@@ -1,3 +1,3 @@
 # CampusFarm
 
-By Xinyi Xu xinyixuu@umich.edu
+By Campus Farm team
