@@ -4,14 +4,49 @@ import numpy as np
 
 @dataclass
 
-class PVArray:
+class PV:
     #I_max = float #max solar insolation in a day in kWh/m^2
     #later, model solar insolation change throughout year with sine wave
     T_daylight = float #total daylight hours
     #array_area = float #solar array area
     max_power = float # 13.2 kW max power under ideal conditions, factoring pv efficiency
-    inv_eff = float #inverter efficiency
+    #inv_eff = float #inverter efficiency
     #pv_eff = float #pv efficiency
+    def __init__(self, array_area, inv_eff, pv_eff, T_daylight, I_max, max_power):
+        self.array_area = array_area
+        self.inv_eff = inv_eff
+        self.pv_eff = pv_eff
+        self.T_daylight = T_daylight
+        self.P_out = 0.0 #cummulative power
+        self.P = 0.0 #instant power 
+        self.I_max = I_max #max solar insolation in a day in kWh/m^2
+        self.max_power = max_power
+    
+    def update(self, t):
+        #?
+        self.P = (self.pv_eff) * (self.inv_eff)*((self.max_power)*np.sin(np.pi * t/(self.T_daylight))+(self.max_power/2))
+        self.P_out += self.P
+        return None
+        
+    def get_current_power_output(self):
+        return self.P
+
+    def get_cumulative_power_output(self):
+        return self.P_out
+    
+    #set the time step to start the simulation
+    def simultator(self):
+        #convert to time step of minutes
+        t = np.floor(self.T_daylight * 60)
+        for i in range(t):
+            self.update(self, i)
+            print(f"Time: {t}, Instant Power: {self.get_current_power_output(self)}, Cumulative Power: {self.get_cummulative_power_output(self)}")
+
+    """"example usage:
+    PV1 = PV(inv_eff=0.96, T_daylight=11.5, max_power=13.2)
+    PV1.simulator(t=800)
+    """""
+        
 
 
 class EV:
