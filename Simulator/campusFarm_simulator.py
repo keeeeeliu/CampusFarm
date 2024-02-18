@@ -1,49 +1,40 @@
 #this is the file for the simulator
 from dataclasses import dataclass
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 @dataclass
 
 class PV:
-    #I_max = float #max solar insolation in a day in kWh/m^2
+    
     #later, model solar insolation change throughout year with sine wave
     T_daylight = float #total daylight hours
-    #array_area = float #solar array area
     max_power = float # 13.2 kW max power under ideal conditions, factoring pv efficiency
-    #inv_eff = float #inverter efficiency
-    #pv_eff = float #pv efficiency
 
-    def __init__(self, array_area, inv_eff, pv_eff, T_daylight, I_max, max_power):
-        self.array_area = array_area
+    def __init__(self, inv_eff, T_daylight, max_power):
         self.inv_eff = inv_eff
-        self.pv_eff = pv_eff
         self.T_daylight = T_daylight
         self.P_out = 0.0 #cummulative power
         self.P = 0.0 #instant power 
-        self.I_max = I_max #max solar insolation in a day in kWh/m^2
         self.max_power = max_power
     
     def update(self, t):
-        #? modify this function 
-        self.P = (self.pv_eff) * (self.inv_eff)*((self.max_power)*np.sin(np.pi * t/(self.T_daylight))+(self.max_power/2))
-        self.P_out += self.P
-        return None
+        self.P = (self.inv_eff)*(self.max_power)* (np.sin(np.pi * t/(self.T_daylight))+1)
+       # self.P_out += self.P
+        return self.P
         
     def get_current_power_output(self):
         return self.P
 
-    def get_cumulative_power_output(self):
-        return self.P_out
-    
-    #set the time step to start the simulation
+        #set the time step to start the simulation
     def simultator(self):
         #convert to time step of minutes
-        t = np.floor(self.T_daylight * 60)
+        t = np.floor(self.T_daylight * 60).astype(int)
         for i in range(t):
-            self.update(self, i)
-            print(f"Time: {t}, Instant Power: {self.get_current_power_output(self)}, Cumulative Power: {self.get_cummulative_power_output(self)}")
-
-    """"example usage:
+            self.update(i)
+            print(f"Time: {i}, Instant Power: {round(self.get_current_power_output(),3)} kW")
+    """"example:
     PV1 = PV(inv_eff=0.96, T_daylight=11.5, max_power=13.2)
     PV1.simulator(t=800)
     """""
@@ -89,7 +80,7 @@ class Cooler:
     k: int
     alpha: float
 
-solar_array = PVArray()
+# solar_array = PV()
 transit = EV()
 main_cooler = Cooler(min_temp = 45, max_temp = 50, Tg = 1, Ta = 70, Tk = 40)
 basement_cooler = Cooler(min_temp = 34, max_temp = 38, Tg = 1, Ta = 70, Tk = 40)
@@ -122,11 +113,11 @@ print("Battery State:", transit.batt_charge)
 
 # initialize variables
     #solar_array.pv_eff = 0.2
-solar_array.inv_eff = 0.96
-    #solar_array.I_max = 3.34 #avg in March in kWh/m^2
-solar_array.T_daylight = 11.5 #hours based on mid february
-solar_array.max_power = 13.2 #in kW, based on Utopian calculations (Joules per second)
-t = 0 # time in hours
+# solar_array.inv_eff = 0.96
+#     #solar_array.I_max = 3.34 #avg in March in kWh/m^2
+# solar_array.T_daylight = 11.5 #hours based on mid february
+# solar_array.max_power = 13.2 #in kW, based on Utopian calculations (Joules per second)
+#t = 0 # time in hours
 
 #change these variables based on simulation !
 
@@ -134,10 +125,12 @@ t = 0 # time in hours
 # power change eq (PV)
 # power_t = (max_power*sin(pi*t/T_daylight)+(13.2/2))*inv_eff
     #convert to time step of minutes, not hours
-PVpower_t = ((solar_array.inv_eff)*(solar_array.max_power)*np.sin(3.14159*t/(solar_array.T_daylight))+(solar_array.max_power/2)) #instant power at time t
-print("Solar Power",PVpower_t)
+#PVpower_t = ((solar_array.inv_eff)*(solar_array.max_power)*np.sin(3.14159*t/(solar_array.T_daylight))+(solar_array.max_power)) #instant power at time t
+# print("Solar Power",PVpower_t)
 # power_cumulative = PVpower_t 
 
+PV1 = PV(inv_eff=0.96, T_daylight=3, max_power=13.2)
+PV1.simultator()
 
 
 
@@ -148,7 +141,7 @@ print("Solar Power",PVpower_t)
 #change these variables based on simulation !
 alpha = 0.9
 main_cooler.Tk = alpha*main_cooler.Tk + (1 - alpha)*(main_cooler.Ta - main_cooler.is_on*main_cooler.Tg)
-main_cooler.simulate()
+# main_cooler.simulate()
 print("Cooler Power", main_cooler.Tk)
 
 # BASEMENT
