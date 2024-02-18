@@ -12,6 +12,7 @@ class PV:
     max_power = float # 13.2 kW max power under ideal conditions, factoring pv efficiency
     #inv_eff = float #inverter efficiency
     #pv_eff = float #pv efficiency
+
     def __init__(self, array_area, inv_eff, pv_eff, T_daylight, I_max, max_power):
         self.array_area = array_area
         self.inv_eff = inv_eff
@@ -23,7 +24,7 @@ class PV:
         self.max_power = max_power
     
     def update(self, t):
-        #?
+        #? modify this function 
         self.P = (self.pv_eff) * (self.inv_eff)*((self.max_power)*np.sin(np.pi * t/(self.T_daylight))+(self.max_power/2))
         self.P_out += self.P
         return None
