@@ -2,26 +2,33 @@
 from dataclasses import dataclass
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+import pandas as pd
 
 @dataclass
+
+
 
 class PV:
     
     #later, model solar insolation change throughout year with sine wave
-    T_daylight = float #total daylight hours
-    max_power = float # 13.2 kW max power under ideal conditions, factoring pv efficiency
+    #T_daylight = float #total daylight hours
+    #max_power = float # 13.2 kW max power under ideal conditions, factoring pv efficiency
 
-    def __init__(self, inv_eff, T_daylight, max_power):
+    def __init__(self, inv_eff, T_daylight, max_power, data):
         self.inv_eff = inv_eff
         self.T_daylight = T_daylight
         self.P_out = 0.0 #cummulative power
         self.P = 0.0 #instant power 
         self.max_power = max_power
+        self.data = data
     
     def update(self, t):
-        self.P = (self.inv_eff)*(self.max_power)* (np.sin(np.pi * t/(self.T_daylight))+1)
-       # self.P_out += self.P
+        minute = np.floor((t / 5)).astype(int)
+        #sin function simulation
+        #self.P = (self.inv_eff)*(self.max_power/2)* (np.sin(np.pi * t/(self.T_daylight))+1)
+
+        #real-world data simulation
+        self.P = self.data.at[minute, 'SolArk PV Power (DNI) kW']
         return self.P
         
     def get_current_power_output(self):
@@ -34,13 +41,12 @@ class PV:
         for i in range(t):
             self.update(i)
             print(f"Time: {i}, Instant Power: {round(self.get_current_power_output(),3)} kW")
+
     """"example:
-    PV1 = PV(inv_eff=0.96, T_daylight=11.5, max_power=13.2)
+    PV1 = PV(inv_eff=0.96, T_daylight=11.5, max_power=13.2, data=dataframe)
     PV1.simulator(t=800)
     """""
         
-
-
 class EV:
     batt_charge: float
     batt_eff: float
@@ -128,8 +134,10 @@ print("Battery State:", transit.batt_charge)
 #PVpower_t = ((solar_array.inv_eff)*(solar_array.max_power)*np.sin(3.14159*t/(solar_array.T_daylight))+(solar_array.max_power)) #instant power at time t
 # print("Solar Power",PVpower_t)
 # power_cumulative = PVpower_t 
+df = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
+print(df.head())
 
-PV1 = PV(inv_eff=0.96, T_daylight=3, max_power=13.2)
+PV1 = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=df)
 PV1.simultator()
 
 
