@@ -6,7 +6,14 @@ import pandas as pd
 
 @dataclass
 
+# Sam put instructions to activate venv in readme (. CF/bin/activate) or better link to how to create venv
+# Sam is there a reason for three python versions in the venv?
+# Sam might be better to put just the requirements in the github repo for the virtual env using pip freeze,
+# Sam and then not have to save the whole venv. paths get hardcoded, so I'm not able to call the python envs
+# Sam you have in here. See the pyvenv.cfg that it's adding Nelson's path, which I can see when I locally echo $PATH
+# Sam https://stackoverflow.com/questions/6590688/is-it-bad-to-have-my-virtualenv-directory-inside-my-git-repository
 
+# Sam might want to make a consistent interface for each of these classes (update(), simulate(), etc)
 
 class PV:
     
@@ -17,7 +24,7 @@ class PV:
     def __init__(self, inv_eff, T_daylight, max_power, data):
         self.inv_eff = inv_eff
         self.T_daylight = T_daylight
-        self.P_out = 0.0 #cummulative power
+        self.P_out = 0.0 #cumulative power
         self.P = 0.0 #instant power 
         self.max_power = max_power
         self.data = data
@@ -35,7 +42,8 @@ class PV:
         return self.P
 
         #set the time step to start the simulation
-    def simultator(self):
+    # Sam could add debug flags as part of the common interface for each element to set the output levels
+    def simultator(self): # Sam should be called simulator?
         #convert to time step of minutes
         t = np.floor(self.T_daylight * 60).astype(int)
         for i in range(t):
@@ -78,6 +86,7 @@ class Cooler:
             self.is_on = True
             
     
+    # Sam could add debug flags as part of the common interface for each element to set the output levels
     def simulate(self,steps):
         for t in range(steps):
             self.set_temp()
@@ -95,6 +104,8 @@ basement_cooler = Cooler(min_temp = 34, max_temp = 38, Tg = 1, Ta = 70, Tk = 40)
 
 
 # EV + EV CHARGER
+
+# Sam will probably want to functionize some of this main stuff
 
 # initialize variables 
 transit.batt_charge = 72 # %
@@ -189,10 +200,10 @@ for i in range(0, 1440):
 
         print("Produce delivered! The drive has ended. Reconnecting to charger ...\n")
 
-        # green house gas equation
+        # greenhouse gas equation
         ghg_saved = 10 # will need to be updated 
 
-        print(f"Green House Gases Saved During Drive: {ghg_saved}\n")
+        print(f"Greenhouse Gases Saved During Drive: {ghg_saved}\n")
         print(f"Energy drained from battery: {drained_energy}\n")
 
         # battery % update
@@ -227,7 +238,7 @@ df = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
 print(df.head())
 
 PV1 = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=df)
-PV1.simultator()
+PV1.simultator() # Sam change function name here too
 
 
 
