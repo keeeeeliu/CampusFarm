@@ -16,11 +16,6 @@ import pandas as pd
 # Sam might want to make a consistent interface for each of these classes (update(), simulate(), etc)
 
 class PV:
-    
-    #later, model solar insolation change throughout year with sine wave
-    #T_daylight = float #total daylight hours
-    #max_power = float # 13.2 kW max power under ideal conditions, factoring pv efficiency
-
     def __init__(self, inv_eff, T_daylight, max_power, data):
         self.inv_eff = inv_eff
         self.T_daylight = T_daylight
@@ -33,26 +28,28 @@ class PV:
         minute = np.floor((t / 5)).astype(int)
         #sin function simulation
         #self.P = (self.inv_eff)*(self.max_power/2)* (np.sin(np.pi * t/(self.T_daylight))+1)
-
         #real-world data simulation
         self.P = self.data.at[minute, 'SolArk PV Power (DNI) kW']
         return self.P
         
     def get_current_power_output(self):
         return self.P
+    
+    def min_to_real_time(self,t):
+        hours, mins = divmod(t, 60)
+        return f"{hours:02d}:{mins:02d}"
 
-        #set the time step to start the simulation
     # Sam could add debug flags as part of the common interface for each element to set the output levels
-    def simultator(self): # Sam should be called simulator?
+    def simulate(self): # Sam should be called simulator? -Yes
         #convert to time step of minutes
         t = np.floor(self.T_daylight * 60).astype(int)
         for i in range(t):
             self.update(i)
-            print(f"Time: {i}, Instant Power: {round(self.get_current_power_output(),3)} kW")
+            print(f"Time: {self.min_to_real_time(i)}, PV Power: {round(self.get_current_power_output(),3)} kW")
 
-    """"example:
+    """"example use:
     PV1 = PV(inv_eff=0.96, T_daylight=11.5, max_power=13.2, data=dataframe)
-    PV1.simulator(t=800)
+    PV1.simulator()
     """""
         
 class EV:
@@ -215,30 +212,10 @@ print("The Day has ended")
 print(f"The final state of charge is {transit.batt_charge}.\n")
 print("Happy Farming!")
 
-# PV ARRAY
-
-# initialize variables
-    #solar_array.pv_eff = 0.2
-# solar_array.inv_eff = 0.96
-#     #solar_array.I_max = 3.34 #avg in March in kWh/m^2
-# solar_array.T_daylight = 11.5 #hours based on mid february
-# solar_array.max_power = 13.2 #in kW, based on Utopian calculations (Joules per second)
-#t = 0 # time in hours
-
-#change these variables based on simulation !
-
-
-# power change eq (PV)
-# power_t = (max_power*sin(pi*t/T_daylight)+(13.2/2))*inv_eff
-    #convert to time step of minutes, not hours
-#PVpower_t = ((solar_array.inv_eff)*(solar_array.max_power)*np.sin(3.14159*t/(solar_array.T_daylight))+(solar_array.max_power)) #instant power at time t
-# print("Solar Power",PVpower_t)
-# power_cumulative = PVpower_t 
+# PV ARRAY simulation
 df = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
-print(df.head())
-
 PV1 = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=df)
-PV1.simultator() # Sam change function name here too
+PV1.simulate() # Sam change function name here too
 
 
 
