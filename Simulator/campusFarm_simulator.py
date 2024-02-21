@@ -1,8 +1,9 @@
-#this is the file for the simulator
+##this is the file for the simulator
 from dataclasses import dataclass
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import math
 
 @dataclass
 
@@ -61,43 +62,53 @@ class EV:
 
 
 class Cooler:
-    def __init__(self, min_temp, max_temp, Tg, Ta, Tk):
+    def __init__(self, min_temp, max_temp, Ta, Tk):
         self.is_on = False # m
         self.min_temp = min_temp
         self.max_temp = max_temp
-        self.Tg = Tg # Temp gain
+        self.p_consume = 3 # power consumed by the thermal cooling load kw/m
         self.Ta = Ta # Ambient temp
         self.Tk = Tk # current internal temp
-        self.t = 0 # time
-    
-    def set_alpha(self,alpha):
-        self.alpha = alpha
+        self.h = 0.01 # time
+        self.COP = 4.5 #coefficient of performance
+        self.Ri = 2 # thermal resistance of the thermal cooling load
+        self.Ci = 0.05 # capacitance of the thermal cooling loadf
     
     def temp_cal(self):
-        Tk = self.alpha*Tk + (1 - self.alpha)*(self.Ta - self.is_on*self.Tg)
+        exponent = -self.h / (self.Ci * self.Ri)
+        alpha = math.exp(exponent)
+        # print(f"exponent: {exponent}")
+        # print(f"alpha: {alpha}")
+        Tg = self.Ri * self.p_consume * self.COP
+        # print(f"alpha*self.Tk: {alpha*self.Tk}, (1 - alpha)*(self.Ta - self.is_on*Tg): {(1 - alpha)*(self.Ta - self.is_on*Tg)}")
+        self.Tk = alpha*self.Tk + (1 - alpha)*(self.Ta - self.is_on*Tg)
+        
 
-    def set_temp(self):
-        if self.Tk < self.min_temp:
-            self.is_on = False
-        elif self.Tk > self.max_temp:
+    def set_temp(self):  
+        if self.max_temp < self.Tk:
             self.is_on = True
-            
-    
-    # Sam could add debug flags as part of the common interface for each element to set the output levels
-    def simulate(self,steps):
-        for t in range(steps):
-            self.set_temp()
-            self.temp_cal(self)
-            print(f"Time: {self.k}, Mini Split ON: {self.is_on}, Internal Temperature: {self.Tk}")
-    min_temp: float
-    max_temp: float
-    k: int
-    alpha: float
+        elif self.min_temp > self.Tk:
+            self.is_on = False
+        elif self.min_temp < self.Tk < self.max_temp:
+            self.is_on = self.is_on
+
+    def print_time(self, minute):
+        hour = minute // 60
+        minute_of_hour = minute % 60
+        print(f"Current time (24-hour format): {hour:02d}:{minute_of_hour:02d}")
+    # def simulate(self):
+    #     steps = 10 # 1 step indicates one minute
+    #     time = 1
+    #     for t in range(steps):
+    #         self.set_temp()
+    #         self.temp_cal()
+    #         ++time
+    #         print(f"Time: {time}, Mini Split ON: {self.is_on}, Internal Temperature: {self.Tk}")
 
 # solar_array = PV()
 transit = EV()
-main_cooler = Cooler(min_temp = 45, max_temp = 50, Tg = 1, Ta = 70, Tk = 40)
-basement_cooler = Cooler(min_temp = 34, max_temp = 38, Tg = 1, Ta = 70, Tk = 40)
+main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
+basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
 
 
 # EV + EV CHARGER
@@ -217,21 +228,32 @@ df = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
 PV1 = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=df)
 PV1.simulate() # Sam change function name here too
 
-
-
-
-
 # MAIN COOLER
 
 #change these variables based on simulation !
-alpha = 0.9
-main_cooler.Tk = alpha*main_cooler.Tk + (1 - alpha)*(main_cooler.Ta - main_cooler.is_on*main_cooler.Tg)
-# main_cooler.simulate()
-print("Cooler Power", main_cooler.Tk)
+test_time = int(input("How long do you want to test for this time? Please enter a time in hours. \n"))
+steps_c = test_time * 60 # test 2 hours for simulation
+times_cooler = 1
+print("\n")
+print("Cooler information: ")
+for i in range (steps_c):
+    main_cooler.set_temp()
+    main_cooler.temp_cal()
+    main_cooler.print_time(i)
+    print(f"Mini Split ON: {main_cooler.is_on}, Internal Temperature: {main_cooler.Tk}")
+    times_cooler = times_cooler + 1
 
 # BASEMENT
-basement_cooler.Tk = alpha*basement_cooler.Tk + (1 - alpha)*(basement_cooler.Ta - basement_cooler.is_on*basement_cooler.Tg)
-print("Basement Power", basement_cooler.Tk)
+steps_b = test_time * 60 # test 2 hours for simulation
+times_base = 1
+print("\n")
+print("Basement information: ")
+for i in range (steps_b):
+    basement_cooler.set_temp()
+    basement_cooler.temp_cal()
+    basement_cooler.print_time(i)
+    print(f"Mini Split ON: {basement_cooler.is_on}, Internal Temperature: {basement_cooler.Tk}")
+    times_base = times_base + 1
 
 
 
