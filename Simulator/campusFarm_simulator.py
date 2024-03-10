@@ -1,5 +1,6 @@
 ##this is the file for the simulator
 from dataclasses import dataclass
+from enum import Enum, auto
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -255,6 +256,63 @@ for i in range (steps_b):
     print(f"Mini Split ON: {basement_cooler.is_on}, Internal Temperature: {basement_cooler.Tk}")
     times_base = times_base + 1
 
+class EVState(Enum):
+    CHARGED = auto()
+    NOT_CHARGED = auto()
+
+if __name__ == "__main__":
+    data = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
+    #declare PV, EV, main_cooler, basement_cooler
+    pv = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=data) 
+    ev = EV() #TODO 
+    # main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
+    # basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
+    main_cooler = Cooler(Ta=70, setpoint=48, power=3)
+    base_cooler = Cooler(Ta=70, setpoint=45, power=3)
+    clean_time = ([24, 200], [500,800]) # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
+    ev_delivery_time = [drive_time,drive_time] #a list of delivery time in form of minutes
+    for t in range(1440):
+        pv.update(t) 
+        ev.update(t) # should take ev state into account
+        main_cooler.update(t)
+        basement_cooler.update(t)
+
+        #EMS_action
+        if pv.P < main_cooler.power:
+            # pv is not genrating enough power
+            # pv+grid to cooler
+            #TODO
+            if main_cooler.setpoint + 2 < main_cooler.max_temp:
+                # a temp fluctuation will stay within ideal healthy zone
+                # increase setpoint to reduce power consumption
+                main_cooler.setpoint += 1
+
+            # check ev delivery schedule, when is the nearest delivery task
+                # charge EV when necessary using grid power
+            if ev_delivery_time[0] - t < 120 and ev_delivery_time[0] - t > 0:
+                # delivery task soon
+                if ev.batt_charge < 50:
+                    # chraging is urgent
+                    ev.next_state = EVState.CHARGED
+                else:
+                    # charging ev is not urgent
+                    # wait for clean period - consecutive charging 
+                    if t >= clean_time[0] and t <=clean_time[1]:
+                        ev.next_state = EVState.CHARGED
+            if ev_delivery_time[0] - t < 0:
+                # pop the past delivery task, so that the first element in the delivery task list is always the upcoming?
+                ev_delivery_time.pop(0)
+
+        else:
+        # pv is generating excessive power
+        # charge ev using solar power if ev is not fully charged
+            if ev.batt_charge < 100:
+                ev.next_state = EVState.CHARGED
+            else:
+                # no need to charge ev, will coolth cooler with solar power
+                if main_cooler.setpoint - 2 > main_cooler.min_temp:
+                    # coolth will not be harmful
+                    main_cooler.setpoint -= 1
 
 
 
