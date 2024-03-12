@@ -231,7 +231,8 @@ class Cooler:
 # solar_array = PV()
 main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
 basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
-    
+main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
+basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
 
 # PV ARRAY simulation
 df = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
@@ -289,6 +290,8 @@ class CleanGrid(Enum):
 
 if __name__ == "__main__":
     print("Starting Campus Farm EMS Simulation for 24 hrs ...")
+
+if __name__ == "__main__":
     data = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
     #declare PV, EV, main_cooler, basement_cooler
     pv = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=data) 
@@ -304,6 +307,11 @@ if __name__ == "__main__":
         pv.update(t) 
         ev.update(t) # should take ev state into account - Nelson to update params
         main_cooler.update(t) 
+    ev_delivery_time = [drive_time,drive_time] #a list of delivery time in form of minutes
+    for t in range(1440):
+        pv.update(t) 
+        ev.update(t) # should take ev state into account
+        main_cooler.update(t)
         basement_cooler.update(t)
 
         #EMS_action
@@ -312,6 +320,9 @@ if __name__ == "__main__":
             # pv+grid to cooler
             #TODO
             # NELSON Q : is there only one set point is that why it is + 2? --> answered
+            # pv is not genrating enough power
+            # pv+grid to cooler
+            #TODO
             if main_cooler.setpoint + 2 < main_cooler.max_temp:
                 # a temp fluctuation will stay within ideal healthy zone
                 # increase setpoint to reduce power consumption
@@ -322,6 +333,9 @@ if __name__ == "__main__":
             # check ev delivery schedule, when is the nearest delivery task
                 # charge EV when necessary using grid power
             if ev.ev_delivery_time[0] - t < 120 and ev.ev_delivery_time[0] - t > 0:
+            # check ev delivery schedule, when is the nearest delivery task
+                # charge EV when necessary using grid power
+            if ev_delivery_time[0] - t < 120 and ev_delivery_time[0] - t > 0:
                 # delivery task soon
                 if ev.batt_charge < 50:
                     # chraging is urgent
@@ -334,6 +348,9 @@ if __name__ == "__main__":
             if ev.ev_delivery_time[0] - t < 0:
                 # pop the past delivery task, so that the first element in the delivery task list is always the upcoming?
                 ev.ev_delivery_time.pop(0)
+            if ev_delivery_time[0] - t < 0:
+                # pop the past delivery task, so that the first element in the delivery task list is always the upcoming?
+                ev_delivery_time.pop(0)
 
         else:
         # pv is generating excessive power
