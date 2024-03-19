@@ -32,14 +32,6 @@ class CleanGrid(Enum):
 class SafeState(Enum):
     SAFE = auto()
     DANGER = auto()
-# Sam put instructions to activate venv in readme (. CF/bin/activate) or better link to how to create venv
-# Sam is there a reason for three python versions in the venv?
-# Sam might be better to put just the requirements in the github repo for the virtual env using pip freeze,
-# Sam and then not have to save the whole venv. paths get hardcoded, so I'm not able to call the python envs
-# Sam you have in here. See the pyvenv.cfg that it's adding Nelson's path, which I can see when I locally echo $PATH
-# Sam https://stackoverflow.com/questions/6590688/is-it-bad-to-have-my-virtualenv-directory-inside-my-git-repository
-
-# Sam might want to make a consistent interface for each of these classes (update(), simulate(), etc)
 
 class PV:
     def __init__(self, inv_eff, T_daylight, max_power, data):
@@ -66,7 +58,7 @@ class PV:
         return f"{hours:02d}:{mins:02d}"
 
     # Sam could add debug flags as part of the common interface for each element to set the output levels
-    def simulate(self): # Sam should be called simulator? -Yes
+    def simulate(self):
         #convert to time step of minutes
         t = np.floor(self.T_daylight * 60).astype(int)
         for i in range(t):
@@ -160,6 +152,8 @@ class EV:
             if(self.state == EVState.CHARGED):
                 print("Stopping EV charging ...")
                 # energy consumed eq                                                             
+                # Sam can this include or take into account the mix at any given time,
+                # or is there an output for pv/grid split for each timestep?
                 energy_consumed = self.charge_pwr_consumed*(self.charging_ctr/60)
                 self.tot_energy_consumed += energy_consumed
                 print(f"Total energy consumed from EV during charge: {energy_consumed} kWh\n")
@@ -197,9 +191,12 @@ class EV:
 
         if(self.state == EVState.CHARGED):
             # batt charge eq 
+            # Sam does the battery charge at the same max rate throughout the charging? If it charging slowly for the last 10%
+            # or sometihng this could maybe change the actual output a lot
             p_in = (self.charger_output_power_max*(1/60)*self.charge_eff)
             self.charge_pwr_consumed += p_in
             self.batt_charge = self.batt_charge + (p_in/self.batt_capacity)
+            # Sam I am pretty sure this is not incrementing self.charging_ctr
             ++self.charging_ctr
 
             
@@ -261,7 +258,7 @@ basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
 # PV ARRAY simulation
 df = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
 PV1 = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=df)
-PV1.simulate() # Sam change function name here too
+PV1.simulate()
 
 # MAIN COOLER
 
@@ -387,6 +384,7 @@ if __name__ == "__main__":
         if pv.P <= main_cooler.instant_power():
             if (pv.P > 0):
                 power_type = PowerState.COMBO
+                # Sam maybe record the percentage of the combo somewhere?
             else:
                 power_type = PowerState.GRID_SUPPORT
     
@@ -418,6 +416,7 @@ if __name__ == "__main__":
                             current_setpoint += 1
                         main_cooler.change_setpoint(current_setpoint)
                         cooling_type = tempState.ECONOMIC
+                        # Sam if this is saving load shifting the cooler, this should be logged somewhere
                         # print(danger_time)
                         #print("@@@")
 
@@ -446,6 +445,7 @@ if __name__ == "__main__":
                 # charge EV when necessary using grid power
             if not ev.ev_deliveries:
                 # no delivery task
+                # Sam if we have very low marginal emissions could it be good to charge if we need to?
                 ev.next_state = EVState.NOT_CHARGED
             else:
                 if ev.ev_deliveries[0][0] - t < 120 and ev.ev_deliveries[0][0] - t > 0:
@@ -459,6 +459,8 @@ if __name__ == "__main__":
                         if not clean_time:
                             ev.next_state = EVState.NOT_CHARGED
                         else:
+                            # Sam think you could say while t > clean_time[0][1] pop(0) here 
+                            # to avoid issue of entering this after passing some of the earlier time ranges
                             if t >= clean_time[0][0] and t <=clean_time[0][1]:
                                 ev.next_state = EVState.CHARGED
                             elif t > clean_time[0][1]:
@@ -475,6 +477,7 @@ if __name__ == "__main__":
                 #     ev.ev_deliveries.pop(0)
 
         elif pv.P > main_cooler.instant_power() and pv.P > 0:
+            # Sam can we log the extra PV generated here somewhere?
             power_type = PowerState.OFF_GRID
 
         
@@ -551,6 +554,7 @@ if __name__ == "__main__":
             current_setpoint = ideal_setpoint
 
         # checking clean periods every timestep
+        # Sam for code cleanliness (haha) it might be nice just to do a while loop where you do the other clean_time logic
         if clean_time:
             if t > clean_time[0][1]:
                 clean_time.pop(0)
