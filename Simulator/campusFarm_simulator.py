@@ -7,7 +7,31 @@ import pandas as pd
 import math
 
 @dataclass
+class EVState(Enum):
+    CHARGED = auto()
+    NOT_CHARGED = auto()
+    DRIVING = auto()
+    # INIT = auto()
 
+
+class PowerState(Enum):
+    GRID_SUPPORT = auto()
+    OFF_GRID = auto()
+    COMBO = auto()
+    INIT = auto()
+
+class tempState(Enum):
+    COOLTH = auto()
+    ECONOMIC = auto()
+    NORMAL = auto()
+
+class CleanGrid(Enum):
+    RELATIVE_CLEAN = auto()
+    RELATIVE_DIRTY = auto()
+
+class SafeState(Enum):
+    SAFE = auto()
+    DANGER = auto()
 # Sam put instructions to activate venv in readme (. CF/bin/activate) or better link to how to create venv
 # Sam is there a reason for three python versions in the venv?
 # Sam might be better to put just the requirements in the github repo for the virtual env using pip freeze,
@@ -266,27 +290,12 @@ for i in range (steps_b):
     print(f"Mini Split ON: {basement_cooler.is_on}, Internal Temperature: {basement_cooler.Tk}")
     times_base = times_base + 1
 
-class EVState(Enum):
-    CHARGED = auto()
-    NOT_CHARGED = auto()
-    DRIVING = auto()
-
-
-class PowerState(Enum):
-    GRID_SUPPORT = auto()
-    OFF_GRID = auto()
-
-class tempState(Enum):
-    COOLTH = auto()
-    ECONOMIC = auto()
-
-class CleanGrid(Enum):
-    RELATIVE_CLEAN = auto()
-    RELATIVE_DIRTY = auto()
 
 
 # NELSON Q: These are the charging/not charging states? --> Answered
 # Should we add states for GRID_SUPPORT, OFF_GRID, COOLTH, WARMING ?
+def check_clean_period(t):
+    return None
 
 if __name__ == "__main__":
     data = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
@@ -295,14 +304,14 @@ if __name__ == "__main__":
     ev = EV() #TODO 
     ev.initialize_ev(72,131,320,True,.9,.9,19.2)
 
-    power_type = auto()
+    power_type = PowerState.INIT
     cooling_type = tempState.NORMAL
     # main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
     # basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
-    main_cooler = Cooler(Ta=70, setpoint=48, power=3)
+    main_cooler = Cooler(Ta=70, setpoint=48, power=1.8)
     base_cooler = Cooler(Ta=70, setpoint=45, power=3)
-    clean_time = [(24, 200), (500,800)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
-    ev_delivery_time = [355,700] #a list of delivery time in form of minutes
+    clean_time = [(24, 200), (1200,1300)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
+    #ev_delivery_time = [355,700] #a list of delivery time in form of minutes
     power_consumed_by_cooler = 0
     # ulti_min, ulti_max = 34, 38 # danger zone set by the user
     # ideal_setpoint = 36 # ideal setpoint set by the user
@@ -322,21 +331,24 @@ if __name__ == "__main__":
     batt_axis = []
     pv_axis = []
     cooler_load = []
+    current_temp = []
+    healthy_max = []
+    healthy_min = []
    
     for t in range(1440):
         pv.update(t)
         ev.update(t) # should take ev state into account
         main_cooler.update()
         base_cooler.update()
-        #print(current_setpoint)
-        # temp_tuple = (current_setpoint,t)
-        # pv_tuple = (pv.get_current_power_output,t)
-        # batt_tuple = (ev.batt_charge,t)
         temp_axis.append(current_setpoint)
         batt_axis.append(ev.batt_charge)
         pv_axis.append(pv.get_current_power_output())
         time_axis.append(t)
         cooler_load.append(main_cooler.instant_power())
+        current_temp.append(main_cooler.Tk)
+        healthy_max.append(ideal_setpoint+2)
+        healthy_min.append(ideal_setpoint-2)
+
     
         if (pv.state != power_type):
             
@@ -362,17 +374,17 @@ if __name__ == "__main__":
                 print("Now the cooler is in the normal mode!")
                 print("The temperature setpoint is:", current_setpoint)
                 main_cooler.state = cooling_type
-        #EMS_action
-        if (cooling_type == tempState.NORMAL):
-            danger_calm_time += 1
-            current_setpoint = ideal_setpoint
-        
-        if (danger_calm_time > 10 and cooling_type == tempState.NORMAL):
-            calm_enough = True
-        elif (danger_calm_time <= 10 and cooling_type == tempState.NORMAL and t > 180):
-            calm_enough = False
 
-        if pv.P < main_cooler.instant_power():
+        if (main_cooler.Tk < ideal_setpoint + 2 and main_cooler.Tk > ideal_setpoint - 2):
+            danger_time = 0
+            danger_calm_time += 1
+        else:
+            danger_time += 1
+            danger_calm_time = 0
+        
+        #EMS_action
+
+        if pv.P <= main_cooler.instant_power():
             if (pv.P > 0):
                 power_type = PowerState.COMBO
             else:
@@ -382,40 +394,54 @@ if __name__ == "__main__":
             # pv+grid to cooler
 
             # TODO
-            if main_cooler.max_temp < ulti_max :
-                # a temp fluctuation will stay within ideal healthy zone
-                # increase setpoint to reduce power consumption
-                # TODO: economy mode, only last for 60 min for now
-                if (calm_enough == True):
-                    # healthy state, avaible for adventure 
-                    calm_enough = False
-                    danger_time = 0
-                    danger_calm_time = 0
-                   # print("!!!")
-                    
-                if (calm_enough == False and danger_time <= 3):
-                    #undergo danger zone
-                    danger_time += 1
-                    current_setpoint += 1
-                    main_cooler.change_setpoint(current_setpoint)
-                    cooling_type = tempState.ECONOMIC
-                    # print(danger_time)
-                    #print("@@@")
-
-                if (calm_enough == False and danger_time > 3):
-                    # finished adventure, but not ready for new adventure
-                    cooling_type = tempState.NORMAL
-                    current_setpoint = ideal_setpoint
-                    main_cooler.change_setpoint(current_setpoint)
-
-                    #print("&&&")
-                        
-                        
-
-
+            if main_cooler.min_temp < ideal_setpoint - 2:
+                # if so, the cooler is at risk of coolth, need to back to normal
+                current_setpoint = ideal_setpoint
+                main_cooler.change_setpoint(current_setpoint)
+                cooling_type = tempState.NORMAL
+            else:
+                # else, the cooler in within healthy zone
+                # can play with the set point when applicable
                 
 
+                if main_cooler.max_temp < ulti_max:
+                    # a temp fluctuation will stay within ideal healthy zone
+                    # increase setpoint to reduce power consumption
+                    # TODO: economy mode, only last for 60 min for now
+                    if (main_cooler.safestate == SafeState.SAFE):
+                        
+                        #undergo danger zone
+                        # danger_time += 1
+                        if (danger_calm_time < 30):
+                            current_setpoint = ideal_setpoint
+                        else:
+                            current_setpoint += 1
+                        main_cooler.change_setpoint(current_setpoint)
+                        cooling_type = tempState.ECONOMIC
+                        # print(danger_time)
+                        #print("@@@")
 
+                    # if (calm_enough == False and danger_time > 120):
+                    if (main_cooler.safestate == SafeState.DANGER):
+                        # finished adventure, but not ready for new adventure
+                        cooling_type = tempState.NORMAL
+                        current_setpoint = ideal_setpoint
+                        main_cooler.change_setpoint(current_setpoint)
+                    
+                else:
+                    # the current tempeture is high, need to back to normal
+                    if (main_cooler.Tk + 2 > ulti_max):
+                        cooling_type = tempState.NORMAL
+                        current_setpoint = ideal_setpoint
+                        main_cooler.change_setpoint(current_setpoint)
+                    if (main_cooler.safestate == SafeState.DANGER):
+                        cooling_type = tempState.NORMAL
+                        current_setpoint = ideal_setpoint
+                        main_cooler.change_setpoint(current_setpoint)
+
+                   
+                    #print("&&&")
+                    
             # check ev delivery schedule, when is the nearest delivery task
                 # charge EV when necessary using grid power
             if not ev.ev_deliveries:
@@ -448,44 +474,67 @@ if __name__ == "__main__":
                 # if ev.ev_deliveries[0][1] < t:
                 #     ev.ev_deliveries.pop(0)
 
-        elif pv.P >= main_cooler.instant_power() and pv.P > 0:
+        elif pv.P > main_cooler.instant_power() and pv.P > 0:
             power_type = PowerState.OFF_GRID
 
         
         # pv is generating excessive power
         # charge ev using solar power if ev is not fully charged
             #!!!!!!!!!!!Reivse: charge ev using solar power if ev battery percentage is not above 80
-            
-        
-            if ev.batt_charge < 80:
-                ev.next_state = EVState.CHARGED
+
+            if main_cooler.max_temp > ideal_setpoint + 2:
+
+                current_setpoint = ideal_setpoint
+                main_cooler.change_setpoint(current_setpoint)
+                cooling_type = tempState.NORMAL
             else:
                 # no need to charge ev, will coolth cooler with solar power
                 if main_cooler.min_temp > ulti_min:
                     # coolth, no longer than 60 min
                     # TODO: no longer than 60 min
                   #  print('????')
-                    if (calm_enough == True):
-                    # healthy state, avaible for adventure 
-                        calm_enough = False
-                        danger_time_cool = 0
-                        danger_calm_time = 0
+                    # if (calm_enough == True):
+                    # # healthy state, avaible for adventure 
+                    #     calm_enough = False
+                    #     danger_time_cool = 0
+                    #     danger_calm_time = 0
                      #   print("111")
                     
-                    if (calm_enough == False and danger_time_cool <= 3):
+                    # if (calm_enough == False and danger_time_cool <= 120):
+                    if (main_cooler.safestate == SafeState.SAFE):
                         #undergo danger zone
-                        danger_time_cool += 1
-                        current_setpoint -= 1
+                        # danger_time_cool += 1
+                        if (danger_calm_time < 30):
+                            current_setpoint = ideal_setpoint
+                        else:
+                            current_setpoint -= 1
+                        # current_setpoint -= 1 
                         main_cooler.change_setpoint(current_setpoint)
                         cooling_type = tempState.COOLTH
                      #   print("222")
 
-                    if(calm_enough == False and danger_time_cool > 3):
+                    # if(calm_enough == False and danger_time_cool > 120):
+                    if (main_cooler.safestate == SafeState.DANGER):
                         # finished adventure, but not ready for new adventure
                         cooling_type = tempState.NORMAL
                         current_setpoint = ideal_setpoint
                         main_cooler.change_setpoint(current_setpoint)
+                        # danger_calm_time = 0
                      #   print("333")
+                else:
+                    if (main_cooler.Tk - 2 < ulti_min):
+
+                        cooling_type = tempState.NORMAL
+                        if (main_cooler.safestate == SafeState.DANGER):
+                            current_setpoint = ideal_setpoint
+                        elif (main_cooler.safestate == SafeState.SAFE):
+                            current_setpoint += 1 if current_setpoint <  ideal_setpoint else ideal_setpoint
+                        main_cooler.change_setpoint(current_setpoint)
+                    # danger_calm_time = 0
+                        
+            
+            if ev.batt_charge < 80:
+                ev.next_state = EVState.CHARGED
         
         if (len(ev.ev_deliveries) > 0):
             
@@ -501,37 +550,54 @@ if __name__ == "__main__":
         if (cooling_type == tempState.NORMAL):
             current_setpoint = ideal_setpoint
 
-    plt.subplot(2,2,1)
+        # checking clean periods every timestep
+        if clean_time:
+            if t > clean_time[0][1]:
+                clean_time.pop(0)
+
+
+    plt.subplot(5,1,1)
     plt.plot(time_axis, temp_axis)  
     plt.xlabel('Time/min')  
     plt.ylabel('Temp Setpoint') 
     plt.title('Temperature Setpoint')  
 
-    plt.subplot(2,2,2)
+    plt.subplot(5,1,2)
     plt.plot(time_axis, batt_axis) 
     plt.xlabel('Time/min')  
     plt.ylabel('Battery Charge Percentage') 
     plt.title('Battery Charge Percentage')
 
-    plt.subplot(2,2,3)
+    plt.subplot(5,1,3)
     plt.plot(time_axis, pv_axis)  
     plt.xlabel('Time/min') 
     plt.ylabel('PV output')
     plt.title('PV output')  
 
-
-
-    plt.subplot(2,2,4)
+    plt.subplot(5,1,4)
     plt.plot(time_axis, cooler_load)  
     plt.xlabel('Time/min')  
     plt.ylabel('cooler load') 
     plt.title('cooler load') 
+    # plt.show()
+
+    plt.subplot(5,1,5)
+    plt.plot(time_axis, current_temp)  
+    plt.plot(time_axis, healthy_max)
+    plt.plot(time_axis,healthy_min)
+    min_hour = min(time_axis) // 60
+    max_hour = max(time_axis) // 60
+    hour_ticks =  list(range(min_hour, max_hour + 1))
+    hour_ticks_in_min = [h*60 for h in hour_ticks]
+    plt.xticks(hour_ticks_in_min, [f"{int(h)}" for h in hour_ticks])
+
+    # plt.xlabel('Time/hour1')  
+    plt.ylabel('current cooler temperature') 
+    plt.title('current cooler temprature') 
     plt.show()
     print("The Day has ended")
     print(f"The final state of charge is {ev.batt_charge}.\n")
     print("Happy Farming!")
-
-
                 
             
 
