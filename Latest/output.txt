@@ -1,0 +1,132 @@
+(cf) (base) keliu@Kes-MacBook-Pro-2 cf % python3 farm.py
+Will there be a delivery Today? Please enter '1' for 'yes' or '0' for 'no': 
+1
+<class 'int'>
+When is the delivery scheduled? Please enter a time in military time with no colon. Example: 1330 for 1:30 PM: 
+1330
+How long will the drive be in minutes? Please enter a whole number. 
+50
+How many miles will the drive be? Please enter a whole or decimal number. 
+24
+A drive is scheduled for: 13:30.
+The drive will be 24.0 miles long and will take 50 minutes.
+
+The Ford Transit is connected to the charger
+
+The current state of charge is 72.
+
+What is the minimum danger zone tempertaure? Pleaser enter:
+45
+What is the maximum danger zone tempertaure? Pleaser enter:
+57
+What is an ideal temperature setpoint? Please enter:
+50
+Time: 00:00, PV Power: 0.0 kW
+The system is using Grid power only! Cooler Power Load is  3
+Time: 00:13, PV Power: 0.0 kW
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Time: 08:16 Starting EV charging ... Current Battery Percentage: 71.97539682539718
+The systm is using PV power only! Cooler Power Load is  0
+Time: 08:16, PV Power: 3.42 kW
+Stopping EV charging ... Current Battery Level is 72.66791590936825
+Total energy consumed from EV during charge: 1.5119999999999894 kWh
+
+Disconnecting from charger. Starting drive ... Current Battery Percentage: 72.66791590936825 
+
+Time 14:22  Produce delivered! The drive has ended. Reconnecting to charger ... Current Battery Percentage: 65.16791590936825 
+
+Greenhouse Gases Saved During Drive: 10
+
+Energy drained from battery: 9.825
+
+Time: 14:23 Starting EV charging ... Current Battery Percentage: 65.16786630619364
+Stopping EV charging ... Current Battery Level is 65.5152250848204
+Total energy consumed from EV during charge: 2.270399999999987 kWh
+
+The system is using both PV power and Grid power Cooler Power Load is  0
+Time: 17:01, PV Power: 2.75 kW
+Time: 17:02 Starting EV charging ... Current Battery Percentage: 65.5151754816458
+The systm is using PV power only! Cooler Power Load is  0
+Time: 17:02, PV Power: 2.75 kW
+Stopping EV charging ... Current Battery Level is 65.58112968011923
+Total energy consumed from EV during charge: 2.4143999999999872 kWh
+
+The system is using Grid power only! Cooler Power Load is  3
+Time: 17:32, PV Power: 0.0 kW
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+Now the cooler is in the normal mode!
+The temperature setpoint is: 50
+Now the cooler is in the economic mode!
+The temperature setpoint is: 51
+The Day has ended
+The final state of charge is 65.56188364837348.
+
+Happy Farming!

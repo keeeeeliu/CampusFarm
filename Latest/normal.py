@@ -3,7 +3,6 @@ from enum import Enum, auto
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import watttime_example as wt
 
 class EVState(Enum):
     CHARGED = auto()
@@ -36,6 +35,7 @@ def min_to_real_time(t):
         return f"{hours:02d}:{mins:02d}"
 
 class PV:
+    
     def __init__(self, inv_eff, T_daylight, max_power, data):
         self.inv_eff = inv_eff
         self.T_daylight = T_daylight
@@ -50,7 +50,7 @@ class PV:
         #sin function simulation
         #self.P = (self.inv_eff)*(self.max_power/2)* (np.sin(np.pi * t/(self.T_daylight))+1)
         #real-world data simulation
-        self.P = self.data.at[minute, 'Power'] / 5 
+        self.P = self.data.at[minute, 'Power']
         return self.P
         
     def get_current_power_output(self):
@@ -66,7 +66,7 @@ class PV:
         t = np.floor(self.T_daylight * 60).astype(int)
         for i in range(t):
             self.update(i)
-            print(f"Time: {self.min_to_real_time(i)}, PV Power: {round(self.get_current_power_output(),3)}")
+            print(f"Time: {self.min_to_real_time(i)}, PV Power: {round(self.get_current_power_output(),3)} kWmin")
 
     """"example use:
     PV1 = PV(inv_eff=0.96, T_daylight=11.5, max_power=13.2, data=dataframe)
@@ -91,7 +91,10 @@ class Cooler:
     def temp_cal(self):
         exponent = -self.h / (self.Ci * self.Ri)
         alpha = np.exp(exponent)
+        # print(f"exponent: {exponent}")
+        # print(f"alpha: {alpha}")
         Tg = self.Ri * self.p_consume * self.COP
+        # print(f"alpha*self.Tk: {alpha*self.Tk}, (1 - alpha)*(self.Ta - self.is_on*Tg): {(1 - alpha)*(self.Ta - self.is_on*Tg)}")
         self.Tk = alpha*self.Tk + (1 - alpha)*(self.Ta - self.is_on*Tg)
         
 
@@ -204,12 +207,13 @@ class EV:
         print(type(self.delivery_bool))
         if(self.delivery_bool == True):
             drive_time = int(input("When is the delivery scheduled? Please enter a time in military time with no colon. Example: 1330 for 1:30 PM: \n"))
-            drive_length = int(input("How long will the drive be in minutes? Please enter a whole number. \n"))
+            drive_duration = int(input("How long will the drive be in minutes? Please enter a whole number. \n"))
             drive_distance = float(input("How many miles will the drive be? Please enter a whole or decimal number. \n"))
             drive_start = self.military_time_to_minutes(drive_time)
-            delivery_tuple = (drive_start, drive_start + drive_length, drive_length, drive_distance)
+            delivery_tuple = (drive_start, drive_start + drive_duration, drive_duration, drive_distance)
             self.ev_deliveries.append(delivery_tuple)
-            print(f"A drive is scheduled for: {min_to_real_time(drive_start)}.\nThe drive will be {drive_distance} miles long and will take {drive_length} minutes.\n")
+            print(f"A drive is scheduled for: {min_to_real_time(drive_start)}.\nThe drive will be {drive_distance} miles long and will take {drive_duration} minutes.\n")
+
 
         if(self.connected):
             print("The Ford Lightning is connected to the charger\n")
@@ -217,45 +221,48 @@ class EV:
     
     def update(self,t):
         # state changes
+        # print(self.charge_pwr_consumed)
         if(self.state != self.next_state):
             #print(f"EV Battery Percentage: {self.batt_charge}\n")
             if(self.state == EVState.CHARGED):
-                print("Time:", min_to_real_time(t), "Stopping EV charging ... Current Battery Level is", self.batt_charge)
+                # next state: driving or not_charged 
+                print("Stopping EV charging ... Current Battery Level is", self.batt_charge)
 
-                # energy consumed eq                                                             
-                self.pv_energy_consumed = self.charge_pwr_consumed
-                self.tot_energy_consumed += self.charge_pwr_consumed
+                # energy consumed eq                                                            
+                energy_consumed = self.charge_pwr_consumed 
+                self.tot_energy_consumed += energy_consumed
                 print(f"Total energy consumed from EV during charge: {self.tot_energy_consumed} kWh\n")
 
                 self.charge_pwr_consumed = 0
-                self.pv_energy_consumed = 0
-                
+                energy_consumed = 0
                 self.charging_ctr = 0
                 if(self.next_state == EVState.DRIVING):
                     print("Disconnecting from charger. Starting drive ... Current Battery Percentage:", self.batt_charge,"\n")
-                    self.drive_drained_percentage = (self.ev_deliveries[0][3]/self.ev_range)*100 / self.ev_deliveries[0][2]
+                    self.drive_drained_percentage = (self.ev_deliveries[0][3]/self.ev_range)*100/self.ev_deliveries[0][2]
                     self.drive_drained_energy = (self.ev_deliveries[0][3]/self.ev_range)*self.batt_capacity
                     self.batt_charge -= self.drive_drained_percentage
-                    
             
             elif(self.state == EVState.NOT_CHARGED):
                 if(self.next_state == EVState.DRIVING):
                     print("Time:",min_to_real_time(t),"Disconnecting from charger. Starting drive ...\n")
-                    self.drive_drained_percentage = (self.ev_deliveries[0][3]/self.ev_range)*100 / self.ev_deliveries[0][2]
+                    self.drive_drained_percentage = (self.ev_deliveries[0][3]/self.ev_range)*100/self.ev_deliveries[0][2]
                     self.drive_drained_energy = (self.ev_deliveries[0][3]/self.ev_range)*self.batt_capacity
                     # battery % update
-              
+                    # self.batt_capacity = self.batt_capacity - self.drive_drained_percentage
                     self.batt_charge -= self.drive_drained_percentage
                 elif(self.next_state == EVState.CHARGED):
                     print("Time:", min_to_real_time(t), "Starting EV charging ... Current Battery Percentage:", self.batt_charge)
     
             elif(self.state == EVState.DRIVING):
+                # self.batt_charge -= self.drive_drained_percentage
+                # print(self.state, self.next_state)
                 print("Time", min_to_real_time(t)," Produce delivered! The drive has ended. Reconnecting to charger ... Current Battery Percentage:", self.batt_charge,"\n")
                 # greenhouse gas equation
                 ghg_saved = 10 # will need to be updated 
 
                 print(f"Greenhouse Gases Saved During Drive: {ghg_saved}\n")
                 print(f"Energy drained from battery: {self.drive_drained_energy}\n")
+                print(f"Current Battery Percentage (%): {self.batt_charge}\n")
                 if(self.next_state == EVState.CHARGED):
                     print("Starting EV charging ... Current Battery Percentage:", self.batt_charge)
             
@@ -270,29 +277,26 @@ class EV:
                     p_in = (self.charger_output_pwr_max*(1/60)*self.charge_eff)
                     # print("@@@@@", p_in)
                     # print("!!!!",self.charging_ctr)
-                    e_consumed = self.charger_output_pwr_max / 60
-                    # self.charge_pwr_consumed += p_in
-                    self.charge_pwr_consumed += e_consumed
-                    self.batt_charge +=  (p_in/self.batt_capacity) * 100
+                    self.charge_pwr_consumed += p_in
+                    self.batt_charge = self.batt_charge + (p_in/self.batt_capacity) * 100
                     self.charging_ctr += 1
                 else:
-                    self.next_state = EVState.NOT_CHARGED
+                    self.state = EVState.NOT_CHARGED
                 
             #should we change to CHARGING/IDLE? 
             elif(self.state == EVState.NOT_CHARGED):
                 #idle discharge eq (losses 2% every month)
                 self.batt_charge = self.batt_charge - (1/20160)
+                # self.batt_charge = self.batt_charge - (1/201)
             elif(self.state == EVState.DRIVING):
-                self.drive_drained_percentage = self.ev_deliveries[0][3]/self.ev_range/self.ev_deliveries[0][2] * 100
+                self.drive_drained_percentage = self.ev_deliveries[0][3]/self.ev_range /self.ev_deliveries[0][2] * 100
+                # print((self.drive_drained_percentage))
+                # print(self.ev_deliveries[0][3],self.ev_range,self.ev_deliveries[0][2])
                 self.batt_charge -= self.drive_drained_percentage
+                # print(len(self.ev_deliveries),self.state, self.next_state, t, "@")
 
 
 if __name__ == "__main__":
-    # integrate watt time data
-    token = wt.get_login_token()
-    data = wt.get_moer(token)
-    # in ems, only returns a list of clean periods
-
     # data = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
     data = pd.read_csv('./Intermittent_Sunlight_March.csv',usecols=['Minute','Power'])
     #declare PV, EV, main_cooler, basement_cooler
@@ -301,15 +305,13 @@ if __name__ == "__main__":
     ev.initialize_ev(20,131,320,True,.9,.9,19.2)
 
     power_type = PowerState.INIT
-    
-  
+    cooling_type = tempState.NORMAL
     # main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
     # basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
     main_cooler = Cooler(Ta=70, setpoint=48, power=3.67)
     base_cooler = Cooler(Ta=70, setpoint=45, power=3)
-    cooler_load_value = main_cooler.p_consume
     # we extract clean time from 16:00 - 24:00 and 0:00 - 7:00 everyday, because we use ev during the day
-    clean_time = [(0, 80), (150,160), (1100,1150)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
+    clean_time = [(0, 20), (150,160), (1100,1150)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
     #ev_delivery_time = [355,700] #a list of delivery time in form of minutes
     power_consumed_by_cooler = 0
     # ulti_min, ulti_max = 34, 38 # danger zone set by the user
@@ -340,7 +342,6 @@ if __name__ == "__main__":
     current_temp_min = []
     danger_max = []
     danger_min = []
-
     energy_consumed_by_cooler = 0.0
     energy_generated_by_pv = 0.0
 
@@ -354,7 +355,7 @@ if __name__ == "__main__":
     pv_by_cooler = 0.0
 
     for t in range(1440):
-        
+       
         pv.update(t)
         ev.update(t)
         # print(ev.state, ev.next_state)
@@ -373,130 +374,67 @@ if __name__ == "__main__":
         danger_max.append(ulti_max)
         danger_min.append(ulti_min)
         
-        energy_consumed_by_cooler += main_cooler.instant_power()/60
+        #normal case
+        #charge EV when it's reconnected to the charger
+        #cooler temp is always the same
+        energy_consumed_by_cooler += main_cooler.instant_power()/60 #kw / min
         energy_generated_by_pv += pv.get_current_power_output()/60
-        
-        
-
-  
-
-        if (pv.state != power_type):
-            
-            if (power_type == PowerState.COMBO):
-                print("The system is using both PV power and Grid power Cooler Power Load is ", main_cooler.instant_power())
-            elif (power_type == PowerState.OFF_GRID):
-                print("The systm is using PV power only! Cooler Power Load is ", main_cooler.instant_power())
-            elif (power_type == PowerState.GRID_SUPPORT):
-                print("The system is using Grid power only! Cooler Power Load is ", main_cooler.instant_power())
-            pv.state = power_type
-            print(f"Time: {pv.min_to_real_time(t)}, PV Power: {round(pv.get_current_power_output(),3)} kW")
 
         if pv.P <= main_cooler.p_consume:
-            if (pv.P > 0):
+            if (pv.P>0):
                 power_type = PowerState.COMBO
             else:
                 power_type = PowerState.GRID_SUPPORT
 
-            # pv is not generating enough power
-            # need to increase the set point 
             if power_type == PowerState.COMBO:
-                ###grid + pv#### should we do coolth??
-                #maybe just the normal
-                if (current_setpoint >= ideal_min):
-                    current_setpoint = ideal_setpoint
-                    main_cooler.change_setpoint(current_setpoint)
-
-                
                 if (main_cooler.instant_power()>0):
                     energy_from_grid += np.abs(main_cooler.instant_power() - pv.P) / 60
                     tot_pv_energy_consumed += pv.P / 60
 
                     grid_by_cooler += np.abs(main_cooler.p_consume - pv.P) / 60
                     pv_by_cooler += np.abs(pv.P) /60
-
-                
-                
-
-                ev.next_state = EVState.NOT_CHARGED
             elif power_type == PowerState.GRID_SUPPORT: 
-                # purely grid 
-                # by cooler
                 energy_from_grid += (main_cooler.instant_power()) / 60
 
                 grid_by_cooler += main_cooler.instant_power() / 60
-
-
-                if (current_setpoint <= ideal_max):
-                    # can increase the set point
-                    # we don't compare current_setpoint with ideal_min because if current_setpoint less than ideal_min, will also be set to ideal_max 
-                    current_setpoint = ideal_max
-                    main_cooler.change_setpoint(current_setpoint)
-                    # else, do nothing 
-                
-                # normally, we don't charge ev using grid power
-                ev.next_state = EVState.NOT_CHARGED
-                # we charge ev using grid only during clean period
-                # we will charge ev every day, despite of days without delivery
-                if clean_time:
-                    if t >= clean_time[0][0] and t <= clean_time[0][1]:
-                        # during clean periods charge ev to keep a descent charge
-                        # if battery charge if above 70, we don't charge using grid
-                        if (ev.batt_charge < 70):
-                            ev.next_state = EVState.CHARGED
-                            #by ev
-                            energy_from_grid += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
-
-                            grid_by_ev +=(ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
-                        
-                    else:
-                        # outside of clean periods
-                        ev.next_state = EVState.NOT_CHARGED
-
-
-
-
-            
         elif pv.P > main_cooler.p_consume and pv.P > 0:
             power_type = PowerState.OFF_GRID
 
             tot_pv_energy_consumed += main_cooler.instant_power()/ 60
-
             pv_by_cooler += main_cooler.instant_power()/ 60
-            # pv is generating excess power
-            if (current_setpoint >= ideal_min):
-                current_setpoint = ideal_min
-                main_cooler.change_setpoint(current_setpoint)
 
-            if ev.batt_charge < 95:
-                    # if excessive power, always charge ev
-                ev.next_state = EVState.CHARGED   
-
-                # tot_pv_energy_consumed += ev.charger_output_pwr_max*(1/60)*ev.charge_eff
-                pv_energy_consumed_by_ev += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
-
-                
-            else:
-                ev.next_state = EVState.NOT_CHARGED
-                
-
+        main_cooler.change_setpoint(current_setpoint)
         # ev delivery task 
         if (len(ev.ev_deliveries) > 0):
             
-            if ev.ev_deliveries[0][0] <= t and ev.ev_deliveries[0][1] >= t:
+            if ev.ev_deliveries[0][0] <= t and ev.ev_deliveries[0][1] > t:
                     # pop the past delivery task, so that the first element in the delivery task list is always the upcoming?
+                    #ev.ev_deliveries.pop(0)
                     ev.connected = False
                     ev.next_state = EVState.DRIVING
-   
-        #update clean periods and delivery schedule
+                
+            # if ev.ev_deliveries[0][1] < t:
+            #         ev.ev_deliveries.pop(0)
+                    
+        else:
+            #no delivery task
+            if (ev.batt_charge < 95):
+                ev.connected = True
+                ev.next_state = EVState.CHARGED
+                grid_by_ev +=(ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
+                energy_from_grid +=  (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
+            else:
+                ev.next_state = EVState.NOT_CHARGED
+
+        #update clean periods
         if clean_time:
             if t > clean_time[0][1]:
                 clean_time.pop(0)
         if ev.ev_deliveries:
             if t > ev.ev_deliveries[0][1]:
                 ev.ev_deliveries.pop(0)
-                ev.connected = True
-                ev.next_state = EVState.NOT_CHARGED
-        
+                ev.next_state = EVState.CHARGED
+    
     pv_by_ev = ev.tot_energy_consumed - grid_by_ev
     tot_pv_energy_consumed = pv_by_ev + pv_by_cooler
     print("Total energy consumed by Cooler", energy_consumed_by_cooler)
@@ -505,13 +443,11 @@ if __name__ == "__main__":
     print("Total energy consumed from grid:", energy_from_grid)
     print("Total solar energy consumed:", tot_pv_energy_consumed)
 
-    
-    
+
     print(pv_by_cooler)
     print(pv_by_ev)
     print(grid_by_cooler)
     print(grid_by_ev)
-
 
     plt.subplot(5,1,1)
     plt.plot(time_axis, temp_axis)  
@@ -562,8 +498,6 @@ if __name__ == "__main__":
     print("The Day has ended")
     print(f"The final state of charge is {ev.batt_charge}.\n")
     print("Happy Farming!")
-
-
 
 
 
