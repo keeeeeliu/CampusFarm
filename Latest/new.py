@@ -50,7 +50,7 @@ class PV:
         #sin function simulation
         #self.P = (self.inv_eff)*(self.max_power/2)* (np.sin(np.pi * t/(self.T_daylight))+1)
         #real-world data simulation
-        self.P = self.data.at[minute, 'Power'] / 5 
+        self.P = self.data.at[minute, 'Power'] 
         return self.P
         
     def get_current_power_output(self):
@@ -289,12 +289,12 @@ class EV:
 
 if __name__ == "__main__":
     # integrate watt time data
-    token = wt.get_login_token()
-    data = wt.get_moer(token)
+    # token = wt.get_login_token()
+    # data = wt.get_moer(token)
     # in ems, only returns a list of clean periods
 
     # data = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
-    data = pd.read_csv('./Intermittent_Sunlight_March.csv',usecols=['Minute','Power'])
+    data = pd.read_csv('./Consistent_Sunlight_October.csv',usecols=['Minute','Power'])
     #declare PV, EV, main_cooler, basement_cooler
     pv = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=data) 
     ev = EV() #TODO 
@@ -302,14 +302,11 @@ if __name__ == "__main__":
 
     power_type = PowerState.INIT
     
-  
-    # main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
-    # basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
     main_cooler = Cooler(Ta=70, setpoint=48, power=3.67)
     base_cooler = Cooler(Ta=70, setpoint=45, power=3)
     cooler_load_value = main_cooler.p_consume
     # we extract clean time from 16:00 - 24:00 and 0:00 - 7:00 everyday, because we use ev during the day
-    clean_time = [(0, 80), (150,160), (1100,1150)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
+    clean_time = wt.get_clean_periods() # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
     #ev_delivery_time = [355,700] #a list of delivery time in form of minutes
     power_consumed_by_cooler = 0
     # ulti_min, ulti_max = 34, 38 # danger zone set by the user
@@ -317,17 +314,19 @@ if __name__ == "__main__":
     ulti_min = float(input("What is the minimum danger zone tempertaure? Pleaser enter:\n"))
     ulti_max = float(input("What is the maximum danger zone tempertaure? Pleaser enter:\n"))
     ideal_setpoint = float(input("What is an ideal temperature setpoint? Please enter:\n"))
-    ideal_min = float(input("What is an ideal temperature min? Please enter:\n")) + 2
-    ideal_max = float(input("What is an ideal temperature max? Please enter:\n")) - 2
+    safe_min = float(input("What is an ideal temperature min? Please enter:\n")) # this is safe zone boundary
+    safe_max = float(input("What is an ideal temperature max? Please enter:\n")) # this is safe zone boundary
+    cooler_fluctuation_range = 2.0 # +/- 2 degrees of set point 
+    ideal_min = safe_min + cooler_fluctuation_range # this is the boundary for set point
+    ideal_max = safe_max - cooler_fluctuation_range # this is the boundary for set point, if current setpoint = ideal max, the cooler temp will always below safe max, even with temp fluctuation
     current_setpoint = ideal_setpoint
-    
-    # pv.simulate()
-    danger_time = 0
-    danger_time_cool = 0
-    danger_calm_time = 0
-    calm_enough = True
+    coolth_tolerance_time = 60 # 1 hour 
+    eco_tolerance_time = 60 # 1 hour
+    eco_time_counter = 0 # should not exceed 1 hour per day
+    coolth_time_counter = 0
+   
 
-    #graph
+    # GRAPH 
     time_axis = []
     temp_axis = []
     batt_axis = []
@@ -341,6 +340,8 @@ if __name__ == "__main__":
     danger_max = []
     danger_min = []
 
+
+    # accumulated 
     energy_consumed_by_cooler = 0.0
     energy_generated_by_pv = 0.0
 
@@ -366,17 +367,21 @@ if __name__ == "__main__":
         time_axis.append(t)
         cooler_load.append(main_cooler.instant_power())
         current_temp.append(main_cooler.Tk)
-        healthy_max.append(ideal_max+2)
-        healthy_min.append(ideal_min-2)
+        healthy_max.append(safe_max)
+        healthy_min.append(safe_min)
         current_temp_max.append(current_setpoint+2)
         current_temp_min.append(current_setpoint-2)
         danger_max.append(ulti_max)
         danger_min.append(ulti_min)
         
-        energy_consumed_by_cooler += main_cooler.instant_power()/60
-        energy_generated_by_pv += pv.get_current_power_output()/60
+        energy_consumed_by_cooler += main_cooler.instant_power()/60 # check
+        energy_generated_by_pv += pv.get_current_power_output()/60 # check
+
+        if (main_cooler.Tk > safe_max):
+            eco_time_counter += 1
         
-        
+        if (main_cooler.Tk < safe_min):
+            coolth_time_counter += 1
 
   
 
@@ -400,52 +405,55 @@ if __name__ == "__main__":
             # pv is not generating enough power
             # need to increase the set point 
             if power_type == PowerState.COMBO:
-                ###grid + pv#### should we do coolth??
-                #maybe just the normal
+                ###grid + pv#### should we do coolth?? No, we will stay in normal mode
+                # we go coolth with purely pv power
                 if (current_setpoint >= ideal_min):
-                    current_setpoint = ideal_setpoint
+                    current_setpoint = ideal_setpoint                        
                     main_cooler.change_setpoint(current_setpoint)
 
-                
-                if (main_cooler.instant_power()>0):
-                    energy_from_grid += np.abs(main_cooler.instant_power() - pv.P) / 60
-                    tot_pv_energy_consumed += pv.P / 60
+                # energy consumption calculation
+                if (main_cooler.instant_power()>0): 
 
-                    grid_by_cooler += np.abs(main_cooler.p_consume - pv.P) / 60
-                    pv_by_cooler += np.abs(pv.P) /60
-
-                
-                
-
+                    energy_from_grid += np.abs(main_cooler.instant_power() - pv.P) / 60 #grid consumption
+                    tot_pv_energy_consumed += pv.P / 60 #pv consumption
+                    grid_by_cooler += np.abs(main_cooler.p_consume - pv.P) / 60 #grid consumption by cooler
+                    pv_by_cooler += pv.P /60
                 ev.next_state = EVState.NOT_CHARGED
-            elif power_type == PowerState.GRID_SUPPORT: 
-                # purely grid 
-                # by cooler
-                energy_from_grid += (main_cooler.instant_power()) / 60
 
+            elif power_type == PowerState.GRID_SUPPORT: 
+                # purely grid  ECO
+                # energy calculation by cooler
+                energy_from_grid += (main_cooler.instant_power()) / 60
                 grid_by_cooler += main_cooler.instant_power() / 60
 
+                #ECO
+                if (eco_time_counter < eco_tolerance_time):
+                    # go danger
+                    if (current_setpoint < safe_max):
+                        current_setpoint = safe_max
+                        main_cooler.change_setpoint(current_setpoint)
 
-                if (current_setpoint <= ideal_max):
-                    # can increase the set point
-                    # we don't compare current_setpoint with ideal_min because if current_setpoint less than ideal_min, will also be set to ideal_max 
-                    current_setpoint = ideal_max
+                elif (eco_time_counter >= eco_tolerance_time):
+                    # stay within safe zone
+                    if (current_setpoint <= ideal_max):
+                        current_setpoint = ideal_max
+                    elif (current_setpoint == safe_max):
+                        current_setpoint = ideal_max
                     main_cooler.change_setpoint(current_setpoint)
-                    # else, do nothing 
+           
                 
                 # normally, we don't charge ev using grid power
                 ev.next_state = EVState.NOT_CHARGED
                 # we charge ev using grid only during clean period
-                # we will charge ev every day, despite of days without delivery
+                # we will charge ev every day, including days without delivery
                 if clean_time:
-                    if t >= clean_time[0][0] and t <= clean_time[0][1]:
+                    if t >= clean_time[0][0] and t <= clean_time[0][1] and (t <= 420 or t >= 1020): # 0:00 - 7:00,  16:00 - 23:59
                         # during clean periods charge ev to keep a descent charge
                         # if battery charge if above 70, we don't charge using grid
                         if (ev.batt_charge < 70):
                             ev.next_state = EVState.CHARGED
                             #by ev
                             energy_from_grid += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
-
                             grid_by_ev +=(ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
                         
                     else:
@@ -463,18 +471,31 @@ if __name__ == "__main__":
 
             pv_by_cooler += main_cooler.instant_power()/ 60
             # pv is generating excess power
-            if (current_setpoint >= ideal_min):
-                current_setpoint = ideal_min
+            # COOLTH
+            if (coolth_time_counter < coolth_tolerance_time):
+                if (current_setpoint > safe_min):
+                    current_setpoint = safe_min
+                    main_cooler.change_setpoint(current_setpoint)
+            elif (coolth_time_counter >= coolth_tolerance_time):
+                if (current_setpoint >= ideal_min):
+                    current_setpoint = ideal_min
+                elif (current_setpoint == safe_min):
+                    current_setpoint = ideal_min
                 main_cooler.change_setpoint(current_setpoint)
 
+
+            # excessive pv may not be enough for ev charging, so ev may use grid power
+            # therefore, rule is: if pv.P - main_cooler.p_consume  > 0, then ev use pv power
             if ev.batt_charge < 95:
                     # if excessive power, always charge ev
-                ev.next_state = EVState.CHARGED   
-
-                # tot_pv_energy_consumed += ev.charger_output_pwr_max*(1/60)*ev.charge_eff
-                pv_energy_consumed_by_ev += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
-
                 
+                if (pv.P - main_cooler.instant_power() > 0): 
+                    ev.next_state = EVState.CHARGED   
+
+                    tot_pv_energy_consumed += ev.charger_output_pwr_max*(1/60)*ev.charge_eff
+                    pv_energy_consumed_by_ev += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
+                else:
+                    ev.next_state = EVState.NOT_CHARGED
             else:
                 ev.next_state = EVState.NOT_CHARGED
                 
@@ -497,13 +518,16 @@ if __name__ == "__main__":
                 ev.connected = True
                 ev.next_state = EVState.NOT_CHARGED
         
-    pv_by_ev = ev.tot_energy_consumed - grid_by_ev
-    tot_pv_energy_consumed = pv_by_ev + pv_by_cooler
+    pv_by_ev = pv_energy_consumed_by_ev
+    # tot_pv_energy_consumed = pv_by_ev + pv_by_cooler
     print("Total energy consumed by Cooler", energy_consumed_by_cooler)
     print("Total energy generated by PV:", energy_generated_by_pv)
     print("Total energy consumed by EV:", ev.tot_energy_consumed)
     print("Total energy consumed from grid:", energy_from_grid)
     print("Total solar energy consumed:", tot_pv_energy_consumed)
+
+    print("Time spent in ECONOMIC mode:", eco_time_counter)
+    print("Time spent in COOLTH mode:", coolth_time_counter)
 
     
     
