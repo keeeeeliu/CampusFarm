@@ -11,7 +11,6 @@ class EVState(Enum):
     DRIVING = auto()
     # INIT = auto()
 
-
 class PowerState(Enum):
     GRID_SUPPORT = auto()
     OFF_GRID = auto()
@@ -294,19 +293,29 @@ if __name__ == "__main__":
     # in ems, only returns a list of clean periods
 
     # data = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
-    data = pd.read_csv('./Consistent_Sunlight_October.csv',usecols=['Minute','Power'])
+    data = pd.read_csv('./PVdata.csv',usecols=['Minute','Power'])
     #declare PV, EV, main_cooler, basement_cooler
     pv = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=data) 
     ev = EV() #TODO 
-    ev.initialize_ev(20,131,320,True,.9,.9,19.2)
+    ev.initialize_ev(75,131,320,True,.9,.9,19.2)
 
     power_type = PowerState.INIT
     
-    main_cooler = Cooler(Ta=70, setpoint=48, power=3.67)
-    base_cooler = Cooler(Ta=70, setpoint=45, power=3)
+    # NF: adding charging levels
+    low_chg = 3.84
+    med_low_chg = 7.68
+    med_chg = 11.52
+    med_high_chg = 15.36
+    high_chg = 19.2
+    
+    main_cooler = Cooler(Ta=78, setpoint=48, power=3.67)
+    base_cooler = Cooler(Ta=78, setpoint=45, power=3)
     cooler_load_value = main_cooler.p_consume
     # we extract clean time from 16:00 - 24:00 and 0:00 - 7:00 everyday, because we use ev during the day
+
+    #TODO: commented this out for testing purposes!
     clean_time = wt.get_clean_periods() # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
+    #clean_time = [(1430, 1530), (1630,1644), (1820,1900)]
     #ev_delivery_time = [355,700] #a list of delivery time in form of minutes
     power_consumed_by_cooler = 0
     # ulti_min, ulti_max = 34, 38 # danger zone set by the user
@@ -390,7 +399,7 @@ if __name__ == "__main__":
             if (power_type == PowerState.COMBO):
                 print("The system is using both PV power and Grid power Cooler Power Load is ", main_cooler.instant_power())
             elif (power_type == PowerState.OFF_GRID):
-                print("The systm is using PV power only! Cooler Power Load is ", main_cooler.instant_power())
+                print("The system is using PV power only! Cooler Power Load is ", main_cooler.instant_power())
             elif (power_type == PowerState.GRID_SUPPORT):
                 print("The system is using Grid power only! Cooler Power Load is ", main_cooler.instant_power())
             pv.state = power_type
@@ -452,6 +461,9 @@ if __name__ == "__main__":
                         # if battery charge if above 70, we don't charge using grid
                         if (ev.batt_charge < 70):
                             ev.next_state = EVState.CHARGED
+
+                            # NF: addition - if we are charging from grid, we are are charging at med rate for now 
+                            ev.charger_output_pwr_max = med_chg
                             #by ev
                             energy_from_grid += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
                             grid_by_ev +=(ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
@@ -488,12 +500,28 @@ if __name__ == "__main__":
             # therefore, rule is: if pv.P - main_cooler.p_consume  > 0, then ev use pv power
             if ev.batt_charge < 95:
                     # if excessive power, always charge ev
-                
-                if (pv.P - main_cooler.instant_power() > 0): 
+                excess_pv = pv.P - main_cooler.instant_power()
+
+                # NF: now checking to see if excess is greater than the lowest charge level
+                if (excess_pv >= low_chg):
                     ev.next_state = EVState.CHARGED   
 
-                    tot_pv_energy_consumed += ev.charger_output_pwr_max*(1/60)*ev.charge_eff
-                    pv_energy_consumed_by_ev += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
+                    # NF: adding logic to switch between charging levels
+                    if(excess_pv >= high_chg):
+                        ev.charger_output_pwr_max = high_chg
+                    elif(excess_pv >= med_high_chg):
+                        ev.charger_output_pwr_max = med_high_chg
+                    elif(excess_pv >= med_chg):
+                        ev.charger_output_pwr_max = med_chg
+                    elif(excess_pv >= med_low_chg):
+                        ev.charger_output_pwr_max = med_low_chg
+                    else:
+                        ev.charger_output_pwr_max = low_chg
+
+                    # NF: Made a change here --> got rid of *charge_eff
+                    tot_pv_energy_consumed += ev.charger_output_pwr_max*(1/60)
+                    pv_energy_consumed_by_ev += ev.charger_output_pwr_max*(1/60)
+
                 else:
                     ev.next_state = EVState.NOT_CHARGED
             else:

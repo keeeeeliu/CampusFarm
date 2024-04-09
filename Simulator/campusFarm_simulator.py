@@ -298,18 +298,18 @@ if __name__ == "__main__":
     #declare PV, EV, main_cooler, basement_cooler
     pv = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=data) 
     ev = EV() #TODO 
-    ev.initialize_ev(20,131,320,True,.9,.9,19.2)
+    ev.initialize_ev(75,131,320,True,.9,.9,19.2)
 
     power_type = PowerState.INIT
     
   
     # main_cooler = Cooler(min_temp = 45, max_temp = 50, Ta = 70, Tk = 48)
     # basement_cooler = Cooler(min_temp = 34, max_temp = 38, Ta = 70, Tk = 48)
-    main_cooler = Cooler(Ta=70, setpoint=48, power=3.67)
-    base_cooler = Cooler(Ta=70, setpoint=45, power=3)
+    main_cooler = Cooler(Ta=78, setpoint=48, power=3.67)
+    base_cooler = Cooler(Ta=78, setpoint=45, power=3)
     cooler_load_value = main_cooler.p_consume
     # we extract clean time from 16:00 - 24:00 and 0:00 - 7:00 everyday, because we use ev during the day
-    clean_time = [(0, 80), (150,160), (1100,1150)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
+    clean_time = [(1430, 1530), (1630,1644), (1820,1900)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
     #ev_delivery_time = [355,700] #a list of delivery time in form of minutes
     power_consumed_by_cooler = 0
     # ulti_min, ulti_max = 34, 38 # danger zone set by the user
