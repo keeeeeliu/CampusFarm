@@ -9,13 +9,16 @@ class EVState(Enum):
     CHARGED = auto()
     NOT_CHARGED = auto()
     DRIVING = auto()
+    DISCHARGE = auto()
     # INIT = auto()
+
 
 class PowerState(Enum):
     GRID_SUPPORT = auto()
     OFF_GRID = auto()
     COMBO = auto()
     INIT = auto()
+    DOWN = auto()
 
 class tempState(Enum):
     COOLTH = auto()
@@ -79,7 +82,7 @@ class Cooler:
         self.max_temp = setpoint + 2
         self.p_consume = power # power consumed by the thermal cooling load kw/m
         self.Ta = Ta # Ambient temp
-        self.Tk = 48 # current internal temp
+        self.Tk = 55 # current internal temp
         self.h = 0.016 # time
         self.COP = 2 #coefficient of performance
         self.Ri = 10 # thermal resistance of the thermal cooling load
@@ -183,6 +186,7 @@ class EV:
         self.drive_drained_percentage = 0
         self.drive_drained_energy = 0
         self.charging_ctr = 0
+        self.discharge_pwr = 5
     
 
         # initialize variables 
@@ -200,7 +204,7 @@ class EV:
         #print(self.state)
         
         # will need to put this into a for loop in the future for multiple deliveries
-        print(type(self.delivery_bool))
+        # print(type(self.delivery_bool))
         if(self.delivery_bool == True):
             drive_time = int(input("When is the delivery scheduled? Please enter a time in military time with no colon. Example: 1330 for 1:30 PM: \n"))
             drive_length = int(input("How long will the drive be in minutes? Please enter a whole number. \n"))
@@ -212,26 +216,26 @@ class EV:
 
         if(self.connected):
             print("The Ford Lightning is connected to the charger\n")
-            print(f"The current state of charge is {self.batt_charge}.\n")
+            print(f"The current state of charge is {round(self.batt_charge,3)}.\n")
     
     def update(self,t):
         # state changes
         if(self.state != self.next_state):
             #print(f"EV Battery Percentage: {self.batt_charge}\n")
             if(self.state == EVState.CHARGED):
-                print("Time:", min_to_real_time(t), "Stopping EV charging ... Current Battery Level is", self.batt_charge)
+                print("Time:", min_to_real_time(t), "Stopping EV charging ... Current Battery Level is", round(self.batt_charge,3))
 
                 # energy consumed eq                                                             
                 self.pv_energy_consumed = self.charge_pwr_consumed
                 self.tot_energy_consumed += self.charge_pwr_consumed
-                print(f"Total energy consumed from EV during charge: {self.tot_energy_consumed} kWh\n")
+                print(f"Total energy consumed from EV during charge: {round(self.tot_energy_consumed,3)} kWh\n")
 
                 self.charge_pwr_consumed = 0
                 self.pv_energy_consumed = 0
                 
                 self.charging_ctr = 0
                 if(self.next_state == EVState.DRIVING):
-                    print("Disconnecting from charger. Starting drive ... Current Battery Percentage:", self.batt_charge,"\n")
+                    print("Disconnecting from charger. Starting drive ... Current Battery Percentage:", round(self.batt_charge,3),"\n")
                     self.drive_drained_percentage = (self.ev_deliveries[0][3]/self.ev_range)*100 / self.ev_deliveries[0][2]
                     self.drive_drained_energy = (self.ev_deliveries[0][3]/self.ev_range)*self.batt_capacity
                     self.batt_charge -= self.drive_drained_percentage
@@ -246,17 +250,20 @@ class EV:
               
                     self.batt_charge -= self.drive_drained_percentage
                 elif(self.next_state == EVState.CHARGED):
-                    print("Time:", min_to_real_time(t), "Starting EV charging ... Current Battery Percentage:", self.batt_charge)
+                    print("Time:", min_to_real_time(t), "Starting EV charging ... Current Battery Percentage:", round(self.batt_charge,3))
     
             elif(self.state == EVState.DRIVING):
-                print("Time", min_to_real_time(t)," Produce delivered! The drive has ended. Reconnecting to charger ... Current Battery Percentage:", self.batt_charge,"\n")
+                print("Time", min_to_real_time(t)," Produce delivered! The drive has ended. Reconnecting to charger ... Current Battery Percentage:", round(self.batt_charge,3),"\n")
                 # greenhouse gas equation
                 ghg_saved = 10 # will need to be updated 
 
-                print(f"Greenhouse Gases Saved During Drive: {ghg_saved}\n")
-                print(f"Energy drained from battery: {self.drive_drained_energy}\n")
+                print(f"Greenhouse Gases Saved During Drive: {round(ghg_saved,3)}\n")
+                print(f"Energy drained from battery: {round(self.drive_drained_energy,3)}\n")
                 if(self.next_state == EVState.CHARGED):
-                    print("Starting EV charging ... Current Battery Percentage:", self.batt_charge)
+                    print("Starting EV charging ... Current Battery Percentage:", round(self.batt_charge,3))
+
+            
+
             
             self.state = self.next_state
         else:
@@ -284,6 +291,12 @@ class EV:
             elif(self.state == EVState.DRIVING):
                 self.drive_drained_percentage = self.ev_deliveries[0][3]/self.ev_range/self.ev_deliveries[0][2] * 100
                 self.batt_charge -= self.drive_drained_percentage
+            elif(self.state == EVState.DISCHARGE):
+                if (self.batt_charge > 0):
+                    self.batt_charge -= (self.discharge_pwr/60*self.discharge_eff)/self.batt_capacity * 100
+                else:
+                    self.next_state = EVState.NOT_CHARGED
+                
 
 
 if __name__ == "__main__":
@@ -293,13 +306,12 @@ if __name__ == "__main__":
     # in ems, only returns a list of clean periods
 
     # data = pd.read_csv('./PVdata.csv',usecols=['Minute','SolArk PV Power (DNI) kW'])
-    data = pd.read_csv('./PVdata.csv',usecols=['Minute','Power'])
+    data = pd.read_csv('./Intermittent_Sunlight_March.csv',usecols=['Minute','Power'])
     #declare PV, EV, main_cooler, basement_cooler
     pv = PV(inv_eff=0.96, T_daylight=24, max_power=13.2, data=data) 
     ev = EV() #TODO 
-    ev.initialize_ev(75,131,320,True,.9,.9,19.2)
-
-    power_type = PowerState.INIT
+    ev.initialize_ev(60,131,320,True,.9,.9,19.2)
+    power_type = PowerState.INIT # system power state 
     
     # NF: adding charging levels
     low_chg = 3.84
@@ -307,16 +319,15 @@ if __name__ == "__main__":
     med_chg = 11.52
     med_high_chg = 15.36
     high_chg = 19.2
-    
-    main_cooler = Cooler(Ta=78, setpoint=48, power=3.67)
-    base_cooler = Cooler(Ta=78, setpoint=45, power=3)
+
+    main_cooler = Cooler(Ta=68, setpoint=48, power=3.67)
+    base_cooler = Cooler(Ta=70, setpoint=45, power=3)
     cooler_load_value = main_cooler.p_consume
     # we extract clean time from 16:00 - 24:00 and 0:00 - 7:00 everyday, because we use ev during the day
-
-    #TODO: commented this out for testing purposes!
-    clean_time = wt.get_clean_periods() # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
-    #clean_time = [(1430, 1530), (1630,1644), (1820,1900)]
+    # clean_time = (wt.get_clean_periods())[0]
+    clean_time = [(0,80),(150,164),(1100,1140)] # a list of relatively clean periods extracted from 72 hrs marginal emissions rate forecast
     #ev_delivery_time = [355,700] #a list of delivery time in form of minutes
+    up_threshold_clean = (wt.get_clean_periods())[1]
     power_consumed_by_cooler = 0
     # ulti_min, ulti_max = 34, 38 # danger zone set by the user
     # ideal_setpoint = 36 # ideal setpoint set by the user
@@ -333,6 +344,7 @@ if __name__ == "__main__":
     eco_tolerance_time = 60 # 1 hour
     eco_time_counter = 0 # should not exceed 1 hour per day
     coolth_time_counter = 0
+    current_grid_MOER = 0.0 #TODO!!!!!!!!!!!!!!
    
 
     # GRAPH 
@@ -363,11 +375,22 @@ if __name__ == "__main__":
     pv_by_ev = 0.0
     pv_by_cooler = 0.0
 
+    # power_type = PowerState.DOWN
+
     for t in range(1440):
+
+        # if (t > 1100 and t < 1300 or (t > 100 and t < 200)):
+        #     power_type = PowerState.DOWN
+
+        # if (t == 1300 or t == 200):
+        #     power_type = PowerState.INIT
+
+        # if (t > 1200 and t < 1300 or (t > 100 and t < 600)):
+        #     current_grid_MOER = 170.0
+            
         
         pv.update(t)
         ev.update(t)
-        # print(ev.state, ev.next_state)
         main_cooler.update()
         base_cooler.update()
         temp_axis.append(current_setpoint)
@@ -392,18 +415,32 @@ if __name__ == "__main__":
         if (main_cooler.Tk < safe_min):
             coolth_time_counter += 1
 
-  
-
         if (pv.state != power_type):
             
             if (power_type == PowerState.COMBO):
                 print("The system is using both PV power and Grid power Cooler Power Load is ", main_cooler.instant_power())
             elif (power_type == PowerState.OFF_GRID):
-                print("The system is using PV power only! Cooler Power Load is ", main_cooler.instant_power())
+                print("The systm is using PV power only! Cooler Power Load is ", main_cooler.instant_power())
             elif (power_type == PowerState.GRID_SUPPORT):
                 print("The system is using Grid power only! Cooler Power Load is ", main_cooler.instant_power())
+            
             pv.state = power_type
             print(f"Time: {pv.min_to_real_time(t)}, PV Power: {round(pv.get_current_power_output(),3)} kW")
+
+        if power_type == PowerState.DOWN:
+            print("The system is down")
+            # ev should discharge during grid shutdown 
+
+            if (ev.batt_charge > 0):
+                # ev may discharge to 0 till the end of the grid shutdown
+                ev.discharge_pwr = main_cooler.instant_power()
+                ev.next_state = EVState.DISCHARGE
+                # print(t,"EV is discharging",ev.state,ev.next_state)
+                # cooler is always normal mode
+                current_setpoint = ideal_setpoint
+                main_cooler.change_setpoint(current_setpoint)
+            continue # skip the rest of the loop, go to the next iteration
+
 
         if pv.P <= main_cooler.p_consume:
             if (pv.P > 0):
@@ -431,6 +468,7 @@ if __name__ == "__main__":
 
             elif power_type == PowerState.GRID_SUPPORT: 
                 # purely grid  ECO
+                # ev will discharge if current MOER is greater than the theshold, till 70%
                 # energy calculation by cooler
                 energy_from_grid += (main_cooler.instant_power()) / 60
                 grid_by_cooler += main_cooler.instant_power() / 60
@@ -460,11 +498,13 @@ if __name__ == "__main__":
                         # during clean periods charge ev to keep a descent charge
                         # if battery charge if above 70, we don't charge using grid
                         if (ev.batt_charge < 70):
+                            # meduim charge rate
+                            ev.charger_output_pwr_max = med_chg
                             ev.next_state = EVState.CHARGED
-
+                            #by ev
                             # NF: addition - if we are charging from grid, we are are charging at med rate for now 
                             ev.charger_output_pwr_max = med_chg
-                            #by ev
+
                             energy_from_grid += (ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
                             grid_by_ev +=(ev.charger_output_pwr_max*(1/60)*ev.charge_eff)
                         
@@ -472,6 +512,19 @@ if __name__ == "__main__":
                         # outside of clean periods
                         ev.next_state = EVState.NOT_CHARGED
 
+                        if (current_grid_MOER > up_threshold_clean and ev.batt_charge > 70):
+                            # grid is dirty, ev discharges
+                            ev.discharge_pwr = main_cooler.instant_power()
+                            ev.next_state = EVState.DISCHARGE
+                else:
+                    # no clean peiords
+                    # outside of clean periods
+                    ev.next_state = EVState.NOT_CHARGED
+
+                    if (current_grid_MOER > up_threshold_clean and ev.batt_charge > 70):
+                        # grid is dirty, ev discharges
+                        ev.discharge_pwr = main_cooler.instant_power()
+                        ev.next_state = EVState.DISCHARGE
 
 
 
@@ -504,7 +557,8 @@ if __name__ == "__main__":
 
                 # NF: now checking to see if excess is greater than the lowest charge level
                 if (excess_pv >= low_chg):
-                    ev.next_state = EVState.CHARGED   
+                    ev.charger_output_pwr_max = high_chg
+                    ev.next_state = EVState.CHARGED
 
                     # NF: adding logic to switch between charging levels
                     if(excess_pv >= high_chg):
@@ -516,12 +570,11 @@ if __name__ == "__main__":
                     elif(excess_pv >= med_low_chg):
                         ev.charger_output_pwr_max = med_low_chg
                     else:
-                        ev.charger_output_pwr_max = low_chg
+                        ev.charger_output_pwr_max = low_chg  
 
                     # NF: Made a change here --> got rid of *charge_eff
                     tot_pv_energy_consumed += ev.charger_output_pwr_max*(1/60)
                     pv_energy_consumed_by_ev += ev.charger_output_pwr_max*(1/60)
-
                 else:
                     ev.next_state = EVState.NOT_CHARGED
             else:
@@ -548,28 +601,27 @@ if __name__ == "__main__":
         
     pv_by_ev = pv_energy_consumed_by_ev
     # tot_pv_energy_consumed = pv_by_ev + pv_by_cooler
-    print("Total energy consumed by Cooler", energy_consumed_by_cooler)
-    print("Total energy generated by PV:", energy_generated_by_pv)
-    print("Total energy consumed by EV:", ev.tot_energy_consumed)
-    print("Total energy consumed from grid:", energy_from_grid)
-    print("Total solar energy consumed:", tot_pv_energy_consumed)
+    print("Total energy consumed by Cooler", round(energy_consumed_by_cooler,3))
+    print("Total energy generated by PV:", round(energy_generated_by_pv,3))
+    print("Total energy consumed by EV:", round(ev.tot_energy_consumed,3))
+    print("Total energy consumed from grid:", round(energy_from_grid,3))
+    print("Total solar energy consumed:", round(tot_pv_energy_consumed,3))
 
-    print("Time spent in ECONOMIC mode:", eco_time_counter)
-    print("Time spent in COOLTH mode:", coolth_time_counter)
+    print("Time spent in ECONOMIC mode:", round(eco_time_counter,3))
+    print("Time spent in COOLTH mode:", round(coolth_time_counter,3))
 
     
     
-    print(pv_by_cooler)
-    print(pv_by_ev)
-    print(grid_by_cooler)
-    print(grid_by_ev)
-
+    print(round(pv_by_cooler,3))
+    print(round(pv_by_ev,3))
+    print(round(grid_by_cooler,3))
+    print(round(grid_by_ev,3))
 
     plt.subplot(5,1,1)
-    plt.plot(time_axis, temp_axis)  
-    plt.xlabel('Time/min')  
-    plt.ylabel('Temp Setpoint') 
-    plt.title('Temperature Setpoint')  
+    plt.plot(time_axis, pv_axis)  
+    plt.xlabel('Time/min') 
+    plt.ylabel('PV output')
+    plt.title('PV output')  
 
     plt.subplot(5,1,2)
     plt.plot(time_axis, batt_axis) 
@@ -578,10 +630,10 @@ if __name__ == "__main__":
     plt.title('Battery Charge Percentage')
 
     plt.subplot(5,1,3)
-    plt.plot(time_axis, pv_axis)  
-    plt.xlabel('Time/min') 
-    plt.ylabel('PV output')
-    plt.title('PV output')  
+    plt.plot(time_axis, temp_axis)  
+    plt.xlabel('Time/min')  
+    plt.ylabel('Temp Setpoint') 
+    plt.title('Temperature Setpoint')  
 
     plt.subplot(5,1,4)
     plt.plot(time_axis, cooler_load)  
@@ -589,7 +641,7 @@ if __name__ == "__main__":
     plt.xlabel('Time/min')  
     plt.ylabel('cooler load') 
     plt.title('cooler load') 
-    # plt.show()
+ 
 
     plt.subplot(5,1,5)
     plt.plot(time_axis, current_temp)  
@@ -610,6 +662,7 @@ if __name__ == "__main__":
     # plt.xlabel('Time/hour1')  
     plt.ylabel('current cooler temperature') 
     plt.title('current cooler temprature') 
+    # plt.savefig("ems.png")
     plt.show()
     print("The Day has ended")
     print(f"The final state of charge is {ev.batt_charge}.\n")
