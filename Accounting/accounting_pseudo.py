@@ -42,7 +42,7 @@ class EmsStat:
 
     # return list to be put into csv rows for day's minute-by-minute data
     def get_data_for_csv(self):
-        return [self.time, self.ev_load_from_grid, self.cool_load_from_grid, self.isTempHigh, self.isTempLow]
+        return [self.time, self.ev_load_from_grid, self.cool_load_from_grid, self.b_cool_load, self.m_cool_load, self.isTempHigh, self.isTempLow]
 
 
    # Writes a single row to a csv file every minute 
@@ -58,6 +58,9 @@ class EmsStat:
 # per day the EV is charging 
 def calculate_co2_responsiblities(day_ems_stats_csv, previous_days_end_state):
 
+    b_cool_energy_ctr = 0
+    m_cool_energy_ctr = 0
+    stable_setpoint_time_ctr = 0
 
     with open('EMS_Data.csv', mode = 'r') as oldfile:
     EmsReader = csv.reader(oldfile)
@@ -72,17 +75,32 @@ def calculate_co2_responsiblities(day_ems_stats_csv, previous_days_end_state):
         self.marginal_co2 = 0
         self.average_co2 = 0
 
-        E_Grid_Cool = row[2]
-        isTempHigh = row[3]
-        isTempLow = row[4]
+        E_Grid_Cool = row[]
+        b_cool_load = row[]
+        m_cool_load = row[]
+        isTempHigh = row[]
+        isTempLow = row[]
 
-        if isTempHigh && isTempLow == false 
+        #Need to find the average power conusmption of each cooler when the setpoints are stable to 
+        #compare them to the energy consumed when the cooler setpoints are high or low. That comparison will allow us to 
+        #predict how the coolers would function without the EMS, and we can use the difference between the real values and the 
+        #average values to find the emissions savings of the EMS w/rspct to the coolers 
+        if (isTempHigh && isTempLow == false) &&  
+        b_cool_energy_ctr = b_cool_energy_ctr + b_cool_load
+        m_cool_energy_ctr = m_cool_energy_ctr + m_cool_load
+        stable_setpoint_time_ctr = stable_setpoint_time_ctr + 1
+
         
         #copying the data from the original csv file without wattime data to a new one with the data
         EmsWriter.writerow(row + marginal_co2 + average_co2)
        
         pass
 
+    # After the counters are done, the average consumption in watts is calculated (watt*minutes / minutes) when the temp setpoint
+    # is not raised or lowered by the ems
+    avg_power_b_cool = b_cool_energy_ctr / stable_setpoint_time_ctr
+    avg_power_m_cool = m_cool_energy_ctr / stable_setpoint_time_ctr
+    
     cooler_marginal_co2 = 0
     cooler_average_co2 = 0
     ev_marginal_co2 = 0
@@ -94,13 +112,13 @@ def calculate_co2_responsiblities(day_ems_stats_csv, previous_days_end_state):
     reader = csv.reader(currentFile)
     
     for row in reader:
-        time = row[0]
-        E_Grid_EV = row[1]
-        E_Grid_Cool = row[2]
-        isTempHigh = row[3]
-        isTempLow = row[4]
-        Marginal_co2 = row[5]
-        Average_co2 = row[6]
+        time = row[]
+        E_Grid_EV = row[]
+        E_Grid_Cool = row[]
+        isTempHigh = row[]
+        isTempLow = row[]
+        Marginal_co2 = row[]
+        Average_co2 = row[]
         cooler_marginal_co2 = cooler_marginal_co2 + E_Grid_Cool * Marginal_co2
         cooler_average_co2 = cooler_average_co2 + E_Grid_Cool * Average_co2
         ev_marginal_co2 = ev_marginal_co2 + E_Grid_EV * Marginal_co2
