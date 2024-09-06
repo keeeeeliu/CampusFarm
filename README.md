@@ -20,3 +20,6 @@ Should now see (env) in terminal prompt, now run:
 If added new packages, use:
 
 `pip freeze > requirements.txt`
+
+
+EMS Rules, Usage, and TODOs: https://docs.google.com/document/d/15bw1BUQSVn3Ge8a-vWfkly68SeJhZLx0jcHMDZaASME/edit
