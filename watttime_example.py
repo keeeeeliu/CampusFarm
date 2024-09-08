@@ -36,7 +36,7 @@ def get_moer(token):
     TOKEN = ""
     headers = {"Authorization": f"Bearer {token}"}
     params = {
-        "region": "CAISO_NORTH",
+        "region": "MISO_DETROIT",
         "signal_type": "co2_moer",
     }
     response = requests.get(url, headers=headers, params=params)
