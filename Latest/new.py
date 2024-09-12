@@ -180,6 +180,12 @@ class EV:
         # self.delivery_bool = self.str_to_bool(self.user_input)
         # self.delivery_bool = True
         self.delivery_bool = int(self.user_input)
+
+        num_drives = 0
+        if(self.delivery_bool == True):
+            num_drives = int(input("How many drives will there be? Please enter a whole number: \n"))
+
+
         self.tot_energy_consumed = 0
         self.charge_pwr_consumed = 0
         self.charging_ctr = 0
@@ -206,13 +212,15 @@ class EV:
         # will need to put this into a for loop in the future for multiple deliveries
         # print(type(self.delivery_bool))
         if(self.delivery_bool == True):
-            drive_time = int(input("When is the delivery scheduled? Please enter a time in military time with no colon. Example: 1330 for 1:30 PM: \n"))
-            drive_length = int(input("How long will the drive be in minutes? Please enter a whole number. \n"))
-            drive_distance = float(input("How many miles will the drive be? Please enter a whole or decimal number. \n"))
-            drive_start = self.military_time_to_minutes(drive_time)
-            delivery_tuple = (drive_start, drive_start + drive_length, drive_length, drive_distance)
-            self.ev_deliveries.append(delivery_tuple)
-            print(f"A drive is scheduled for: {min_to_real_time(drive_start)}.\nThe drive will be {drive_distance} miles long and will take {drive_length} minutes.\n")
+            while(num_drives != 0):
+                drive_time = int(input("When is the delivery scheduled? Please enter a time in military time with no colon. Example: 1330 for 1:30 PM: \n"))
+                drive_length = int(input("How long will the drive be in minutes? Please enter a whole number. \n"))
+                drive_distance = float(input("How many miles will the drive be? Please enter a whole or decimal number. \n"))
+                drive_start = self.military_time_to_minutes(drive_time)
+                delivery_tuple = (drive_start, drive_start + drive_length, drive_length, drive_distance)
+                self.ev_deliveries.append(delivery_tuple)
+                print(f"A drive is scheduled for: {min_to_real_time(drive_start)}.\nThe drive will be {drive_distance} miles long and will take {drive_length} minutes.\n")
+                num_drives = num_drives - 1
 
         if(self.connected):
             print("The Ford Lightning is connected to the charger\n")
@@ -447,7 +455,9 @@ if __name__ == "__main__":
                 power_type = PowerState.COMBO
             else:
                 power_type = PowerState.GRID_SUPPORT
+            
 
+            # TODO: Q for Ke - What does combo or grid support have to do with what logic follows?
             # pv is not generating enough power
             # need to increase the set point 
             if power_type == PowerState.COMBO:
@@ -512,19 +522,31 @@ if __name__ == "__main__":
                         # outside of clean periods
                         ev.next_state = EVState.NOT_CHARGED
 
-                        if (current_grid_MOER > up_threshold_clean and ev.batt_charge > 70):
-                            # grid is dirty, ev discharges
-                            ev.discharge_pwr = main_cooler.instant_power()
-                            ev.next_state = EVState.DISCHARGE
+                        # COMMENTED!
+                        # if (current_grid_MOER > up_threshold_clean and ev.batt_charge > 70):
+                        #     # grid is dirty, ev discharges
+                        #     ev.discharge_pwr = main_cooler.instant_power()
+                        #     ev.next_state = EVState.DISCHARGE
                 else:
                     # no clean peiords
                     # outside of clean periods
-                    ev.next_state = EVState.NOT_CHARGED
 
-                    if (current_grid_MOER > up_threshold_clean and ev.batt_charge > 70):
-                        # grid is dirty, ev discharges
-                        ev.discharge_pwr = main_cooler.instant_power()
-                        ev.next_state = EVState.DISCHARGE
+
+                    # NF:
+                    if(len(ev.ev_deliveries) > 0):
+                        # if the delivery will take the battery below 20%
+                        if(((ev.batt_charge/100)*320)-ev.ev_deliveries[0][2] < 65):
+                            ev.next_state = EVState.CHARGED
+                        else:
+                            ev.next_state = EVState.NOT_CHARGED
+                    else:
+                        ev.next_state = EVState.NOT_CHARGED
+
+                    # COMMENTED!
+                    # if (current_grid_MOER > up_threshold_clean and ev.batt_charge > 70):
+                    #     # grid is dirty, ev discharges
+                    #     ev.discharge_pwr = main_cooler.instant_power()
+                    #     ev.next_state = EVState.DISCHARGE
 
 
 
@@ -557,6 +579,13 @@ if __name__ == "__main__":
 
                 # NF: now checking to see if excess is greater than the lowest charge level
                 if (excess_pv >= low_chg):
+                    print("MADE IT")
+                    print("CHG PWR")
+                    print(ev.charger_output_pwr_max)
+                    print("MAIN COOLER")
+                    print(main_cooler.instant_power())
+                    print("PV PWR")
+                    print(pv.P)
                     ev.charger_output_pwr_max = high_chg
                     ev.next_state = EVState.CHARGED
 

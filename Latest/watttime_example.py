@@ -10,9 +10,9 @@ def make_account():
 
     import requests
     register_url = 'https://api.watttime.org/register'
-    params = {'username': 'sfay',
-            'password': 'uY*B5#sxbcLgMa',
-            'email': 'smafay6@gmail.com',
+    params = {'username': 'nelfigs',
+            'password': '%Trpriprq38$*nF',
+            'email': 'nelfigs@umich.edu',
             'org': 'University of Michigan'}
     rsp = requests.post(register_url, json=params)
     print(rsp.text)
@@ -23,7 +23,7 @@ def get_login_token():
     import requests
     from requests.auth import HTTPBasicAuth
     login_url = 'https://api.watttime.org/login'
-    rsp = requests.get(login_url, auth=HTTPBasicAuth('sfay', 'uY*B5#sxbcLgMa'))
+    rsp = requests.get(login_url, auth=HTTPBasicAuth('nelfigs', '%Trpriprq38$*nF'))
     TOKEN = rsp.json()['token']
     print(rsp.json())
     return TOKEN
@@ -36,7 +36,7 @@ def get_moer(token):
     TOKEN = ""
     headers = {"Authorization": f"Bearer {token}"}
     params = {
-        "region": "CAISO_NORTH",
+        "region": "MISO_DETROIT",
         "signal_type": "co2_moer",
     }
     response = requests.get(url, headers=headers, params=params)
