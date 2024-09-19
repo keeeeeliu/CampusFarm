@@ -76,14 +76,17 @@ def change_value(value):
 
     return current_value
 
-def change_setpoint(value):
+def change_setpoint(current_value, updated_value):
     """Function that access the CoolBot website and change the temperature based on the input value."""
-    updated_value = 0
-    while updated_value != value:
+    print(f"Inside: Current value: {current_value}, Updated value: {updated_value}")
+    while updated_value != current_value:
         try:
-            updated_value = change_value(value)
+            # For test purposes
+            current_value = change_value(updated_value)
         except:
             print("An Error has occurred for Cooler Web Automation")
+
+    return current_value
     
 def main():
     change_setpoint(45)

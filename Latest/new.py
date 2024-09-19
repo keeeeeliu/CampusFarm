@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import watttime_example as wt
+from automation import change_setpoint
 
 class EVState(Enum):
     CHARGED = auto()
@@ -369,6 +370,10 @@ if __name__ == "__main__":
     danger_max = []
     danger_min = []
 
+    # For Web Test only.
+    web_test_axis = []
+    web_temp = ideal_setpoint
+
 
     # accumulated 
     energy_consumed_by_cooler = 0.0
@@ -402,6 +407,8 @@ if __name__ == "__main__":
         main_cooler.update()
         base_cooler.update()
         temp_axis.append(current_setpoint)
+        # For Web test purposes only.
+        web_test_axis.append(web_temp)
         batt_axis.append(ev.batt_charge)
         pv_axis.append(pv.get_current_power_output())
         time_axis.append(t)
@@ -445,6 +452,7 @@ if __name__ == "__main__":
                 ev.next_state = EVState.DISCHARGE
                 # print(t,"EV is discharging",ev.state,ev.next_state)
                 # cooler is always normal mode
+                web_temp = change_setpoint(current_setpoint, ideal_setpoint)
                 current_setpoint = ideal_setpoint
                 main_cooler.change_setpoint(current_setpoint)
             continue # skip the rest of the loop, go to the next iteration
@@ -464,6 +472,7 @@ if __name__ == "__main__":
                 ###grid + pv#### should we do coolth?? No, we will stay in normal mode
                 # we go coolth with purely pv power
                 if (current_setpoint >= ideal_min):
+                    web_temp = change_setpoint(current_setpoint, ideal_setpoint)
                     current_setpoint = ideal_setpoint                        
                     main_cooler.change_setpoint(current_setpoint)
 
@@ -487,16 +496,19 @@ if __name__ == "__main__":
                 if (eco_time_counter < eco_tolerance_time):
                     # go danger
                     if (current_setpoint < safe_max):
+                        web_temp = change_setpoint(current_setpoint, safe_max)
                         current_setpoint = safe_max
                         main_cooler.change_setpoint(current_setpoint)
 
                 elif (eco_time_counter >= eco_tolerance_time):
                     # stay within safe zone
+                    temp = current_setpoint
                     if (current_setpoint <= ideal_max):
                         current_setpoint = ideal_max
                     elif (current_setpoint == safe_max):
                         current_setpoint = ideal_max
                     main_cooler.change_setpoint(current_setpoint)
+                    web_temp = change_setpoint(temp, current_setpoint)
            
                 
                 # normally, we don't charge ev using grid power
@@ -561,14 +573,17 @@ if __name__ == "__main__":
             # COOLTH
             if (coolth_time_counter < coolth_tolerance_time):
                 if (current_setpoint > safe_min):
+                    web_temp = change_setpoint(current_setpoint, safe_min)
                     current_setpoint = safe_min
                     main_cooler.change_setpoint(current_setpoint)
             elif (coolth_time_counter >= coolth_tolerance_time):
+                temp = current_setpoint
                 if (current_setpoint >= ideal_min):
                     current_setpoint = ideal_min
                 elif (current_setpoint == safe_min):
                     current_setpoint = ideal_min
                 main_cooler.change_setpoint(current_setpoint)
+                web_temp = change_setpoint(temp, current_setpoint)
 
 
             # excessive pv may not be enough for ev charging, so ev may use grid power
@@ -670,7 +685,6 @@ if __name__ == "__main__":
     plt.xlabel('Time/min')  
     plt.ylabel('cooler load') 
     plt.title('cooler load') 
- 
 
     plt.subplot(5,1,5)
     plt.plot(time_axis, current_temp)  
@@ -693,6 +707,21 @@ if __name__ == "__main__":
     plt.title('current cooler temprature') 
     # plt.savefig("ems.png")
     plt.show()
+
+    # For web testing purposes only.
+    plt.subplot(1, 2, 1)
+    plt.plot(time_axis, temp_axis)  
+    plt.xlabel('Time/min')  
+    plt.ylabel('Temp Setpoint') 
+    plt.title('Temperature Setpoint') 
+
+    plt.subplot(1, 2, 2)
+    plt.plot(time_axis, web_test_axis)  
+    plt.xlabel('Time/min')  
+    plt.ylabel('Temp Setpoint') 
+    plt.title('Temperature Setpoint For Web Testing') 
+    plt.show()
+
     print("The Day has ended")
     print(f"The final state of charge is {ev.batt_charge}.\n")
     print("Happy Farming!")
