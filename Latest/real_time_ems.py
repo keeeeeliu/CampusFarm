@@ -36,7 +36,7 @@ def get_pv():
     power_map = get_inverter_data()
     pv = power_map["Solar W"]
     pv = int(pv.replace("W", ""))
-    return pv
+    pv_output = pv 
 
 def get_cooler_temp():
     global cooler_indoor_temp
