@@ -5,8 +5,11 @@ from datetime import datetime
 from tkinter import messagebox
 import json
 import subprocess
-import currentWattTime as wt
+# import curret_watt_time as wt
 import csv
+from astral import LocationInfo
+from astral.sun import sun 
+
 
 realtime = datetime.now()
 ev_charge = 0
@@ -16,6 +19,15 @@ ev_connected = True
 coolEV_power = 0
 
 # note: read data from json file
+
+############## utility function ##############
+def is_daytime(city="Detroit", country="USA"):
+    location = LocationInfo(city, country)
+    s = sun(location.observer, date=datetime.now().date())
+    now = datetime.now().replace(tzinfo=None)
+    sunrise = s['sunrise'].replace(tzinfo=None)
+    sunset = s['sunset'].replace(tzinfo=None)
+    return sunrise <= now <= sunset
 
 ############### data inputs ###############
 def get_pv():
@@ -58,10 +70,10 @@ def send_charging_decision():
 ############### decision rules ###############
 def ems():
     while True:
-        global p
+   
         # TODO: add ems rules here
         
-        print("evs")
+        print(is_daytime())
         time.sleep(2) # run ems rules to make decisions every 5 mins 
 
 
@@ -81,7 +93,7 @@ def main():
     try:
         while True:
             print(f"Current ev_charge: {ev_charge}")
-            print(p)
+        
             time.sleep(10)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
