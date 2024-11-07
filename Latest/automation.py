@@ -76,17 +76,112 @@ def change_value(value):
 
     return current_value
 
-def change_setpoint(value):
-    """Function that access the CoolBot website and change the temperature based on the input value."""
-    updated_value = 0
-    while updated_value != value:
+
+def get_sensor_temp():
+    """Returns temperature from temperature sensor."""
+    chromedriver_autoinstaller.install()
+
+    driver = webdriver.Chrome()
+    url = "https://www.easylogcloud.com/devices.aspx"
+    driver.get(url)
+
+    wait = WebDriverWait(driver, 20)
+    login = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="cph1_username1"]')))
+
+    email = driver.find_element(By.XPATH, '//*[@id="cph1_username1"]')
+    email.send_keys('njnewman@umich.edu')
+
+    password = driver.find_element(By.XPATH, '//*[@id="cph1_password"]')
+    password.send_keys('NJNewman42!')
+
+    button = driver.find_element(By.XPATH, '//*[@id="cph1_signin"]')
+    button.click()
+
+    main_page = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="deviceokpanel"]')))
+    button_device = driver.find_element(By.XPATH, '//*[@id="deviceokpanel"]')
+    button_device.click()
+
+    device_page = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="cph1_devicesupdatepanel"]/div[1]/div[2]/div[1]/div[4]')))
+    temp_container = driver.find_element(By.XPATH, '//*[@id="channelreading_0_0"]')
+    current_temp = float(temp_container.text)
+
+    return float(current_temp)
+
+
+def get_coolbot_temp():
+    """Function to extract current temperature from CoolBot website."""
+    chromedriver_autoinstaller.install()
+
+    driver = webdriver.Chrome()
+    url = "https://cb.storeitcold.com/#/login"
+    driver.get(url)
+
+    wait = WebDriverWait(driver, 20)
+    login = wait.until(EC.visibility_of_element_located((By.XPATH, "/html/body/ion-app/ng-component/ion-nav/page-login/single-page/ion-content/div[2]/ion-grid/ion-row/ion-col/div/form/ion-row[1]/ion-col/ion-list/ion-item[1]/div[1]")))
+
+    email = driver.find_element(By.XPATH, "/html/body/ion-app/ng-component/ion-nav/page-login/single-page/ion-content/div[2]/ion-grid/ion-row/ion-col/div/form/ion-row[1]/ion-col/ion-list/ion-item[1]/div[1]/div/ion-input/input")
+    email.send_keys('campusfarm@umich.edu')
+
+    password = driver.find_element(By.XPATH, "/html/body/ion-app/ng-component/ion-nav/page-login/single-page/ion-content/div[2]/ion-grid/ion-row/ion-col/div/form/ion-row[1]/ion-col/ion-list/ion-item[2]/div[1]/div/ion-input/input")
+    password.send_keys('CFSPC&EV!')
+
+    button = driver.find_element(By.XPATH, "/html/body/ion-app/ng-component/ion-nav/page-login/single-page/ion-content/div[2]/ion-grid/ion-row/ion-col/div/form/ion-row[2]/ion-col/button[1]")
+    button.click()
+
+    main_page = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="statusGrid"]/ion-row[1]/ion-col/span')))
+
+    button_account = driver.find_element(By.XPATH, '//*[@id="tab-t0-1"]')
+    button_account.click()
+
+    button_click = driver.find_element(By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[3]/expanding-list-item[2]/div/ion-list-header/div[1]/ion-icon')
+    button_click.click()
+    time.sleep(3)
+
+    element = driver.find_element(By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[3]/expanding-list-item[2]/div/div/ion-item[1]/div[1]/span')
+    temp = element.text
+    temp = temp.split('°')[0]
+
+    return float(temp)
+
+def change_setpoint(updated_value):
+    """Function that access the CoolBot website and temperature sensor website and change the temperature based on the input value."""
+    coolbot_temp = -1
+    sensor_temp = -1
+    current_value = -1
+    # Extract the temperature from coolbot until success
+    while coolbot_temp == -1:
         try:
-            updated_value = change_value(value)
+            coolbot_temp = get_coolbot_temp()
+        except:
+            print("An Error has occured while extracting the coolbot temperature from CoolBot website.")
+    
+    # Extract the temperature from sensor until success
+    while sensor_temp == -1:
+        try:
+            sensor_temp = get_sensor_temp()
+        except:
+            print("An Error has occured while extracting the sensor temperature.")
+    
+    print(f"Temperature from Sensor: {sensor_temp}, Temperature from CoolBot: {coolbot_temp}")
+
+    temp = (coolbot_temp + sensor_temp) / 2
+    # if the current temperature is within the updated setpoint range
+    if updated_value - 2 <= temp and temp <= updated_value + 2:
+        print(f"Temperature is within the range of the updated setpoint: {updated_value} - 2 <= {temp} <= {updated_value} + 2")
+        return False
+    
+    while updated_value != current_value:
+        try:
+            # For test purposes
+            print(f"Temperature setpoint changed to {updated_value}")
+            current_value = change_value(updated_value)
         except:
             print("An Error has occurred for Cooler Web Automation")
+
+    return True
     
 def main():
-    change_setpoint(45)
+    change_setpoint(32)
 
 if __name__ == '__main__':
     main()

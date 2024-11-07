@@ -1,6 +1,8 @@
 import requests
 import matplotlib.pyplot as plt
 import numpy as np
+from datetime import datetime, timedelta
+import matplotlib.dates as mdates
 
 def make_account():
     
@@ -44,21 +46,28 @@ def get_moer(token):
     return response.json()
 
 token = get_login_token()
-# # print(token)
+#print(token)
 data = get_moer(token)
-# print(data)
+#print(data)
 time = []
 value = []
 t = 0
-for entry in data['data']:
-    time.append(5*t)
+generated_time = data['meta']['generated_at']
+print(generated_time)
+generated_date = generated_time.split('T')[0]
+start_clock = ((generated_time.split('T')[1].split('+')[0]).strip())[:5]
+print((start_clock))
+start_time = datetime.strptime(start_clock, '%H:%M')
+with open("watttime_output.txt", "w") as file:
+    for entry in data['data']:
+        time.append(5*t)
     # print(f"Point Time: {data['point_time']}, Value: {data['value']}")
-    # print(f"Point Time: {entry['point_time']}, Value: {entry['value']}")
-    military_time = entry['point_time'].split('T')[1].split('+')[0]
-    hours = int(military_time[0:2])
-    mins = int(military_time[3:5])
-    value.append(entry['value'])
-    t+=1
+        file.write(f"Point Time: {entry['point_time']}, Value: {entry['value']} \n")
+        military_time = entry['point_time'].split('T')[1].split('+')[0]
+        hours = int(military_time[0:2])
+        mins = int(military_time[3:5])
+        value.append(entry['value'])
+        t+=1
 
 value_array = np.array(value)
 time_block_list = []
@@ -80,14 +89,39 @@ for el in result:
     extracted_time.append(time_block)
 print("Extracted clean periods are:", extracted_time)
 
-# plt.figure()
-# plt.plot(time, value) 
-# for start, end in extracted_time:
-#     plt.fill_between(time, value, where=(time >= start) & (time <= end), color='green', alpha=0.5)
-# plt.xlabel('Time/min')  
-# plt.ylabel('MOER (lbs CO_2/MWh)') 
-# plt.title('Marginal Operating Emission Rate - Region CAISO_NORTH')
-# plt.savefig("watttime.png")
+plt.figure()
+
+# Convert time to datetime labels
+time_labels = [start_time + timedelta(minutes=int(x)) for x in time]
+
+# # Plot the data
+plt.plot(time_labels, value)
+
+# Fill between specified times
+for start, end in extracted_time:
+   # plt.fill_between(time, value, where=(time >= start) & (time <= end), color='green', alpha=0.5)
+    s = start_time + timedelta(minutes=int(start))
+    e = start_time + timedelta(minutes=int(end))
+
+    mask = (np.array(time_labels) >= s) & (np.array(time_labels) <= e)
+    plt.plot(np.array(time_labels)[mask], np.array(value)[mask], color='green')
+
+# Set labels and title
+plt.xlabel('Time')  # Updated xlabel to 'Time' since it's now in HH:MM:SS format
+plt.ylabel('MOER (lbs CO_2/MWh)')
+plt.title(f"Marginal Operating Emission Rate - Region MISO_DETROIT - {generated_date}")
+
+# Set x-axis formatter using gca() to get current Axes
+plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+
+# Rotate x-axis labels for better readability
+plt.xticks(rotation=45)
+
+# Save the figure
+plt.savefig("watttime.png")
+
+# Optionally show the plot
+#plt.show()
 
 def get_clean_periods():
     return extracted_time
