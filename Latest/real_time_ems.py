@@ -9,6 +9,7 @@ import subprocess
 import csv
 from astral import LocationInfo
 from astral.sun import sun 
+from connections.charger.solArk_inverter import get_inverter_data
 
 
 realtime = datetime.now()
@@ -32,7 +33,10 @@ def is_daytime(city="Detroit", country="USA"):
 ############### data inputs ###############
 def get_pv():
     global pv_output
-    pass
+    power_map = get_inverter_data()
+    pv = power_map["Solar W"]
+    pv = int(pv.replace("W", ""))
+    return pv
 
 def get_cooler_temp():
     global cooler_indoor_temp
