@@ -6,61 +6,64 @@ from selenium.webdriver.support import expected_conditions as EC
 import chromedriver_autoinstaller
 import time
 
-# Automatically install and get the path to chromedriver
-chromedriver_path = chromedriver_autoinstaller.install()
-service = Service(chromedriver_path)
-driver = webdriver.Chrome(service=service)
 
-# Open the webpage
-driver.get('https://www.solarkcloud.com/login')
+def get_inverter_data():
+    # Automatically install and get the path to chromedriver
+    chromedriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromedriver_path)
+    driver = webdriver.Chrome(service=service)
 
-try:
-    email_field = WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Please input your E-mail']"))
-    )
-    email_field.send_keys('campusfarm@umich.edu')
+    # Open the webpage
+    driver.get('https://www.solarkcloud.com/login')
 
-    password_field = WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Please re-enter password']"))
-    )
-    password_field.send_keys('CFSPC&EV!')
+    try:
+        email_field = WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Please input your E-mail']"))
+        )
+        email_field.send_keys('campusfarm@umich.edu')
 
-    checkbox = driver.find_element(By.CLASS_NAME, "el-checkbox__input")
-    checkbox.click()  # Click the checkbox
+        password_field = WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Please re-enter password']"))
+        )
+        password_field.send_keys('CFSPC&EV!')
 
-    sign_in_button = WebDriverWait(driver, 60).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, "button.sunmit"))
-    )
-    sign_in_button.click()
+        checkbox = driver.find_element(By.CLASS_NAME, "el-checkbox__input")
+        checkbox.click()  # Click the checkbox
 
-except Exception as e:
-    print("Error during login:", e)
+        sign_in_button = WebDriverWait(driver, 60).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "button.sunmit"))
+        )
+        sign_in_button.click()
 
-time.sleep(2)
+    except Exception as e:
+        print("Error during login:", e)
 
-try:
-    campus_farm_link = driver.find_element(By.LINK_TEXT, "campus farm")
-    campus_farm_link.click() 
-except Exception as e:
-    print("An error occurred:", e)
+    time.sleep(2)
 
-time.sleep(2)
+    try:
+        campus_farm_link = driver.find_element(By.LINK_TEXT, "campus farm")
+        campus_farm_link.click() 
+    except Exception as e:
+        print("An error occurred:", e)
 
-# Define keys for each wattage value
-keys = ["Solar W", "Battery W", "Grid W", "Consumed W"]
-wattage_dict = {}
+    time.sleep(2)
 
-# Find all elements with the class name "txt" and store each wattage value in the dictionary
-try:
-    wattage_elements = driver.find_elements(By.CLASS_NAME, "txt")
-    for i, element in enumerate(wattage_elements):
-        if i < len(keys): 
-            wattage_text = element.text  
-            wattage_dict[keys[i]] = wattage_text  
+    # Define keys for each wattage value
+    keys = ["Solar W", "Battery W", "Grid W", "Consumed W"]
+    wattage_dict = {}
 
-    print("Wattage Dictionary:", wattage_dict)
+    # Find all elements with the class name "txt" and store each wattage value in the dictionary
+    try:
+        wattage_elements = driver.find_elements(By.CLASS_NAME, "txt")
+        for i, element in enumerate(wattage_elements):
+            if i < len(keys): 
+                wattage_text = element.text  
+                wattage_dict[keys[i]] = wattage_text  
 
-except Exception as e:
-    print("An error occurred:", e)
+        print("Wattage Dictionary:", wattage_dict)
 
-driver.quit()
+    except Exception as e:
+        print("An error occurred:", e)
+
+    driver.quit()
+    return wattage_dict
