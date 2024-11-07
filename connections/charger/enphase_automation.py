@@ -55,15 +55,28 @@ except Exception as e:
 
 time.sleep(2)
 
-# Locate the "Edit Schedule" button and click it
+# # Locate the "Edit Schedule" button and click it
+# try:
+#     edit_schedule_button = WebDriverWait(driver, 60).until(
+#         EC.element_to_be_clickable((By.CLASS_NAME, 'edit-schedule-label'))
+#     )
+#     ActionChains(driver).move_to_element(edit_schedule_button).click(edit_schedule_button).perform()
+#     print("Edit Schedule button clicked successfully!")
+# except Exception as e:
+#     print("Error finding or clicking the Edit Schedule button:", e)
+
+# time.sleep(2)
+
+# Locate and click the "Charge Now" button specifically
 try:
-    edit_schedule_button = WebDriverWait(driver, 60).until(
-        EC.element_to_be_clickable((By.CLASS_NAME, 'edit-schedule-label'))
+    # Using XPath to target the button that contains the "Charge Now" text
+    charge_now_button = WebDriverWait(driver, 60).until(
+        EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Charge Now']"))
     )
-    ActionChains(driver).move_to_element(edit_schedule_button).click(edit_schedule_button).perform()
-    print("Edit Schedule button clicked successfully!")
+    ActionChains(driver).move_to_element(charge_now_button).click(charge_now_button).perform()
+    print("Charge Now button clicked successfully!")
 except Exception as e:
-    print("Error finding or clicking the Edit Schedule button:", e)
+    print("Error finding or clicking the Charge Now button:", e)
 
 # Optional: Close the browser after a delay
 time.sleep(3)
