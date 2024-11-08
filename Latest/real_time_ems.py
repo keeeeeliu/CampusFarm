@@ -18,6 +18,9 @@ pv_output = 0
 cooler_indoor_temp = 0
 ev_connected = True
 coolEV_power = 0
+clean_periods = []
+
+
 
 # note: read data from json file
 
@@ -65,19 +68,44 @@ def get_charge():
 
 
 ############### control commands ###############
-def send_cooler_decision():
+def send_cooler_decision(setpoint):
     pass
 
-def send_charging_decision():
+def send_charging_decision(OnOFF:bool):
+    # should return binary value 
     pass
 
 ############### decision rules ###############
 def ems():
+    global pv_output 
+    global coolEV_power
     while True:
    
         # TODO: add ems rules here
-        
-        print(is_daytime())
+        if is_daytime() == False: # nighttime: charge during clean periods
+            
+            if ev_connected:
+                if realtime in clean_periods:
+                    # send command: ev charge on 
+                    send_charging_decision(True)
+                else:
+                    # send command: ev charge off
+                    send_charging_decision(False)
+            
+            if realtime in clean_periods:
+                # send command: cooler temp default
+                send_cooler_decision()
+            else:
+                # send command: cooler temp eco
+                send_cooler_decision()
+
+        if is_daytime() == True: # daytime: lower temp setpoint when excess PV
+            if pv_output >= coolEV_power:
+                # send command: cooler temp coolth
+                send_cooler_decision()
+            else:
+                # send command: cooler temp default 
+                send_cooler_decision()
         time.sleep(2) # run ems rules to make decisions every 5 mins 
 
 
