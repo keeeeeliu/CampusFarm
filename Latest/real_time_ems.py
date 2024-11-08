@@ -18,9 +18,7 @@ pv_output = 0
 cooler_indoor_temp = 0
 ev_connected = True
 coolEV_power = 0
-clean_periods = []
-
-
+power_map = {}
 
 # note: read data from json file
 
@@ -34,9 +32,12 @@ def is_daytime(city="Detroit", country="USA"):
     return sunrise <= now <= sunset
 
 ############### data inputs ###############
+def bring_in_inverter_data():
+    global power_map
+    power_map = get_inverter_data()
+
 def get_pv():
     global pv_output
-    power_map = get_inverter_data()
     pv = power_map["Solar W"]
     pv = int(pv.replace("W", ""))
     pv_output = pv 
@@ -51,7 +52,9 @@ def get_ev_connection():
 
 def get_total_power():
     global coolEV_power
-    pass
+    consumption = power_map["Consumed W"]
+    consumption = int(consumption.replace("W", ""))
+    coolEV_power = consumption
 
 def get_charge():
     while True:
