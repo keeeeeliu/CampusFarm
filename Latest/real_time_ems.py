@@ -11,6 +11,8 @@ from astral import LocationInfo
 from astral.sun import sun 
 from connections.charger.solArk_inverter import get_inverter_data
 from automation import change_setpoint
+from connections.charger.enphase_automation import charger_on
+from connections.charger.enphase_automation import charger_off
 
 
 realtime = datetime.now()
@@ -82,8 +84,10 @@ def send_cooler_decision(setpoint):
     return change_setpoint(setpoint)
 
 def send_charging_decision(OnOFF:bool):
-    # should return binary value 
-    pass
+    if OnOFF:
+        charger_on()
+    else:
+        charger_off()
 
 ############### decision rules ###############
 def ems():
