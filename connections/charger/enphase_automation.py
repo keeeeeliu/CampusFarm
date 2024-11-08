@@ -7,77 +7,124 @@ from selenium.webdriver.support import expected_conditions as EC
 import chromedriver_autoinstaller
 import time
 
-# Automatically install and get the path to chromedriver
-chromedriver_path = chromedriver_autoinstaller.install()
-service = Service(chromedriver_path)
-driver = webdriver.Chrome(service=service)
+def charger_on():
+    # Automatically install and get the path to chromedriver
+    chromedriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromedriver_path)
+    driver = webdriver.Chrome(service=service)
 
-# Open the webpage
-driver.get('https://enlighten.enphaseenergy.com')
+    # Open the webpage
+    driver.get('https://enlighten.enphaseenergy.com')
 
-# Wait for the page to load
-time.sleep(2)
-
-# Enter login details
-try:
-    # Find the email input field and enter your email
-    email_field = driver.find_element(By.ID, 'user_email') 
-    email_field.send_keys('campusfarm@umich.edu') 
-
-    # Find the password input field and enter your password
-    password_field = driver.find_element(By.ID, 'user_password') 
-    password_field.send_keys('CFSPC&EV!')  
-
-    # Find and click the sign-in button
-    sign_in_button = driver.find_element(By.ID, 'submit')
-    sign_in_button.click()
-
-    print("Logged in successfully!")
-except Exception as e:
-    print("Error during login:", e)
-
-time.sleep(2)
-
-# Click the myEnlighten button and switch to the new tab
-try:
-    myEnlighten_button = driver.find_element(By.ID, 'myenlighten_link')
-    myEnlighten_button.click()
-    print("Clicked on myEnlighten button.")
-
-    # Wait briefly for the new tab to open
+    # Wait for the page to load
     time.sleep(2)
 
-    # Switch to the new tab
-    driver.switch_to.window(driver.window_handles[-1])  # Switch to the last opened tab
-    print("Switched to the new tab.")
-except Exception as e:
-    print("Error during myEnlighten click or switching tabs:", e)
+    # Enter login details
+    try:
+        # Find the email input field and enter your email
+        email_field = driver.find_element(By.ID, 'user_email') 
+        email_field.send_keys('campusfarm@umich.edu') 
 
-time.sleep(2)
+        # Find the password input field and enter your password
+        password_field = driver.find_element(By.ID, 'user_password') 
+        password_field.send_keys('CFSPC&EV!')  
 
-# # Locate the "Edit Schedule" button and click it
-# try:
-#     edit_schedule_button = WebDriverWait(driver, 60).until(
-#         EC.element_to_be_clickable((By.CLASS_NAME, 'edit-schedule-label'))
-#     )
-#     ActionChains(driver).move_to_element(edit_schedule_button).click(edit_schedule_button).perform()
-#     print("Edit Schedule button clicked successfully!")
-# except Exception as e:
-#     print("Error finding or clicking the Edit Schedule button:", e)
+        # Find and click the sign-in button
+        sign_in_button = driver.find_element(By.ID, 'submit')
+        sign_in_button.click()
 
-# time.sleep(2)
+        print("Logged in successfully!")
+    except Exception as e:
+        print("Error during login:", e)
 
-# Locate and click the "Charge Now" button specifically
-try:
-    # Using XPath to target the button that contains the "Charge Now" text
-    charge_now_button = WebDriverWait(driver, 60).until(
-        EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Charge Now']"))
-    )
-    ActionChains(driver).move_to_element(charge_now_button).click(charge_now_button).perform()
-    print("Charge Now button clicked successfully!")
-except Exception as e:
-    print("Error finding or clicking the Charge Now button:", e)
+    time.sleep(2)
 
-# Optional: Close the browser after a delay
-time.sleep(3)
-driver.quit()
+    # Click the myEnlighten button and switch to the new tab
+    try:
+        myEnlighten_button = driver.find_element(By.ID, 'myenlighten_link')
+        myEnlighten_button.click()
+        print("Clicked on myEnlighten button.")
+
+        # Wait briefly for the new tab to open
+        time.sleep(2)
+
+        # Switch to the new tab
+        driver.switch_to.window(driver.window_handles[-1])  # Switch to the last opened tab
+        print("Switched to the new tab.")
+    except Exception as e:
+        print("Error during myEnlighten click or switching tabs:", e)
+
+    time.sleep(2)
+
+    try:
+        # Using XPath to target the button that contains the "Charge Now" text
+        charge_now_button = WebDriverWait(driver, 60).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Charge Now']"))
+        )
+        ActionChains(driver).move_to_element(charge_now_button).click(charge_now_button).perform()
+        print("Charge Now button clicked successfully!")
+    except Exception as e:
+        print("Error finding or clicking the Charge Now button:", e)
+
+    driver.quit()
+
+def charger_off():
+    # Automatically install and get the path to chromedriver
+    chromedriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromedriver_path)
+    driver = webdriver.Chrome(service=service)
+
+    # Open the webpage
+    driver.get('https://enlighten.enphaseenergy.com')
+
+    # Wait for the page to load
+    time.sleep(2)
+
+    # Enter login details
+    try:
+        # Find the email input field and enter your email
+        email_field = driver.find_element(By.ID, 'user_email') 
+        email_field.send_keys('campusfarm@umich.edu') 
+
+        # Find the password input field and enter your password
+        password_field = driver.find_element(By.ID, 'user_password') 
+        password_field.send_keys('CFSPC&EV!')  
+
+        # Find and click the sign-in button
+        sign_in_button = driver.find_element(By.ID, 'submit')
+        sign_in_button.click()
+
+        print("Logged in successfully!")
+    except Exception as e:
+        print("Error during login:", e)
+
+    time.sleep(2)
+
+    # Click the myEnlighten button and switch to the new tab
+    try:
+        myEnlighten_button = driver.find_element(By.ID, 'myenlighten_link')
+        myEnlighten_button.click()
+        print("Clicked on myEnlighten button.")
+
+        # Wait briefly for the new tab to open
+        time.sleep(2)
+
+        # Switch to the new tab
+        driver.switch_to.window(driver.window_handles[-1])  # Switch to the last opened tab
+        print("Switched to the new tab.")
+    except Exception as e:
+        print("Error during myEnlighten click or switching tabs:", e)
+
+    time.sleep(2)
+
+    # Locate and click the "Stop" button specifically
+    try:
+        stop_button = WebDriverWait(driver, 60).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Stop']"))
+        )
+        ActionChains(driver).move_to_element(stop_button).click(stop_button).perform()
+        print("Stop button clicked successfully!")
+    except Exception as e:
+        print("Error finding or clicking the Stop button:", e)
+
+    driver.quit() 
