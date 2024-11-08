@@ -10,6 +10,7 @@ import csv
 from astral import LocationInfo
 from astral.sun import sun 
 from connections.charger.solArk_inverter import get_inverter_data
+from automation import change_setpoint
 
 
 realtime = datetime.now()
@@ -19,8 +20,13 @@ cooler_indoor_temp = 0
 ev_connected = True
 coolEV_power = 0
 power_map = {}
+clean_periods = []
 
-# note: read data from json file
+
+############## input from UI ############
+SETPOINT_DEFAULT = 55
+SETPOINT_COOLTH = 53
+SETPOINT_ECO = 57
 
 ############## utility function ##############
 def is_daytime(city="Detroit", country="USA"):
@@ -72,7 +78,8 @@ def get_charge():
 
 ############### control commands ###############
 def send_cooler_decision(setpoint):
-    pass
+    """Return true if setpoint changed, false otherwise."""
+    return change_setpoint(setpoint)
 
 def send_charging_decision(OnOFF:bool):
     # should return binary value 
@@ -97,18 +104,18 @@ def ems():
             
             if realtime in clean_periods:
                 # send command: cooler temp default
-                send_cooler_decision()
+                send_cooler_decision(SETPOINT_DEFAULT)
             else:
                 # send command: cooler temp eco
-                send_cooler_decision()
+                send_cooler_decision(SETPOINT_ECO)
 
         if is_daytime() == True: # daytime: lower temp setpoint when excess PV
             if pv_output >= coolEV_power:
                 # send command: cooler temp coolth
-                send_cooler_decision()
+                send_cooler_decision(SETPOINT_COOLTH)
             else:
                 # send command: cooler temp default 
-                send_cooler_decision()
+                send_cooler_decision(SETPOINT_DEFAULT)
         time.sleep(2) # run ems rules to make decisions every 5 mins 
 
 
