@@ -63,6 +63,7 @@ def charger_on():
         )
         ActionChains(driver).move_to_element(charge_now_button).click(charge_now_button).perform()
         print("Charge Now button clicked successfully!")
+        time.sleep(5)
     except Exception as e:
         print("Error finding or clicking the Charge Now button:", e)
 
@@ -124,6 +125,7 @@ def charger_off():
         )
         ActionChains(driver).move_to_element(stop_button).click(stop_button).perform()
         print("Stop button clicked successfully!")
+        time.sleep(5)
     except Exception as e:
         print("Error finding or clicking the Stop button:", e)
 

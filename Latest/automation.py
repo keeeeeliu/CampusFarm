@@ -132,6 +132,7 @@ def get_coolbot_temp():
 
     button_account = driver.find_element(By.XPATH, '//*[@id="tab-t0-1"]')
     button_account.click()
+    time.sleep(3) # wait until the command is fully displayed and clickable
 
     button_click = driver.find_element(By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[3]/expanding-list-item[2]/div/ion-list-header/div[1]/ion-icon')
     button_click.click()
@@ -152,15 +153,15 @@ def change_setpoint(updated_value):
     while coolbot_temp == -1:
         try:
             coolbot_temp = get_coolbot_temp()
-        except:
-            print("An Error has occured while extracting the coolbot temperature from CoolBot website.")
+        except Exception as e:
+            print(f"An Error has occurred while extracting the coolbot temperature: {e}.")
     
     # Extract the temperature from sensor until success
     while sensor_temp == -1:
         try:
             sensor_temp = get_sensor_temp()
-        except:
-            print("An Error has occured while extracting the sensor temperature.")
+        except Exception as e:
+            print("An Error has occured while extracting the sensor temperature: {e}.")
     
     print(f"Temperature from Sensor: {sensor_temp}, Temperature from CoolBot: {coolbot_temp}")
 
@@ -175,8 +176,9 @@ def change_setpoint(updated_value):
             # For test purposes
             print(f"Temperature setpoint changed to {updated_value}")
             current_value = change_value(updated_value)
-        except:
-            print("An Error has occurred for Cooler Web Automation")
+            time.sleep(5) # wait until the command fully changed
+        except Exception as e:
+            print(f"An Error has occurred for Cooler Web Automation: {e}")
 
     return True
     
