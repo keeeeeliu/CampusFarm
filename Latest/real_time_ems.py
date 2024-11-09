@@ -152,7 +152,7 @@ def ems():
 
 
         else: # daytime && night 
-            if realtime in cooler_dirty_periods:
+            if realtime not in cooler_dirty_periods:
                 # TODO do some coolth? 
                 send_cooler_decision(SETPOINT_DEFAULT)
             else:
