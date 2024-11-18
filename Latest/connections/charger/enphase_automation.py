@@ -29,7 +29,7 @@ def charger_on():
         password_field = driver.find_element(By.ID, 'user_password') 
         password_field.send_keys('CFSPC&EV!')  
 
-        # Find and click the sign-in button
+        # F5dind and click the sign-in button
         sign_in_button = driver.find_element(By.ID, 'submit')
         sign_in_button.click()
 
@@ -130,3 +130,71 @@ def charger_off():
         print("Error finding or clicking the Stop button:", e)
 
     driver.quit() 
+
+def plugged_in():
+    # Automatically install and get the path to chromedriver
+    chromedriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromedriver_path)
+    driver = webdriver.Chrome(service=service)
+
+    # Open the webpage
+    driver.get('https://enlighten.enphaseenergy.com')
+
+    # Wait for the page to load
+    time.sleep(2)
+
+    # Enter login details
+    try:
+        # Find the email input field and enter your email
+        email_field = driver.find_element(By.ID, 'user_email') 
+        email_field.send_keys('campusfarm@umich.edu') 
+
+        # Find the password input field and enter your password
+        password_field = driver.find_element(By.ID, 'user_password') 
+        password_field.send_keys('CFSPC&EV!')  
+
+        # F5dind and click the sign-in button
+        sign_in_button = driver.find_element(By.ID, 'submit')
+        sign_in_button.click()
+
+        print("Logged in successfully!")
+    except Exception as e:
+        print("Error during login:", e)
+
+    time.sleep(2)
+
+    # Click the myEnlighten button and switch to the new tab
+    try:
+        myEnlighten_button = driver.find_element(By.ID, 'myenlighten_link')
+        myEnlighten_button.click()
+        print("Clicked on myEnlighten button.")
+
+        # Wait briefly for the new tab to open
+        time.sleep(2)
+
+        # Switch to the new tab
+        driver.switch_to.window(driver.window_handles[-1])  # Switch to the last opened tab
+        print("Switched to the new tab.")
+    except Exception as e:
+        print("Error during myEnlighten click or switching tabs:", e)
+
+    time.sleep(2)
+
+        # Check for "Not Plugged-in"
+    try:
+        # Locate the span containing the status text
+        status_box = driver.find_element(By.CLASS_NAME, 'ev_info_icon_section')
+
+        # Get the text from the element
+        status_text = status_box.text.strip()
+
+        # Print True if it doesn't say "Not Plugged-in", False otherwise
+        if status_text == "Not Plugged-in":
+            return False
+        else:
+            return True
+    except Exception as e:
+        print("Error checking plug-in status:", e)
+
+    # Close the browser
+    driver.quit()
