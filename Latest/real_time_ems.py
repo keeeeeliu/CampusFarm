@@ -84,8 +84,6 @@ def get_charge():
                 print(ev_charge)
         except FileNotFoundError:
             ev_charge = 0.0
-        
-        time.sleep(2) # update EV charge every 5 mintues 
 
 
 ############### control commands ###############
@@ -99,10 +97,27 @@ def send_charging_decision(OnOFF:bool):
     else:
         charger_off()
 
+############### updater ###############
+def update_inverter_data():
+    while True:
+        bring_in_inverter_data()
+        get_pv()
+        time.sleep(300)  # Update every 5 minutes
+
+def update_charge_data():
+    while True:
+        get_charge()
+        time.sleep(300)  # Update every 5 minutes
+
 ############### decision rules ###############
 def ems():
     global pv_output 
     global coolEV_power
+    global total_power
+    global ev_charging
+    global cooler_indoor_temp
+    global realtime 
+    global ev_connected 
     while True:
    
         # TODO: add ems rules here
@@ -168,8 +183,6 @@ def ems():
                         elif econ_timer >= MAX_ECON_TIME_LIMIT:
                             send_cooler_decision(SETPOINT_DEFAULT)
 
-
-
         if realtime in ev_clean_periods:
             if ev_connected:
                 send_charging_decision(True)
@@ -204,7 +217,7 @@ def ems():
         #     else:
         #         # send command: cooler temp default 
         #         send_cooler_decision(SETPOINT_DEFAULT)
-        time.sleep(2) # run ems rules to make decisions every 5 mins 
+        time.sleep(300) # run ems rules to make decisions every 5 mins 
 
 
 ############### multi-thread ###############
@@ -215,20 +228,28 @@ def main():
     main_thread.daemon = True  # Daemonize thread to exit when ems thread exits
     main_thread.start()
 
-    # Start the real-time charge (walking steps) update thread
-    charge_update_thread = threading.Thread(target=get_charge)
-    charge_update_thread.daemon = True  # Daemon thread for step updates
-    charge_update_thread.start()
+
+    # Start data updating thread
+    inverter_thread = threading.Thread(target=update_inverter_data)
+    inverter_thread.daemon = True
+    inverter_thread.start()
+
+    charge_thread = threading.Thread(target=update_charge_data)
+    charge_thread.daemon = True
+    charge_thread.start()
 
     try:
         while True:
             print(f"Current ev_charge: {ev_charge}")
-        
+            print(f"Realtime: {datetime.now()}")
+            print(f"EV Charge: {ev_charge}%")
+            print(f"PV Output: {pv_output}W")
+            print(f"Current Setpoint: {CURRENT_SETPOINT}")
             time.sleep(10)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
     
 
 if __name__ == "__main__":
-    # main()
-    send_cooler_decision(34)
+    main()
+    # send_cooler_decision(34)
