@@ -13,9 +13,8 @@ import csv
 from astral import LocationInfo
 from astral.sun import sun 
 from connections.charger.solArk_inverter import get_inverter_data
-from automation import change_setpoint
-from connections.charger.enphase_automation import charger_on
-from connections.charger.enphase_automation import charger_off
+from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
+from connections.charger.enphase_automation import charger_on, charger_off, plugged_in
 
 
 realtime = datetime.now()
