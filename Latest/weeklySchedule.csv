@@ -1,0 +1,7 @@
+Description,StartDate,StartTime,EndTime,IsRepeat,DaysOfWeek
+To East Quad,10/08/2024,09:00,11:00,True,"Monday, Wednesday"
+To North Quad,10/09/2024,12:00,13:00,False,
+To West Quad,10/10/2024,14:00,15:00,True,Tuesday
+To South Quad,10/01/2024, 9:00, 12:00,True,Tuesday
+wifgu3iu4g3,09/01/2024,20:00,22:00,True,Tuesday
+9128bd,08/20/2024,23:00,23:30,True,"Tuesday, Thursday"
