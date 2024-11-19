@@ -5,6 +5,9 @@ from datetime import datetime
 from tkinter import messagebox
 import json
 import subprocess
+import pytz
+from datetime import datetime, timedelta
+import math
 # import curret_watt_time as wt
 import csv
 from astral import LocationInfo
@@ -19,16 +22,27 @@ realtime = datetime.now()
 ev_charge = 0
 pv_output = 0
 cooler_indoor_temp = 0
-ev_connected = True
+ev_connected = True # EV charger plugged in? 
 total_power = 0
 power_map = {}
+ev_power = 0
 cooler_dirty_periods = []
 ev_clean_periods = []
 ev_charging = True
 coolth_timer = 0
 econ_timer = 0
-ev_percent = 0
+ev_percent = 80 # EV battery percentage
 ev_p5 = 0
+time_interval = 5 # mins
+
+############# constants #################
+EV_CHARGING_RATE = 13.7 ## kWh 
+EV_CAPPACITY = 131 ## kW
+
+
+############## Test Mode ################
+EMS_EV = True
+EMS_Cooler = True
 
 
 ############## input from UI ############
@@ -38,7 +52,11 @@ SETPOINT_ECON = 57
 CURRENT_SETPOINT = 55 
 MAX_COOLTH_TIME_LIMIT = 40 # min 
 MAX_ECON_TIME_LIMIT = 40
-EV_PERCENT_DESIRED = 60
+EV_PERCENT_DESIRED = 100
+TMIN = 51
+TMAX = 59
+RULE_BASED_MODE = True
+OPTIMIZATION_MODE = True
 
 ############## utility function ##############
 def is_daytime(city="Detroit", country="USA"):
@@ -48,6 +66,24 @@ def is_daytime(city="Detroit", country="USA"):
     sunrise = s['sunrise'].replace(tzinfo=None)
     sunset = s['sunset'].replace(tzinfo=None)
     return sunrise <= now <= sunset
+
+# Load clean periods from JSON file
+def load_clean_periods(filename="ev_clean_periods.json"):
+    global ev_clean_periods
+    with open(filename, "r") as file:
+        periods = json.load(file)
+    ev_clean_periods = periods
+
+# Function to check if current time is in clean periods
+def is_realtime_in_clean_periods(realtime, clean_periods):
+    adjusted_realtime = realtime - timedelta(hours=5)
+    for start, end in clean_periods:
+        # Parse start and end times from ISO 8601 format
+        start_dt = datetime.fromisoformat(start).astimezone(pytz.UTC)
+        end_dt = datetime.fromisoformat(end).astimezone(pytz.UTC)
+        if start_dt <= adjusted_realtime.astimezone(pytz.UTC) < end_dt:
+            return True
+    return False
 
 ############### data inputs ###############
 def bring_in_inverter_data():
@@ -62,11 +98,11 @@ def get_pv():
 
 def get_cooler_temp():
     global cooler_indoor_temp
-    pass
+    cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
 
 def get_ev_connection():
     global ev_connected
-    pass
+    ev_connected = plugged_in()
 
 def get_total_power():
     global coolEV_power
@@ -183,12 +219,15 @@ def ems():
                         elif econ_timer >= MAX_ECON_TIME_LIMIT:
                             send_cooler_decision(SETPOINT_DEFAULT)
 
-        if realtime in ev_clean_periods:
-            if ev_connected:
-                send_charging_decision(True)
-        else:
-            if ev_connected:
-                send_charging_decision(False)
+        if EMS_EV:  # test EMS + EV 
+            if is_realtime_in_clean_periods(realtime, ev_clean_periods):
+                print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
+                if ev_connected:
+                    send_charging_decision(True)
+            else:
+                print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
+                if ev_connected:
+                    send_charging_decision(False)
 
             
 
@@ -251,5 +290,23 @@ def main():
     
 
 if __name__ == "__main__":
-    main()
+    # main()
+
+    ######## check cooler command functionality ########
     # send_cooler_decision(34)
+
+
+    ######### check ev connection functionality ########
+    # get_ev_connection()
+    # print(ev_connected)
+
+    ######### check clean periods extraction functionality ########
+    load_clean_periods()
+    if is_realtime_in_clean_periods(realtime,ev_clean_periods):
+        print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
+    else:
+        print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
+
+    ######### check inverter #########
+    # bring_in_inverter_data()
+    # print(power_map)
