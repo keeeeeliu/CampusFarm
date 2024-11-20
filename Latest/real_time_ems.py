@@ -382,7 +382,7 @@ def main():
     
 
 if __name__ == "__main__":
-    # main()
+    main()
 
     ######## check cooler command functionality ########
     # send_cooler_decision(34)
@@ -391,9 +391,9 @@ if __name__ == "__main__":
     ######### check ev connection functionality ########
     # get_ev_connection()
     # print(ev_connected)
-    get_charge()
-    print(ev_charge)
-    print(ev_miles_left)
+    # get_charge()
+    # print(ev_charge)
+    # print(ev_miles_left)
 
     ######### check clean periods extraction functionality ########
     # load_clean_periods()
