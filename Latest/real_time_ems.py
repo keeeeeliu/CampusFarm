@@ -16,10 +16,12 @@ from astral.sun import sun
 from connections.charger.solArk_inverter import get_inverter_data
 from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
 from connections.charger.enphase_automation import charger_on, charger_off, plugged_in
-from connections.charger.get_charger_consumption import get_miles_added
+#from connections.charger.get_charger_consumption import get_miles_added
+from connections.ev_battery import check_battery
 
 realtime = datetime.now()
 ev_charge = 0
+ev_miles_left = 0
 pv_output = 0
 cooler_indoor_temp = 0
 ev_connected = True # EV charger plugged in? 
@@ -162,15 +164,22 @@ def get_total_power():
     coolEV_power = consumption
 
 def get_charge():
-    while True:
-        global ev_charge
-        try:
-            with open('charge_data.json','r') as file:
-                data = json.load(file)
-                ev_charge = data['charge']
-                print(ev_charge)
-        except FileNotFoundError:
-            ev_charge = 0.0
+    # while True:
+    #     global ev_charge
+    #     try:
+    #         with open('charge_data.json','r') as file:
+    #             data = json.load(file)
+    #             ev_charge = data['charge']
+    #             print(ev_charge)
+    #     except FileNotFoundError:
+    #         ev_charge = 0.0
+    global ev_charge
+    global ev_miles_left
+
+    ev_battery_dict = check_battery()
+    ev_charge = ev_battery_dict['percentage']
+    ev_miles_left = ev_battery_dict['miles_left']
+
 
 def get_amount_of_clean_periods():
     global EV_CHARGING_RATE
@@ -382,13 +391,16 @@ if __name__ == "__main__":
     ######### check ev connection functionality ########
     # get_ev_connection()
     # print(ev_connected)
+    get_charge()
+    print(ev_charge)
+    print(ev_miles_left)
 
     ######### check clean periods extraction functionality ########
-    load_clean_periods()
-    if is_realtime_in_clean_periods(realtime,ev_clean_periods):
-        print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
-    else:
-        print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
+    # load_clean_periods()
+    # if is_realtime_in_clean_periods(realtime,ev_clean_periods):
+    #     print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
+    # else:
+    #     print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
 
     ######### check inverter #########
     # bring_in_inverter_data()

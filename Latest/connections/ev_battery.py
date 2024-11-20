@@ -43,7 +43,7 @@ def check_battery():
         driver.quit()
         return
 
-    time.sleep(8)
+    time.sleep(35)
     # Wait for the next page to load and the Charge Level element to be visible
     try:
         charge_level_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box2-value"]')))
