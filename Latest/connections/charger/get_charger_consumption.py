@@ -80,12 +80,15 @@ for i, session in enumerate(sessions, start=1):
     start_time_human = datetime.fromtimestamp(session['start_time']).strftime('%Y-%m-%d %H:%M:%S')
     end_time_human = datetime.fromtimestamp(session['end_time']).strftime('%Y-%m-%d %H:%M:%S')
     
-    print(f"Session {i}:")
-    print(f"  Start Time: {start_time_human}")
-    print(f"  End Time: {end_time_human}")
-    print(f"  Duration: {session['duration']} seconds")
-    print(f"  Energy Added: {session['energy_added']} kWh")
-    print(f"  Charge Time: {session['charge_time']} seconds")
-    print(f"  Miles Added: {session['miles_added']}")
-    print(f"  Cost: {session['cost']}")
-    print()
+    # print(f"Session {i}:")
+    # print(f"  Start Time: {start_time_human}")
+    # print(f"  End Time: {end_time_human}")
+    # print(f"  Duration: {session['duration']} seconds")
+    # print(f"  Energy Added: {session['energy_added']} kWh")
+    # print(f"  Charge Time: {session['charge_time']} seconds")
+    # print(f"  Miles Added: {session['miles_added']}")
+    # print(f"  Cost: {session['cost']}")
+    # print()
+
+def get_miles_added():
+    return sessions[0]['miles_added']

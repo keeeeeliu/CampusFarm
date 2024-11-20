@@ -16,7 +16,7 @@ from astral.sun import sun
 from connections.charger.solArk_inverter import get_inverter_data
 from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
 from connections.charger.enphase_automation import charger_on, charger_off, plugged_in
-#from connections.charger.get_charger_consumption import get_miles_added
+from connections.charger.get_charger_consumption import get_miles_added
 from connections.ev_battery import check_battery
 
 realtime = datetime.now()
@@ -164,15 +164,6 @@ def get_total_power():
     coolEV_power = consumption
 
 def get_charge():
-    # while True:
-    #     global ev_charge
-    #     try:
-    #         with open('charge_data.json','r') as file:
-    #             data = json.load(file)
-    #             ev_charge = data['charge']
-    #             print(ev_charge)
-    #     except FileNotFoundError:
-    #         ev_charge = 0.0
     global ev_charge
     global ev_miles_left
 
@@ -209,15 +200,18 @@ def send_charging_decision(OnOFF:bool):
 
 ############### updater ###############
 def update_inverter_data():
-    while True:
-        bring_in_inverter_data()
-        get_pv()
-        time.sleep(300)  # Update every 5 minutes
+    global power_map
+    global pv_output
+    global grid_power
+    # while True:
+    bring_in_inverter_data()
+    pv_output = int(power_map["Solar W"][:-1])
+    grid_power = int(power_map["Grid W"][:-1])
 
-def update_charge_data():
-    while True:
-        get_charge()
-        time.sleep(300)  # Update every 5 minutes
+# def update_charge_data():
+#     while True:
+#         get_charge()
+#         time.sleep(300)  # Update every 5 minutes
 
 ############### decision rules ###############
 def ems():
@@ -355,28 +349,34 @@ def ems():
 def main():
 
     # Start the ems script thread
-    main_thread = threading.Thread(target=ems)
-    main_thread.daemon = True  # Daemonize thread to exit when ems thread exits
-    main_thread.start()
+    # main_thread = threading.Thread(target=ems)
+    # main_thread.daemon = True  # Daemonize thread to exit when ems thread exits
+    # main_thread.start()
 
 
-    # Start data updating thread
-    inverter_thread = threading.Thread(target=update_inverter_data)
-    inverter_thread.daemon = True
-    inverter_thread.start()
+    # # Start data updating thread
+    # inverter_thread = threading.Thread(target=update_inverter_data)
+    # inverter_thread.daemon = True
+    # inverter_thread.start()
 
-    charge_thread = threading.Thread(target=update_charge_data)
-    charge_thread.daemon = True
-    charge_thread.start()
+    # charge_thread = threading.Thread(target=update_charge_data)
+    # charge_thread.daemon = True
+    # charge_thread.start()
 
     try:
         while True:
-            print(f"Current ev_charge: {ev_charge}")
-            print(f"Realtime: {datetime.now()}")
+            # print(f"Current ev_charge: {ev_charge}")
+            # print(f"Realtime: {datetime.now()}")
+
+            # get_charge()
+            update_inverter_data()
+            get_cooler_temp()
             print(f"EV Charge: {ev_percent}%")
             print(f"PV Output: {pv_output}W")
-            print(f"Current Setpoint: {CURRENT_SETPOINT}")
-            time.sleep(10)  # Adjust this interval as needed to monitor `ev_charge`
+            print(f"Grid Power: {grid_power}W")
+            print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
+            # print(f"Current Setpoint: {CURRENT_SETPOINT}")
+            time.sleep(90)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
     
