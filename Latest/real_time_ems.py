@@ -34,7 +34,6 @@ ev_charging = True
 coolth_timer = 0
 econ_timer = 0
 ev_percent = 51 # EV battery percentage
-ev_p5 = 0 
 cooler_load = 0
 time_interval = 5 # mins
 ev_miles_travelled = 0 # 
