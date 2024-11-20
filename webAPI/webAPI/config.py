@@ -1,4 +1,4 @@
-"""Insta485 development configuration."""
+"""webAPI development configuration."""
 
 import pathlib
 
