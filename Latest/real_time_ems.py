@@ -392,7 +392,7 @@ def main():
             get_charge()
             update_inverter_data()
             get_cooler_temp()
-            
+            ems()
             print(f"EV Charge: {ev_percent}%")
             print(f"PV Output: {pv_output}W")
             print(f"Grid Power: {grid_power}W")
