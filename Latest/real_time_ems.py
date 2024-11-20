@@ -8,6 +8,7 @@ import subprocess
 import pytz
 from datetime import datetime, timedelta
 import math
+
 # import curret_watt_time as wt
 import csv
 from astral import LocationInfo
@@ -15,7 +16,7 @@ from astral.sun import sun
 from connections.charger.solArk_inverter import get_inverter_data
 from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
 from connections.charger.enphase_automation import charger_on, charger_off, plugged_in
-
+from connections.charger.get_charger_consumption import get_miles_added
 
 realtime = datetime.now()
 ev_charge = 0
@@ -31,18 +32,44 @@ ev_charging = True
 coolth_timer = 0
 econ_timer = 0
 ev_percent = 80 # EV battery percentage
-ev_p5 = 0
+ev_p5 = 0 
+cooler_load = 0
 time_interval = 5 # mins
+ev_miles_travelled = 0 # 
+grid_power = 0 ##### read from inverter ('Grid' in power map)
+solar_power_used = 0 
+
+############# WattTime Data #############
+aoer = [] # average operatinig emission rate
+moer = [] # marginal operating emission rate
+
+############ Carbon Accounting ##########
+grid_co2_list = []
+grid_co2 = 0 
+ev_grid_co2_list = []
+ev_grid_co2 = 0
+solar_saving_list = []
+solar_saving = 0
+ev_ems_co2_list = []
+ev_ems_co2 = 0
+cooler_ems_co2_list = []
+cooler_ems_co2 = 0
+
+baseline_con_emissions = 0
+total_baseline_emissions = 0
+ev_emission_reduction = 0 # relative to baseline 
+pv_emission_reduction = 0
+ems_emission_reduction = 0
+total_emission_reduction = 0 # gonna be the sum(pv,ems,ev... reduction)
+
 
 ############# constants #################
 EV_CHARGING_RATE = 13.7 ## kWh 
 EV_CAPPACITY = 131 ## kW
 
-
 ############## Test Mode ################
 EMS_EV = True
 EMS_Cooler = True
-
 
 ############## input from UI ############
 SETPOINT_DEFAULT = 55
@@ -84,6 +111,31 @@ def is_realtime_in_clean_periods(realtime, clean_periods):
             return True
     return False
 
+########### Carbon Accounting Getters #############
+baseline_con_emissions = ev_miles_travelled * 1.590 # lbs CO2/mile
+
+def get_total_baseline_emissions():
+    global total_baseline_emissions
+    global baseline_con_emissions
+    global grid_co2
+    total_baseline_emissions = baseline_con_emissions + grid_co2
+    return total_baseline_emissions
+
+def get_ev_emission_reduction():
+    global ev_emission_reduction
+    global baseline_con_emissions
+    global ev_grid_co2
+    ev_emission_reduction = baseline_con_emissions - ev_grid_co2
+    return ev_emission_reduction
+
+def get_pv_emission_reduction():
+    global solar_saving
+    return solar_saving  
+
+def get_total_ems_ev_cooler_emissions():
+    global ev_ems_co2, cooler_ems_co2
+    return ev_ems_co2 + cooler_ems_co2
+
 ############### data inputs ###############
 def bring_in_inverter_data():
     global power_map
@@ -120,6 +172,20 @@ def get_charge():
         except FileNotFoundError:
             ev_charge = 0.0
 
+def get_amount_of_clean_periods():
+    global EV_CHARGING_RATE
+    global EV_CAPPACITY
+    global ev_percent
+    global EV_PERCENT_DESIRED
+    global time_interval
+    result = (((EV_PERCENT_DESIRED - ev_percent)/100 * EV_CAPPACITY) / EV_CHARGING_RATE) * 60 / time_interval
+    return math.ceil(result)
+
+def get_ev_miles_travelled():
+    global ev_miles_travelled
+    ev_miles_travelled += get_miles_added()
+    return ev_miles_travelled
+
 
 ############### control commands ###############
 def send_cooler_decision(setpoint):
@@ -154,8 +220,6 @@ def ems():
     global realtime 
     global ev_connected 
     while True:
-   
-        # TODO: add ems rules here
         if pv_output > total_power: # daytime 
             if ev_charging:
                 # adjust temperature setpoint  
@@ -200,7 +264,6 @@ def ems():
                             elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
                                 send_cooler_decision(SETPOINT_DEFAULT)
 
-
         else: # daytime && night 
             if realtime not in cooler_dirty_periods:
                 # TODO do some coolth? 
@@ -228,7 +291,29 @@ def ems():
                 if ev_connected:
                     send_charging_decision(False)
 
-            
+        ############## calculation ################
+        grid_co2_list.append(max(0,aoer * grid_power))
+        grid_co2 = sum(grid_co2_list)
+
+        ############## EV reduction ###############
+        ev_total_load_fraction = ev_p5 / total_power ## total_power: PV used + grid power  (maybe 'Consume' in power map)
+        ev_grid_load = ev_total_load_fraction * grid_power 
+        ev_grid_co2_list.append(max(0,aoer * ev_grid_load))
+        ev_grid_co2 = sum(ev_grid_co2_list)
+
+        ############## PV reduction ###############
+        solar_saving_list.append(max(0, aoer * solar_power_used))
+        solar_saving = sum(solar_saving_list)
+
+        ############## rule-based EMS carbon accounting ##########
+        ev_ems_co2_list.append(max(0,moer * ev_grid_load))
+        ev_ems_co2 = sum(ev_ems_co2_list)
+
+        cooler_grid_load = (cooler_load / total_power) * grid_power
+        cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
+        cooler_ems_co2 = sum(cooler_ems_co2_list)
+
+
 
 
         # if is_daytime() == False: # nighttime: charge during clean periods
@@ -257,7 +342,6 @@ def ems():
         #         send_cooler_decision(SETPOINT_DEFAULT)
         time.sleep(300) # run ems rules to make decisions every 5 mins 
 
-
 ############### multi-thread ###############
 def main():
 
@@ -280,7 +364,7 @@ def main():
         while True:
             print(f"Current ev_charge: {ev_charge}")
             print(f"Realtime: {datetime.now()}")
-            print(f"EV Charge: {ev_charge}%")
+            print(f"EV Charge: {ev_percent}%")
             print(f"PV Output: {pv_output}W")
             print(f"Current Setpoint: {CURRENT_SETPOINT}")
             time.sleep(10)  # Adjust this interval as needed to monitor `ev_charge`
@@ -309,3 +393,5 @@ if __name__ == "__main__":
     ######### check inverter #########
     # bring_in_inverter_data()
     # print(power_map)
+
+    
