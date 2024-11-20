@@ -128,5 +128,3 @@ Now the cooler is in the economic mode!
 The temperature setpoint is: 51
 The Day has ended
 The final state of charge is 65.56188364837348.
-
-Happy Farming!

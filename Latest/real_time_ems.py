@@ -246,7 +246,7 @@ def ems():
     global ev_p5  
     global realtime
    
-    with open('output.txt', 'a') as file:
+    with open('output_1121.txt', 'a') as file:
         if pv_output > total_power: # daytime 
             if ev_charging:
                 # adjust temperature setpoint  
@@ -405,7 +405,7 @@ def main():
     
 
 if __name__ == "__main__":
-    # main()
+    main()
     # print(ev_charging)
 
     ######## check cooler command functionality ########
