@@ -34,7 +34,7 @@ def create_data():
 
     energy_flow = {
         'net_inverter_to_grid': net_inverter_grid + ' kw',
-        'net_solar_to_inverter': net_solar_inverter + ' kw',
+        'net_solar_to_inverter': net_solar_inverter + ' kw', # pv_output
         'net_inverter_to_components': net_inverter_components + ' kw'
     }
 
