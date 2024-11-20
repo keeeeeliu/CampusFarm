@@ -60,5 +60,3 @@ def check_battery():
         print("Error extracting data:", e)
 
     driver.quit()
-
-check_battery()
