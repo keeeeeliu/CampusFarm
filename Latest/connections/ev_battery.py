@@ -16,6 +16,7 @@ def check_battery():
     # # Open the webpage
     # driver.get('https://www.ford.com/myaccount/account-dashboard')
 
+    battery = {}
     driver = uc.Chrome()
     driver.get('https://www.ford.com/myaccount/account-dashboard')
 
@@ -52,6 +53,9 @@ def check_battery():
         est_distance_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box3-value"]')))
         est_distance = est_distance_element.text.strip(' mi')  # Remove the mi suffix
         print(f"Estimated Distance: {est_distance}")
+        battery['miles_left'] = est_distance
+        battery['percentage'] = charge_level
+        return battery
     except Exception as e:
         print("Error extracting data:", e)
 
