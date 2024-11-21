@@ -270,5 +270,3 @@ def check_charging():
     except Exception as e:
         print("An error occurred:", e)
         driver.quit()
-
-check_charging()
