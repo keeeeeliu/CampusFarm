@@ -263,6 +263,3 @@ def check_charging():
         print("Stop button not found.")
         driver.quit()  # Quit the driver even if the button is not found
         return False  # Return False if the button is not found
-
-    
-check_charging()
