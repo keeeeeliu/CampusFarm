@@ -12,3 +12,11 @@
 2024-11-20 21:28:02.435822: send_charging_decision(False)), do nothing
 2024-11-20 21:28:02.435822: send_cooler_decision(41
 2024-11-20 21:28:02.435822: send_charging_decision(False)), do nothing
+2024-11-20 21:45:42.267750: send_cooler_decision(41
+2024-11-20 21:46:09.763941: send_charging_decision(False)), do nothing
+2024-11-20 21:48:26.100549: send_cooler_decision(41
+2024-11-20 21:48:51.508032: send_charging_decision(False)), do nothing
+2024-11-20 21:51:06.025000: send_cooler_decision(41
+2024-11-20 21:51:35.880639: send_charging_decision(False)), do nothing
+2024-11-20 21:57:20.598304: send_cooler_decision(41
+2024-11-20 21:57:49.242473: send_charging_decision(True), do nothing

@@ -338,6 +338,7 @@ def ems():
 
         if EMS_EV:  # test EMS + EV 
             realtime = datetime.now()
+            load_clean_periods()
             if is_realtime_in_clean_periods(realtime, ev_clean_periods):
                 print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
                 if ev_connected:
