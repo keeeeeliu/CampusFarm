@@ -8,6 +8,9 @@ import chromedriver_autoinstaller
 import undetected_chromedriver as uc
 import time
 
+# Disable the __del__ method to prevent errors from being printed
+uc.Chrome.__del__ = lambda self: None
+
 def charger_on():
     # Automatically install and get the path to chromedriver
     # chromedriver_path = chromedriver_autoinstaller.install()
@@ -135,8 +138,6 @@ def charger_off():
 
 def plugged_in():
     # Automatically install and get the path to chromedriver
-    # chromedriver_path = chromedriver_autoinstaller.install()
-    # service = Service(chromedriver_path)
     driver = uc.Chrome()
 
     # Open the webpage
@@ -147,15 +148,12 @@ def plugged_in():
 
     # Enter login details
     try:
-        # Find the email input field and enter your email
         email_field = driver.find_element(By.ID, 'user_email') 
         email_field.send_keys('campusfarm@umich.edu') 
 
-        # Find the password input field and enter your password
         password_field = driver.find_element(By.ID, 'user_password') 
         password_field.send_keys('CFSPC&EV!')  
 
-        # F5dind and click the sign-in button
         sign_in_button = driver.find_element(By.ID, 'submit')
         sign_in_button.click()
 
@@ -163,7 +161,7 @@ def plugged_in():
     except Exception as e:
         print("Error during login:", e)
 
-    time.sleep(2)
+    time.sleep(3)
 
     # Click the myEnlighten button and switch to the new tab
     try:
@@ -172,36 +170,42 @@ def plugged_in():
         print("Clicked on myEnlighten button.")
 
         # Wait briefly for the new tab to open
-        time.sleep(2)
+        time.sleep(3)
 
-        # Switch to the new tab
         driver.switch_to.window(driver.window_handles[-1])  # Switch to the last opened tab
         print("Switched to the new tab.")
     except Exception as e:
         print("Error during myEnlighten click or switching tabs:", e)
 
-    time.sleep(2)
+    time.sleep(3)
 
-        # Check for "Not Plugged-in"
     try:
-        # Locate the span containing the status text
+        # Locate the span element using its class name
         status_box = driver.find_element(By.CLASS_NAME, 'ev_info_icon_section')
-
-        # Get the text from the element
+        
+        # Extract the text content
         status_text = status_box.text.strip()
-
-        # Print True if it doesn't say "Not Plugged-in", False otherwise
-        if status_text == "Not Plugged-in":
-            driver.quit()
-            return False
+        print(f"Status text: {status_text}")
+        
+        # Check if the text matches "Not Charging: Manual override"
+        if "Not Charging: Manual override" in status_text or "Charging" in status_text:
+            return_value = True
         else:
-            driver.quit()
-            return True
+            return_value = False
     except Exception as e:
         print("Error checking plug-in status:", e)
+        return_value = None
+    finally:
+        if driver:
+            try:
+                driver.quit()
+            except Exception as cleanup_error:
+                print(f"Error during cleanup: {cleanup_error}")
+            driver = None  # Prevent further cleanup by `__del__`
 
-    # Close the browser
-    driver.quit()
+    # Return the final value
+    return return_value
+
 
 def check_charging():
     # Automatically install and get the path to chromedriver

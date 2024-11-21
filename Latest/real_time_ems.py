@@ -80,7 +80,7 @@ EMS_Cooler = True
 SETPOINT_DEFAULT = 41
 SETPOINT_COOLTH = 35
 SETPOINT_ECON = 48
-CURRENT_SETPOINT = 33 
+CURRENT_SETPOINT = 35 
 MAX_COOLTH_TIME_LIMIT = 40 # min 
 MAX_ECON_TIME_LIMIT = 40
 EV_PERCENT_DESIRED = 80
@@ -255,6 +255,14 @@ def ems():
     global realtime
     global driving
     global cooler_indoor_temp
+    global EV_CHARGING_RATE
+    global EV_CAPPACITY
+    global SETPOINT_DEFAULT
+    global SETPOINT_COOLTH
+    global SETPOINT_ECON
+    global CURRENT_SETPOINT
+    global TMAX
+    global TMIN
    
     with open('output_1121.txt', 'a') as file:
         if pv_output > total_power: # daytime 
@@ -422,7 +430,7 @@ def main():
             print(f"EV Charging Status: {ev_charging}")
             print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
             # print(f"Current Setpoint: {CURRENT_SETPOINT}")
-            time.sleep(60)  # Adjust this interval as needed to monitor `ev_charge`
+            time.sleep(900)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
     
