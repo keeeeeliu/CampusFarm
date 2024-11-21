@@ -190,8 +190,10 @@ def plugged_in():
 
         # Print True if it doesn't say "Not Plugged-in", False otherwise
         if status_text == "Not Plugged-in":
+            driver.quit()
             return False
         else:
+            driver.quit()
             return True
     except Exception as e:
         print("Error checking plug-in status:", e)
@@ -250,16 +252,19 @@ def check_charging():
 
         # Wait for the Charge Now button to appear
     try:
-        charge_now_button = WebDriverWait(driver, 30).until(
+        charge_now_button = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located(
                 (By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Stop']")
             )
         )
         if charge_now_button.is_displayed():
+
             print("Stop button is present.")
+            driver.quit()
             return True  # Return True if the button is present
     except Exception:
         print("Stop Now button not found.")
+        driver.quit()
         return False  # Return False if the button is not present
 
     except Exception as e:

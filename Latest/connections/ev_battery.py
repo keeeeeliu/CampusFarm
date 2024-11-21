@@ -43,7 +43,7 @@ def check_battery():
         driver.quit()
         return
 
-    time.sleep(35)
+    time.sleep(20)
     # Wait for the next page to load and the Charge Level element to be visible
     try:
         charge_level_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box2-value"]')))
@@ -55,6 +55,7 @@ def check_battery():
         print(f"Estimated Distance: {est_distance}")
         battery['miles_left'] = est_distance
         battery['percentage'] = charge_level
+        driver.quit()   
         return battery
     except Exception as e:
         print("Error extracting data:", e)

@@ -169,7 +169,7 @@ def change_setpoint(updated_value):
     # if the current temperature is within the updated setpoint range
     if updated_value - 2 <= temp and temp <= updated_value + 2:
         print(f"Temperature is within the range of the updated setpoint: {updated_value} - 2 <= {temp} <= {updated_value} + 2")
-        return False
+        return temp
     
     while updated_value != current_value:
         try:
@@ -180,7 +180,7 @@ def change_setpoint(updated_value):
         except Exception as e:
             print(f"An Error has occurred for Cooler Web Automation: {e}")
 
-    return True
+    return temp
     
 def main():
     change_setpoint(32)
