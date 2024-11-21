@@ -25,7 +25,7 @@ realtime = datetime.now()
 ev_charge = 0
 ev_miles_left = 0
 pv_output = 0
-cooler_indoor_temp = 0
+cooler_indoor_temp = 37
 ev_connected = True # EV charger plugged in? 
 total_power = 0
 power_map = {}
@@ -80,7 +80,7 @@ EMS_Cooler = True
 SETPOINT_DEFAULT = 41
 SETPOINT_COOLTH = 35
 SETPOINT_ECON = 48
-CURRENT_SETPOINT = 35 
+CURRENT_SETPOINT = 32 
 MAX_COOLTH_TIME_LIMIT = 40 # min 
 MAX_ECON_TIME_LIMIT = 40
 EV_PERCENT_DESIRED = 80
@@ -216,7 +216,6 @@ def get_ev_miles_travelled():
 
 ############### control commands ###############
 def send_cooler_decision(setpoint):
-    """Return true if setpoint changed, false otherwise."""
     return change_setpoint(setpoint)
 
 def send_charging_decision(OnOFF:bool):
@@ -285,7 +284,7 @@ def ems():
                             functional_test_save()
             elif ev_charging == False and ev_connected == True:
                 if pv_output > total_power + ev_p5:
-                    cooler_indoor_temp = send_charging_decision(True)
+                    send_charging_decision(True)
                     file.write(f"{realtime}: send_charging_decision(True)\n")
                     functional_test_save()
 
@@ -430,7 +429,7 @@ def main():
             print(f"EV Charging Status: {ev_charging}")
             print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
             # print(f"Current Setpoint: {CURRENT_SETPOINT}")
-            time.sleep(900)  # Adjust this interval as needed to monitor `ev_charge`
+            time.sleep(300)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
     
