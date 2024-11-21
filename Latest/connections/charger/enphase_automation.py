@@ -251,22 +251,18 @@ def check_charging():
     time.sleep(5)  # Ensure the new tab's content loads completely
 
         # Wait for the Charge Now button to appear
-    try:
-        charge_now_button = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Stop']")
-            )
-        )
-        if charge_now_button.is_displayed():
 
-            print("Stop button is present.")
-            driver.quit()
-            return True  # Return True if the button is present
-        else:
-            print("Stop Now button not found.")
-            driver.quit()
-            return False  # Return False if the button is not present
-        
-    except Exception as e:
-        print("An error occurred:", e)
-        driver.quit()
+    try:
+        # Locate the "Stop" button using the XPath
+        stop_button = driver.find_element(By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Stop']")
+        print("Stop button found!")
+        driver.quit()  # Quit the driver if the button is found
+        return True  # Return True if the button is found
+    except Exception:
+        # Handle the case where the button is not found
+        print("Stop button not found.")
+        driver.quit()  # Quit the driver even if the button is not found
+        return False  # Return False if the button is not found
+
+    
+check_charging()
