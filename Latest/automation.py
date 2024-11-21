@@ -146,18 +146,18 @@ def get_coolbot_temp():
 
 def change_setpoint(updated_value):
     """Function that access the CoolBot website and temperature sensor website and change the temperature based on the input value."""
-    coolbot_temp = -1
-    sensor_temp = -1
-    current_value = -1
+    coolbot_temp = None
+    sensor_temp = None
+    current_value = None
     # Extract the temperature from coolbot until success
-    while coolbot_temp == -1:
+    while coolbot_temp == None:
         try:
             coolbot_temp = get_coolbot_temp()
         except Exception as e:
             print(f"An Error has occurred while extracting the coolbot temperature: {e}.")
     
     # Extract the temperature from sensor until success
-    while sensor_temp == -1:
+    while sensor_temp == None:
         try:
             sensor_temp = get_sensor_temp()
         except Exception as e:
