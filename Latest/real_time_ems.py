@@ -19,6 +19,7 @@ from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
 from connections.charger.enphase_automation import charger_on, charger_off, plugged_in, check_charging
 from connections.charger.get_charger_consumption import get_miles_added
 from connections.ev_battery import check_battery
+from WT_nonEMS import generate_clean_periods, save_clean_periods
 
 realtime = datetime.now()
 ev_charge = 0
@@ -37,10 +38,11 @@ econ_timer = 0
 ev_p5 = 0.983
 ev_percent = 51 # EV battery percentage
 cooler_load = 0
-time_interval = 5 # mins
+time_interval = 2 # mins
 ev_miles_travelled = 0 # 
 grid_power = 0 ##### read from inverter ('Grid' in power map)
 solar_power_used = 0 
+driving = False
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
@@ -67,21 +69,21 @@ total_emission_reduction = 0 # gonna be the sum(pv,ems,ev... reduction)
 
 
 ############# constants #################
-EV_CHARGING_RATE = 13.7 ## kWh 
-EV_CAPPACITY = 131 ## kW
+EV_CHARGING_RATE = 11.5 ## kW 
+EV_CAPPACITY = 131 ## kWh
 
 ############## Test Mode ################
 EMS_EV = True
 EMS_Cooler = True
 
 ############## input from UI ############
-SETPOINT_DEFAULT = 55
-SETPOINT_COOLTH = 53
-SETPOINT_ECON = 57
-CURRENT_SETPOINT = 55 
+SETPOINT_DEFAULT = 41
+SETPOINT_COOLTH = 35
+SETPOINT_ECON = 48
+CURRENT_SETPOINT = 33 
 MAX_COOLTH_TIME_LIMIT = 40 # min 
 MAX_ECON_TIME_LIMIT = 40
-EV_PERCENT_DESIRED = 100
+EV_PERCENT_DESIRED = 80
 TMIN = 51
 TMAX = 59
 RULE_BASED_MODE = True
@@ -338,8 +340,23 @@ def ems():
             else:
                 print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
                 if ev_connected:
+                    if driving == True:
+                        # returned from a drive
+                        # regen clean periods
+                        driving = False
+                        num_clean_periods = get_amount_of_clean_periods()
+                        print(num_clean_periods)
+                        generate_clean_periods(num_clean_periods)
+                        save_clean_periods()
+                        file.write(f"{realtime}: back, generate new clean charging schedule)\n")
+                        functional_test_save()
+
                     send_charging_decision(False)
                     file.write(f"{realtime}: send_charging_decision(False))\n")
+                    functional_test_save()
+                else:
+                    driving = True
+                    file.write(f"{realtime}: going on a drive)\n")
                     functional_test_save()
 
         ############## calculation ################
@@ -406,6 +423,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # print(get_amount_of_clean_periods())
+
     # print(ev_charging)
 
     ######## check cooler command functionality ########
