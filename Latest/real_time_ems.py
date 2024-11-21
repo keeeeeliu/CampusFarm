@@ -121,12 +121,12 @@ def functional_test_save():
     global realtime
     global ev_charge, ev_miles_left, pv_output, cooler_indoor_temp, ev_connected
     global total_power, power_map, ev_power, cooler_dirty_periods
-    global ev_charging, ev_percent, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used
-    with open('output.txt', 'a') as file:
+    global ev_charging, ev_percent, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
+    with open('output_1121.txt', 'a') as file:
         file.write(f"realtime: {realtime}")
         file.write(f"ev_charge: {ev_charge}, ev_miles_left: {ev_miles_left}, pv_output: {pv_output}, cooler_indoor_temp: {cooler_indoor_temp}, ev_connected: {ev_connected}\n")
         file.write(f"total_power: {total_power}, power_map: {power_map}, ev_power: {ev_power}, cooler_dirty_periods: {cooler_dirty_periods}\n")
-        file.write(f"ev_charging: {ev_charging}\n")
+        file.write(f"ev_charging: {ev_charging}, driving: {driving}\n")
         file.write(f"ev_percent: {ev_percent}, ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
         file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n")
 
@@ -190,11 +190,13 @@ def get_total_power():
 
 def get_charge():
     global ev_charge
+    global ev_percent
     global ev_miles_left
 
     ev_battery_dict = check_battery()
-    ev_charge = ev_battery_dict['percentage']
-    ev_miles_left = ev_battery_dict['miles_left']
+    ev_charge = int(ev_battery_dict['percentage'])
+    ev_percent = int(ev_charge)
+    ev_miles_left = int(ev_battery_dict['miles_left'])
 
 
 def get_amount_of_clean_periods():
@@ -359,16 +361,16 @@ def ems():
                         driving = False
                         num_clean_periods = get_amount_of_clean_periods()
                         print(num_clean_periods)
-                        # generate_clean_periods(num_clean_periods)
-                        # save_clean_periods()
-                        file.write(f"{realtime}: back, generate new clean charging schedule)\n")
+                        generate_clean_periods(num_clean_periods)
+                        save_clean_periods()
+                        file.write(f"{realtime}: back, generate new clean charging schedule\n")
                         functional_test_save()
                     if ev_charging:
                         send_charging_decision(False)
                         file.write(f"{realtime}: send_charging_decision(False))\n")
                         functional_test_save()
                     else: 
-                        file.write(f"{realtime}: send_charging_decision(False)), do nothing\n")
+                        file.write(f"{realtime}: send_charging_decision(False), do nothing\n")
                         functional_test_save()
                 else:
                     driving = True
@@ -401,27 +403,13 @@ def ems():
 
 ############### multi-thread ###############
 def main():
-
-    # Start the ems script thread
-    # main_thread = threading.Thread(target=ems)
-    # main_thread.daemon = True  # Daemonize thread to exit when ems thread exits
-    # main_thread.start()
-
-
-    # # Start data updating thread
-    # inverter_thread = threading.Thread(target=update_inverter_data)
-    # inverter_thread.daemon = True
-    # inverter_thread.start()
-
-    # charge_thread = threading.Thread(target=update_charge_data)
-    # charge_thread.daemon = True
-    # charge_thread.start()
+    global ev_percent, pv_output, grid_power, ev_charging, cooler_indoor_temp
 
     try:
         while True:
             # print(f"Current ev_charge: {ev_charge}")
             # print(f"Realtime: {datetime.now()}")
-            
+            get_ev_connection()
             get_charge()
             update_inverter_data()
             get_is_ev_charging()

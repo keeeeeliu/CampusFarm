@@ -38,7 +38,7 @@ def get_inverter_data():
     except Exception as e:
         print("Error during login:", e)
 
-    time.sleep(2)
+    time.sleep(5)
 
     try:
         campus_farm_link = driver.find_element(By.LINK_TEXT, "campus farm")
