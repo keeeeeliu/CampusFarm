@@ -252,15 +252,15 @@ def check_charging():
     try:
         charge_now_button = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located(
-                (By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Charge Now']")
+                (By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Stop']")
             )
         )
         if charge_now_button.is_displayed():
-            print("Charge Now button is present.")
-            return False  # Return False if the button is present
+            print("Stop button is present.")
+            return True  # Return True if the button is present
     except Exception:
-        print("Charge Now button not found.")
-        return True  # Return True if the button is not present
+        print("Stop Now button not found.")
+        return False  # Return False if the button is not present
 
     except Exception as e:
         print("An error occurred:", e)
