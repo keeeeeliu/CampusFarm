@@ -166,6 +166,10 @@ def get_pv():
     pv = int(pv.replace("W", ""))
     pv_output = pv 
 
+def update_realtime():
+    global realtime
+    realtime = datetime.now()
+
 # def get_cooler_temp():
 #     global cooler_indoor_temp
 #     cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
@@ -333,6 +337,7 @@ def ems():
                             functional_test_save()
 
         if EMS_EV:  # test EMS + EV 
+            realtime = datetime.now()
             if is_realtime_in_clean_periods(realtime, ev_clean_periods):
                 print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
                 if ev_connected:
@@ -419,6 +424,7 @@ def main():
             get_charge()
             update_inverter_data()
             get_is_ev_charging()
+            update_realtime()
             # get_cooler_temp()
             ems()
             print(f"EV Charge: {ev_percent}%")
