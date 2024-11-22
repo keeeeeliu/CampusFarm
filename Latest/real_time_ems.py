@@ -16,14 +16,14 @@ from astral import LocationInfo
 from astral.sun import sun 
 from connections.charger.solArk_inverter import get_inverter_data
 from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
-from connections.charger.enphase_automation import charger_on, charger_off, plugged_in, check_charging
+from connections.charger.enphase_automation import charger_on, charger_off, plugged_in_and_charging
 from connections.charger.get_charger_consumption import get_miles_added
 from connections.ev_battery import check_battery
 from WT_nonEMS import generate_clean_periods, save_clean_periods
 from wifistatus import check_wifi_status_ifconfig
 
 realtime = datetime.now()
-ev_charge = 0
+ev_charge = 64
 ev_miles_left = 0
 pv_output = 0
 cooler_indoor_temp = 37
@@ -37,7 +37,7 @@ ev_charging = True
 coolth_timer = 0
 econ_timer = 0
 ev_p5 = 0.983
-ev_percent = 51 # EV battery percentage
+ev_percent = 64 # EV battery percentage
 cooler_load = 0
 time_interval = 2 # mins
 ev_miles_travelled = 0 # 
@@ -85,7 +85,7 @@ SETPOINT_ECON = 48
 CURRENT_SETPOINT = 32 
 MAX_COOLTH_TIME_LIMIT = 40 # min 
 MAX_ECON_TIME_LIMIT = 40
-EV_PERCENT_DESIRED = 80
+EV_PERCENT_DESIRED = 85
 TMIN = 51
 TMAX = 59
 RULE_BASED_MODE = True
@@ -176,13 +176,16 @@ def update_realtime():
 #     global cooler_indoor_temp
 #     cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
 
-def get_ev_connection():
-    global ev_connected
-    ev_connected = plugged_in()
+# def get_ev_connection_and_charging():
+#     global ev_connected
+#     ev_connected = plugged_in()
 
-def get_is_ev_charging():
+def get_is_ev_conn_and_charging():
     global ev_charging
-    ev_charging = check_charging()
+    global ev_connected
+    connection_dict = plugged_in_and_charging()
+    ev_connected = connection_dict['connected']
+    ev_charging = connection_dict['charging']
 
 def get_total_power():
     global coolEV_power
@@ -268,7 +271,7 @@ def ems():
     global TMAX
     global TMIN
    
-    with open('output_1121.txt', 'a') as file:
+    with open('output_1122.txt', 'a') as file:
         if pv_output > total_power: # daytime 
             if ev_charging:
                 # adjust temperature setpoint  
@@ -371,6 +374,7 @@ def ems():
                         # returned from a drive
                         # regen clean periods
                         driving = False
+                        get_charge()
                         num_clean_periods = get_amount_of_clean_periods()
                         print(num_clean_periods)
                         generate_clean_periods(num_clean_periods)
@@ -421,15 +425,20 @@ def main():
         while True:
             # print(f"Current ev_charge: {ev_charge}")
             # print(f"Realtime: {datetime.now()}")
-            get_wifi_status()
-            if wifi_status:
-                get_ev_connection()
-                get_charge()
-                update_inverter_data()
-                get_is_ev_charging()
-                update_realtime()
-                # get_cooler_temp()
-                ems()
+            #get_wifi_status()
+            # if wifi_status:
+            #     get_is_ev_conn_and_charging()
+            #     #get_charge()
+            #     update_inverter_data()
+            #     update_realtime()
+            #     # get_cooler_temp()
+            #     ems()
+            get_is_ev_conn_and_charging()
+            #get_charge()
+            update_inverter_data()
+            update_realtime()
+            # get_cooler_temp()
+            ems()
             print(f"EV Charge: {ev_percent}%")
             print(f"PV Output: {pv_output}W")
             print(f"Grid Power: {grid_power}W")
