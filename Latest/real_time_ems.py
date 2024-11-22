@@ -21,6 +21,8 @@ from connections.charger.get_charger_consumption import get_miles_added
 from connections.ev_battery import check_battery
 from WT_nonEMS import generate_clean_periods, save_clean_periods
 from wifistatus import check_wifi_status_ifconfig
+from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
+##### how to call this? -->  generate_dirty_periods(get_amount_of_dirty_periods())
 
 realtime = datetime.now()
 ev_charge = 64
@@ -44,6 +46,7 @@ ev_miles_travelled = 0 #
 grid_power = 0 ##### read from inverter ('Grid' in power map)
 solar_power_used = 0 
 driving = False
+dirtytime_threshold = 3 # hours 
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
@@ -106,6 +109,13 @@ def load_clean_periods(filename="ev_clean_periods.json"):
     with open(filename, "r") as file:
         periods = json.load(file)
     ev_clean_periods = periods
+
+# Load dirty periods from JSON file
+def load_dirty_periods(filename="cooler_dirty_periods.json"):
+    global cooler_dirty_periods
+    with open(filename, "r") as file:
+        periods = json.load(file)
+    cooler_dirty_periods = periods
 
 # Function to check if current time is in clean periods
 def is_realtime_in_clean_periods(realtime, clean_periods):
@@ -213,6 +223,10 @@ def get_amount_of_clean_periods():
     global time_interval
     result = (((EV_PERCENT_DESIRED - ev_percent)/100 * EV_CAPPACITY) / EV_CHARGING_RATE) * 60 / time_interval
     return math.ceil(result)
+
+def get_amount_of_dirty_periods():
+    global dirtytime_threshold
+    return dirtytime_threshold * 12 
 
 def get_ev_miles_travelled():
     global ev_miles_travelled
@@ -441,6 +455,11 @@ def main():
             #     update_realtime()
             #     # get_cooler_temp()
             #     ems()
+            ########### this block: generate dirty periods sheet 
+            generate_dirty_periods(get_amount_of_clean_periods)
+            save_dirty_periods()
+            load_dirty_periods()
+            ############
             get_is_ev_conn_and_charging()
             #get_charge()
             update_inverter_data()
