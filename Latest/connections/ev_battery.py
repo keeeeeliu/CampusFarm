@@ -8,14 +8,6 @@ import time
 import undetected_chromedriver as uc
 
 def check_battery():
-    # Automatically install and get the path to chromedriver
-    chromedriver_path = chromedriver_autoinstaller.install()
-    service = Service(chromedriver_path)
-    # driver = webdriver.Chrome(service=service)
-
-    # # Open the webpage
-    # driver.get('https://www.ford.com/myaccount/account-dashboard')
-
     battery = {}
     driver = uc.Chrome()
     driver.get('https://www.ford.com/myaccount/account-dashboard')
