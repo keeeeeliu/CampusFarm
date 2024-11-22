@@ -364,6 +364,16 @@ def ems():
                             functional_test_save()
                             CURRENT_SETPOINT = SETPOINT_DEFAULT
 
+                        else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                            file.write(f"{realtime}: econ_timer < max econ time limit, do nothing!\n")
+                            functional_test_save()
+
+
+                    else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                        file.write(f"{realtime}: else cooler_indoor temp not >= setpoint econ -2, do nothing!\n")
+                        functional_test_save()
+
+
         if EMS_EV:  # test EMS + EV 
             realtime = datetime.now()
             load_clean_periods()
