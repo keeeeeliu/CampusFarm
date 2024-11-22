@@ -47,6 +47,7 @@ grid_power = 0 ##### read from inverter ('Grid' in power map)
 solar_power_used = 0 
 driving = False
 dirtytime_threshold = 3 # hours 
+last_24_hour_run = datetime.now()
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
@@ -462,13 +463,15 @@ def ems():
 
 ############### multi-thread ###############
 def main():
-    global ev_percent, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status
+    global ev_percent, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run
     get_charge()
     num_clean_periods = get_amount_of_clean_periods()
     print(num_clean_periods)
     generate_clean_periods(num_clean_periods)
     save_clean_periods()
     load_clean_periods()
+
+    last_24_hour_run = datetime.now()
 
     try:
         while True:
@@ -482,10 +485,12 @@ def main():
             #     update_realtime()
             #     # get_cooler_temp()
             #     ems()
-            ########### this block: generate dirty periods sheet 
-            generate_dirty_periods(get_amount_of_clean_periods)
-            save_dirty_periods()
-            load_dirty_periods()
+            ########### this block: generate dirty periods sheet once per day
+            if datetime.now() - last_24_hour_run >= timedelta(hours=24):
+                generate_dirty_periods(get_amount_of_clean_periods)
+                save_dirty_periods()
+                load_dirty_periods()
+                last_24_hour_run = datetime.now()  # Update the last run time
             ############
             get_is_ev_conn_and_charging()
             #get_charge()
