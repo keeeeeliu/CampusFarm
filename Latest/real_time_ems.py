@@ -307,52 +307,37 @@ def ems():
                     else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
                         file.write(f"{realtime}: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!\n")
                         functional_test_save()
-
-            elif ev_charging == False and ev_connected == True:
-                if pv_output > total_power + ev_p5:
+           
+            elif ev_charging == False:
+                if ev_connected and pv_output > total_power + ev_p5:
                     send_charging_decision(True)
                     file.write(f"{realtime}: send_charging_decision(True)\n")
                     functional_test_save()
 
-                    # star
-                    if CURRENT_SETPOINT != SETPOINT_COOLTH:
-                        cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
-                        file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}\n")
-                        functional_test_save()
-                        CURRENT_SETPOINT = SETPOINT_COOLTH
-                    else:  # avoid coolth damage 
-                        if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
-                            # start time 
-                            if coolth_timer == 0:
-                                # TODO: set a timer here 
-                                pass
-                            elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
-                                cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                                file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
-                                functional_test_save()
-                else:
-                    # star 
-                    if CURRENT_SETPOINT != SETPOINT_COOLTH:
-                        cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
-                        file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}\n")
-                        functional_test_save()
-                        CURRENT_SETPOINT = SETPOINT_COOLTH
-                    else:  # avoid coolth damage 
-                        if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
-                            # start time 
-                            if coolth_timer == 0:
-                                # TODO: set a timer here 
-                                pass
-                            elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
-                                cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                                file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
-                                functional_test_save()
-            
-            elif ev_charging == False:
-                if ev_connected and pv_output > total_power + ev_p5:
-                    print("")
+                # star
+                if CURRENT_SETPOINT != SETPOINT_COOLTH:
+                    cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
+                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}\n")
+                    functional_test_save()
+                    CURRENT_SETPOINT = SETPOINT_COOLTH
+                else:  # avoid coolth damage 
+                    if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
+                        # start time 
+                        if coolth_timer == 0:
+                            # TODO: set a timer here 
+                            pass
+                        elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
+                            cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                            file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
+                            functional_test_save()
+                
 
-        else: # daytime && night 
+            else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                file.write(f"{realtime}: else EV Charging , do nothing!\n")
+                functional_test_save()
+
+
+        else: # daytime && night --- no excess PV
             if realtime not in cooler_dirty_periods:
                 # TODO do some coolth? 
                 cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
