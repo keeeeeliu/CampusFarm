@@ -131,6 +131,7 @@ def functional_test_save():
         file.write(f"ev_charging: {ev_charging}, driving: {driving}\n")
         file.write(f"ev_percent: {ev_percent}, ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
         file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n")
+        file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
 
 ########### Carbon Accounting Getters #############
 baseline_con_emissions = ev_miles_travelled * 1.590 # lbs CO2/mile
@@ -188,10 +189,10 @@ def get_is_ev_conn_and_charging():
     ev_charging = connection_dict['charging']
 
 def get_total_power():
-    global coolEV_power
+    global total_power
     consumption = power_map["Consumed W"]
     consumption = int(consumption.replace("W", ""))
-    coolEV_power = consumption
+    total_power = consumption
 
 def get_charge():
     global ev_charge
@@ -252,7 +253,6 @@ def update_inverter_data():
 ############### decision rules ###############
 def ems():
     global pv_output 
-    global coolEV_power
     global total_power
     global ev_charging
     global cooler_indoor_temp
@@ -290,6 +290,10 @@ def ems():
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                             functional_test_save()
+                    else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                        file.write(f"{realtime}: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!\n")
+                        functional_test_save()
+
             elif ev_charging == False and ev_connected == True:
                 if pv_output > total_power + ev_p5:
                     send_charging_decision(True)
@@ -329,6 +333,10 @@ def ems():
                                 cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                                 file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                                 functional_test_save()
+            
+            elif ev_charging == False:
+                if ev_connected and pv_output > total_power + ev_p5:
+                    print("")
 
         else: # daytime && night 
             if realtime not in cooler_dirty_periods:
@@ -445,7 +453,7 @@ def main():
             print(f"Wifi Connected: {wifi_status}")
             print(f"EV Charging Status: {ev_charging}")
             print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
-            # print(f"Current Setpoint: {CURRENT_SETPOINT}")
+            print(f"Current Setpoint: {CURRENT_SETPOINT}")
             time.sleep(300)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
