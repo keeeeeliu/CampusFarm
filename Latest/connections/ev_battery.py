@@ -43,21 +43,40 @@ def check_battery():
         driver.quit()
         return
 
-    time.sleep(20)
+    time.sleep(25)
     # Wait for the next page to load and the Charge Level element to be visible
-    try:
-        charge_level_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box2-value"]')))
-        charge_level = charge_level_element.text.strip('%')  # Remove the % sign
-        print(f"Charge Level: {charge_level}")
+    max_retries = 3  # Set the maximum number of retries
+    attempt = 0
+    battery = {}
 
-        est_distance_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box3-value"]')))
-        est_distance = est_distance_element.text.strip(' mi')  # Remove the mi suffix
-        print(f"Estimated Distance: {est_distance}")
-        battery['miles_left'] = est_distance
-        battery['percentage'] = charge_level
-        driver.quit()   
-        return battery
-    except Exception as e:
-        print("Error extracting data:", e)
+    while attempt < max_retries:
+        try:
+            # Increment attempt counter
+            attempt += 1
+            
+            # Wait and extract charge level
+            charge_level_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box2-value"]')))
+            charge_level = charge_level_element.text.strip('%')  # Remove the % sign
+            print(f"Charge Level: {charge_level}")
 
-    driver.quit()
+            # Wait and extract estimated distance
+            est_distance_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box3-value"]')))
+            est_distance = est_distance_element.text.strip(' mi')  # Remove the mi suffix
+            print(f"Estimated Distance: {est_distance}")
+
+            # Update battery dictionary
+            battery['miles_left'] = est_distance
+            battery['percentage'] = charge_level
+            
+            # Close the driver and return data
+            driver.quit()
+            return battery
+
+        except Exception as e:
+            print(f"Attempt {attempt} failed. Error extracting data: {e}")
+            
+            if attempt == max_retries:
+                print("Max retries reached. Exiting...")
+                driver.quit()
+                return None
+
