@@ -304,6 +304,7 @@ def ems():
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                             functional_test_save()
+                            CURRENT_SETPOINT = SETPOINT_DEFAULT
                     else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
                         file.write(f"{realtime}: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!\n")
                         functional_test_save()
@@ -330,6 +331,7 @@ def ems():
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                             functional_test_save()
+                            CURRENT_SETPOINT = SETPOINT_DEFAULT
                 
 
             else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
@@ -343,12 +345,13 @@ def ems():
                 cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                 file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                 functional_test_save()
+                CURRENT_SETPOINT = SETPOINT_DEFAULT
             else:
                 if CURRENT_SETPOINT != SETPOINT_ECON:
                     cooler_indoor_temp = send_cooler_decision(SETPOINT_ECON)
-                    CURRENT_SETPOINT = SETPOINT_ECON
                     file.write(f"{realtime}: send_cooler_decision({SETPOINT_ECON}\n")
                     functional_test_save()
+                    CURRENT_SETPOINT = SETPOINT_ECON
                 else: # avoid econ damage
                     if cooler_indoor_temp >= SETPOINT_ECON - 2:
                         # start time counting 
@@ -359,6 +362,7 @@ def ems():
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                             functional_test_save()
+                            CURRENT_SETPOINT = SETPOINT_DEFAULT
 
         if EMS_EV:  # test EMS + EV 
             realtime = datetime.now()
