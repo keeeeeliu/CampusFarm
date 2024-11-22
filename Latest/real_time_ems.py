@@ -276,6 +276,8 @@ def ems():
     global realtime
     global driving
     global cooler_indoor_temp
+    global coolth_timer
+    global econ_timer
     global EV_CHARGING_RATE
     global EV_CAPPACITY
     global SETPOINT_DEFAULT
@@ -343,13 +345,18 @@ def ems():
                     if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
                         # start time 
                         if coolth_timer == 0:
-                            # TODO: set a timer here 
-                            pass
-                        elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
+                            coolth_timer = time.time()
+                            print("Coolth timer started!")
+                            file.write(f"{realtime}: starting coolth timer \n")
+                            functional_test_save()
+
+                        elif (time.time() - coolth_timer) >= MAX_COOLTH_TIME_LIMIT:
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                             functional_test_save()
                             CURRENT_SETPOINT = SETPOINT_DEFAULT
+                            coolth_timer = 0
+
                     else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
                         file.write(f"{realtime}: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!\n")
                         functional_test_save()
@@ -370,13 +377,18 @@ def ems():
                     if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
                         # start time 
                         if coolth_timer == 0:
-                            # TODO: set a timer here 
-                            pass
-                        elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
+                            coolth_timer = time.time()
+                            print("Coolth timer started!")
+                            file.write(f"{realtime}: starting coolth timer \n")
+                            functional_test_save()
+
+                        elif (time.time() - coolth_timer) >= MAX_COOLTH_TIME_LIMIT:
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
+                            file.write(f"{realtime}: stopping coolth timer reached limit \n")
                             functional_test_save()
                             CURRENT_SETPOINT = SETPOINT_DEFAULT
+                            coolth_timer = 0
                 
 
             else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
@@ -401,13 +413,18 @@ def ems():
                     if cooler_indoor_temp >= SETPOINT_ECON - 2:
                         # start time counting 
                         if econ_timer == 0:
-                            # TODO: set a timer here
-                            pass
-                        elif econ_timer >= MAX_ECON_TIME_LIMIT:
+                            econ_timer = time.time()
+                            print("Coolth timer started!")
+                            file.write(f"{realtime}: starting econ timer \n")
+                            functional_test_save()
+
+                        elif (time.time() - econ_timer) >= MAX_ECON_TIME_LIMIT:
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
+                            file.write(f"{realtime}: stopping econ timer reached limit \n")
                             functional_test_save()
                             CURRENT_SETPOINT = SETPOINT_DEFAULT
+                            econ_timer = 0
 
                         else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
                             file.write(f"{realtime}: econ_timer < max econ time limit, do nothing!\n")
