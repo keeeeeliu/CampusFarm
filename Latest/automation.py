@@ -1,16 +1,15 @@
-from selenium import webdriver
-import chromedriver_autoinstaller
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+import undetected_chromedriver as uc
 import time
 
-def change_value(value):
-    """Function to change the value on website based on the input value and return the current value."""
-    chromedriver_autoinstaller.install()
+# Disable the __del__ method to prevent errors from being printed
+uc.Chrome.__del__ = lambda self: None
 
-    driver = webdriver.Chrome()
+def change_value(value):
+    driver = uc.Chrome()
     url = "https://cb.storeitcold.com/#/login"
     driver.get(url)
 
@@ -78,10 +77,7 @@ def change_value(value):
 
 
 def get_sensor_temp():
-    """Returns temperature from temperature sensor."""
-    chromedriver_autoinstaller.install()
-
-    driver = webdriver.Chrome()
+    driver = uc.Chrome()
     url = "https://www.easylogcloud.com/devices.aspx"
     driver.get(url)
 
@@ -109,10 +105,7 @@ def get_sensor_temp():
 
 
 def get_coolbot_temp():
-    """Function to extract current temperature from CoolBot website."""
-    chromedriver_autoinstaller.install()
-
-    driver = webdriver.Chrome()
+    driver = uc.Chrome()
     url = "https://cb.storeitcold.com/#/login"
     driver.get(url)
 
