@@ -7,6 +7,9 @@ import chromedriver_autoinstaller
 import time
 import undetected_chromedriver as uc
 
+# Disable the __del__ method to prevent errors from being printed
+uc.Chrome.__del__ = lambda self: None
+
 def check_battery():
     battery = {}
     driver = uc.Chrome()

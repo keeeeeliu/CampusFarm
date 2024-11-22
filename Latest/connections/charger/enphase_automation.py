@@ -12,9 +12,6 @@ import time
 uc.Chrome.__del__ = lambda self: None
 
 def charger_on():
-    # Automatically install and get the path to chromedriver
-    # chromedriver_path = chromedriver_autoinstaller.install()
-    # service = Service(chromedriver_path)
     driver = uc.Chrome()
 
     # Open the webpage
