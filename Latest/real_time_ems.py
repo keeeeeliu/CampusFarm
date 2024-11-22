@@ -291,45 +291,45 @@ def ems():
 
         ############### Charging in clean periods section ###################
 
-        if EMS_EV:  # test EMS + EV 
-            realtime = datetime.now()
-            load_clean_periods()
-            if is_realtime_in_clean_periods(realtime, ev_clean_periods):
-                print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
-                if ev_connected:
-                    if ev_charging == False: 
-                        send_charging_decision(True)
-                        file.write(f"{realtime}: send_charging_decision(True)\n")
-                        functional_test_save()
-                    else:
-                        file.write(f"{realtime}: send_charging_decision(True), do nothing\n")
-                        functional_test_save()
-
-            else:
-                print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
-                if ev_connected:
-                    if driving == True:
-                        # returned from a drive
-                        # regen clean periods
-                        driving = False
-                        get_charge()
-                        num_clean_periods = get_amount_of_clean_periods()
-                        print(num_clean_periods)
-                        generate_clean_periods(num_clean_periods)
-                        save_clean_periods()
-                        file.write(f"{realtime}: back, generate new clean charging schedule\n")
-                        functional_test_save()
-                    if ev_charging:
-                        send_charging_decision(False)
-                        file.write(f"{realtime}: send_charging_decision(False))\n")
-                        functional_test_save()
-                    else: 
-                        file.write(f"{realtime}: send_charging_decision(False), do nothing\n")
-                        functional_test_save()
-                else:
-                    driving = True
-                    file.write(f"{realtime}: going on a drive)\n")
+        realtime = datetime.now()
+        
+        if is_realtime_in_clean_periods(realtime, ev_clean_periods):
+            print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
+            if ev_connected:
+                if ev_charging == False: 
+                    send_charging_decision(True)
+                    file.write(f"{realtime}: send_charging_decision(True)\n")
                     functional_test_save()
+                else:
+                    file.write(f"{realtime}: send_charging_decision(True), do nothing\n")
+                    functional_test_save()
+
+        else:
+            print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
+            if ev_connected:
+                if driving == True:
+                    # returned from a drive
+                    # regen clean periods
+                    driving = False
+                    get_charge()
+                    num_clean_periods = get_amount_of_clean_periods()
+                    print(num_clean_periods)
+                    generate_clean_periods(num_clean_periods)
+                    save_clean_periods()
+                    load_clean_periods()
+                    file.write(f"{realtime}: back, generate new clean charging schedule\n")
+                    functional_test_save()
+                if ev_charging:
+                    send_charging_decision(False)
+                    file.write(f"{realtime}: send_charging_decision(False))\n")
+                    functional_test_save()
+                else: 
+                    file.write(f"{realtime}: send_charging_decision(False), do nothing\n")
+                    functional_test_save()
+            else:
+                driving = True
+                file.write(f"{realtime}: going on a drive)\n")
+                functional_test_save()
 
 
         ############### Rules Section ######################
@@ -463,6 +463,12 @@ def ems():
 ############### multi-thread ###############
 def main():
     global ev_percent, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status
+    get_charge()
+    num_clean_periods = get_amount_of_clean_periods()
+    print(num_clean_periods)
+    generate_clean_periods(num_clean_periods)
+    save_clean_periods()
+    load_clean_periods()
 
     try:
         while True:
