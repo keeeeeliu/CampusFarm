@@ -20,6 +20,7 @@ from connections.charger.enphase_automation import charger_on, charger_off, plug
 from connections.charger.get_charger_consumption import get_miles_added
 from connections.ev_battery import check_battery
 from WT_nonEMS import generate_clean_periods, save_clean_periods
+from wifistatus import check_wifi_status_ifconfig
 
 realtime = datetime.now()
 ev_charge = 0
@@ -66,6 +67,7 @@ ev_emission_reduction = 0 # relative to baseline
 pv_emission_reduction = 0
 ems_emission_reduction = 0
 total_emission_reduction = 0 # gonna be the sum(pv,ems,ev... reduction)
+wifi_status = True 
 
 
 ############# constants #################
@@ -213,6 +215,9 @@ def get_ev_miles_travelled():
     ev_miles_travelled += get_miles_added()
     return ev_miles_travelled
 
+def get_wifi_status():
+    global wifi_status
+    wifi_status = check_wifi_status_ifconfig()
 
 ############### control commands ###############
 def send_cooler_decision(setpoint):
@@ -410,22 +415,25 @@ def ems():
 
 ############### multi-thread ###############
 def main():
-    global ev_percent, pv_output, grid_power, ev_charging, cooler_indoor_temp
+    global ev_percent, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status
 
     try:
         while True:
             # print(f"Current ev_charge: {ev_charge}")
             # print(f"Realtime: {datetime.now()}")
-            get_ev_connection()
-            get_charge()
-            update_inverter_data()
-            get_is_ev_charging()
-            update_realtime()
-            # get_cooler_temp()
-            ems()
+            get_wifi_status()
+            if wifi_status:
+                get_ev_connection()
+                get_charge()
+                update_inverter_data()
+                get_is_ev_charging()
+                update_realtime()
+                # get_cooler_temp()
+                ems()
             print(f"EV Charge: {ev_percent}%")
             print(f"PV Output: {pv_output}W")
             print(f"Grid Power: {grid_power}W")
+            print(f"Wifi Connected: {wifi_status}")
             print(f"EV Charging Status: {ev_charging}")
             print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
             # print(f"Current Setpoint: {CURRENT_SETPOINT}")
