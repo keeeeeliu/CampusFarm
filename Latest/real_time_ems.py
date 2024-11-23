@@ -35,11 +35,10 @@ power_map = {}
 ev_power = 0
 cooler_dirty_periods = []
 ev_clean_periods = []
-ev_charging = True
+ev_charging = False
 coolth_timer = 0
 econ_timer = 0
-ev_p5 = 0.983
-ev_percent = 64 # EV battery percentage
+ev_p5 = 958.33
 cooler_load = 0
 time_interval = 2 # mins
 ev_miles_travelled = 0 # 
@@ -134,15 +133,19 @@ def functional_test_save():
     global realtime
     global ev_charge, ev_miles_left, pv_output, cooler_indoor_temp, ev_connected
     global total_power, power_map, ev_power, cooler_dirty_periods
-    global ev_charging, ev_percent, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
-    with open('output_1121.txt', 'a') as file:
-        file.write(f"realtime: {realtime}")
+    global ev_charging, ev_charge, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
+    with open('output_1123.txt', 'a') as file:
+        file.write(f"realtime: {realtime}\n")
+        file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
+        file.write(f"ev charging ? {ev_charging}\n")
+        file.write(f"current temp in cooler: {cooler_indoor_temp}")
         file.write(f"ev_charge: {ev_charge}, ev_miles_left: {ev_miles_left}, pv_output: {pv_output}, cooler_indoor_temp: {cooler_indoor_temp}, ev_connected: {ev_connected}\n")
         file.write(f"total_power: {total_power}, power_map: {power_map}, ev_power: {ev_power}, cooler_dirty_periods: {cooler_dirty_periods}\n")
         file.write(f"ev_charging: {ev_charging}, driving: {driving}\n")
-        file.write(f"ev_percent: {ev_percent}, ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
-        file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n")
-        file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
+        file.write(f"ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
+        file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n\n")
+
+        
 
 ########### Carbon Accounting Getters #############
 baseline_con_emissions = ev_miles_travelled * 1.590 # lbs CO2/mile
@@ -184,13 +187,9 @@ def update_realtime():
     global realtime
     realtime = datetime.now()
 
-# def get_cooler_temp():
-#     global cooler_indoor_temp
-#     cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
-
-# def get_ev_connection_and_charging():
-#     global ev_connected
-#     ev_connected = plugged_in()
+def get_cooler_temp():
+    global cooler_indoor_temp
+    cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
 
 def get_is_ev_conn_and_charging():
     global ev_charging
@@ -207,22 +206,20 @@ def get_total_power():
 
 def get_charge():
     global ev_charge
-    global ev_percent
     global ev_miles_left
 
     ev_battery_dict = check_battery()
     ev_charge = int(ev_battery_dict['percentage'])
-    ev_percent = int(ev_charge)
     ev_miles_left = int(ev_battery_dict['miles_left'])
 
 
 def get_amount_of_clean_periods():
     global EV_CHARGING_RATE
     global EV_CAPPACITY
-    global ev_percent
+    global ev_charge
     global EV_PERCENT_DESIRED
     global time_interval
-    result = (((EV_PERCENT_DESIRED - ev_percent)/100 * EV_CAPPACITY) / EV_CHARGING_RATE) * 60 / time_interval
+    result = (((EV_PERCENT_DESIRED - ev_charge)/100 * EV_CAPPACITY) / EV_CHARGING_RATE) * 60 / time_interval
     return math.ceil(result)
 
 def get_amount_of_dirty_periods():
@@ -248,6 +245,45 @@ def send_charging_decision(OnOFF:bool):
     else:
         charger_off()
 
+def generate_new_clean_periods():
+    get_charge()
+    num_clean_periods = get_amount_of_clean_periods()
+    print(num_clean_periods)
+    generate_clean_periods(num_clean_periods)
+    save_clean_periods()
+    load_clean_periods()
+
+def star_adjust_temp_setpoint_coolth():
+    with open('output_1123.txt', 'a') as file:
+        # adjust temperature setpoint  
+        if CURRENT_SETPOINT != SETPOINT_COOLTH:
+            cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
+            file.write(f"Decision:\n")
+            file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}, CURRENT_SETPOINT != SETPOINT_COOLTH\n")
+            functional_test_save()
+            CURRENT_SETPOINT = SETPOINT_COOLTH
+        else:  # avoid coolth damage 
+            if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
+                # start time 
+                if coolth_timer == 0:
+                    coolth_timer = time.time()
+                    file.write(f"EVENT:\n")
+                    print("Coolth timer started!")
+                    file.write(f"{realtime}: starting coolth timer \n")
+                    functional_test_save()
+
+                elif (time.time() - coolth_timer) >= MAX_COOLTH_TIME_LIMIT:
+                    cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                    file.write(f"DECISION/EVENT:\n")
+                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, max coolth time limit hit!\n")
+                    functional_test_save()
+                    CURRENT_SETPOINT = SETPOINT_DEFAULT
+                    coolth_timer = 0
+
+            else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                file.write(f"Decision:\n")
+                file.write(f"{realtime}: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!\n")
+                functional_test_save()
 
 
 ############### updater ###############
@@ -288,7 +324,7 @@ def ems():
     global TMAX
     global TMIN
    
-    with open('output_1122.txt', 'a') as file:
+    with open('output_1123.txt', 'a') as file:
 
         ############### Charging in clean periods section ###################
 
@@ -299,10 +335,12 @@ def ems():
             if ev_connected:
                 if ev_charging == False: 
                     send_charging_decision(True)
+                    file.write(f"Decision:\n")
                     file.write(f"{realtime}: send_charging_decision(True)\n")
                     functional_test_save()
                 else:
-                    file.write(f"{realtime}: send_charging_decision(True), do nothing\n")
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_charging_decision(True), already charging, do nothing\n")
                     functional_test_save()
 
         else:
@@ -312,23 +350,22 @@ def ems():
                     # returned from a drive
                     # regen clean periods
                     driving = False
-                    get_charge()
-                    num_clean_periods = get_amount_of_clean_periods()
-                    print(num_clean_periods)
-                    generate_clean_periods(num_clean_periods)
-                    save_clean_periods()
-                    load_clean_periods()
-                    file.write(f"{realtime}: back, generate new clean charging schedule\n")
+                    generate_new_clean_periods()
+                    file.write(f"EVENT/Decision:\n")
+                    file.write(f"{realtime}: back from drive, generate new clean charging schedule\n")
                     functional_test_save()
                 if ev_charging:
                     send_charging_decision(False)
-                    file.write(f"{realtime}: send_charging_decision(False))\n")
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_charging_decision(False) - not in clean period turning charging off)\n")
                     functional_test_save()
                 else: 
-                    file.write(f"{realtime}: send_charging_decision(False), do nothing\n")
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}:not in clean period, not charging, do nothing\n")
                     functional_test_save()
             else:
                 driving = True
+                file.write(f"EVENT:\n")
                 file.write(f"{realtime}: going on a drive)\n")
                 functional_test_save()
 
@@ -336,78 +373,31 @@ def ems():
         ############### Rules Section ######################
         if pv_output > total_power: # daytime 
             if ev_charging:
-                # adjust temperature setpoint  
-                if CURRENT_SETPOINT != SETPOINT_COOLTH:
-                    cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
-                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}\n")
-                    functional_test_save()
-                    CURRENT_SETPOINT = SETPOINT_COOLTH
-                else:  # avoid coolth damage 
-                    if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
-                        # start time 
-                        if coolth_timer == 0:
-                            coolth_timer = time.time()
-                            print("Coolth timer started!")
-                            file.write(f"{realtime}: starting coolth timer \n")
-                            functional_test_save()
-
-                        elif (time.time() - coolth_timer) >= MAX_COOLTH_TIME_LIMIT:
-                            cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                            file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
-                            functional_test_save()
-                            CURRENT_SETPOINT = SETPOINT_DEFAULT
-                            coolth_timer = 0
-
-                    else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
-                        file.write(f"{realtime}: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!\n")
-                        functional_test_save()
+                star_adjust_temp_setpoint_coolth()
            
-            elif ev_charging == False:
-                if ev_connected and pv_output > total_power + ev_p5:
+            else:
+                if ev_connected and (pv_output*.0833) > ((total_power*.0833) + ev_p5): # multiplying by 0.0833 to get energy for next 5 min
                     send_charging_decision(True)
-                    file.write(f"{realtime}: send_charging_decision(True)\n")
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_charging_decision(True), excess PV including amount it takes to charge for 5 min\n")
                     functional_test_save()
 
-                # star
-                if CURRENT_SETPOINT != SETPOINT_COOLTH:
-                    cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
-                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}\n")
-                    functional_test_save()
-                    CURRENT_SETPOINT = SETPOINT_COOLTH
-                else:  # avoid coolth damage 
-                    if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
-                        # start time 
-                        if coolth_timer == 0:
-                            coolth_timer = time.time()
-                            print("Coolth timer started!")
-                            file.write(f"{realtime}: starting coolth timer \n")
-                            functional_test_save()
-
-                        elif (time.time() - coolth_timer) >= MAX_COOLTH_TIME_LIMIT:
-                            cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                            file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
-                            file.write(f"{realtime}: stopping coolth timer reached limit \n")
-                            functional_test_save()
-                            CURRENT_SETPOINT = SETPOINT_DEFAULT
-                            coolth_timer = 0
-                
-
-            else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
-                file.write(f"{realtime}: else EV Charging , do nothing!\n")
-                functional_test_save()
+                star_adjust_temp_setpoint_coolth()
 
 
         else: # daytime && night --- no excess PV
             if realtime not in cooler_dirty_periods:
                 # TODO do some coolth? 
                 cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
+                file.write(f"Decision:\n")
+                file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, not in a cooler dirty period\n")
                 functional_test_save()
                 CURRENT_SETPOINT = SETPOINT_DEFAULT
             else:
                 if CURRENT_SETPOINT != SETPOINT_ECON:
                     cooler_indoor_temp = send_cooler_decision(SETPOINT_ECON)
-                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_ECON}\n")
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_ECON}, in a cooler dirty period\n")
                     functional_test_save()
                     CURRENT_SETPOINT = SETPOINT_ECON
                 else: # avoid econ damage
@@ -415,14 +405,16 @@ def ems():
                         # start time counting 
                         if econ_timer == 0:
                             econ_timer = time.time()
+                            file.write(f"EVENT:\n")
                             print("Coolth timer started!")
                             file.write(f"{realtime}: starting econ timer \n")
                             functional_test_save()
 
                         elif (time.time() - econ_timer) >= MAX_ECON_TIME_LIMIT:
                             cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                            file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
+                            file.write(f"Decision/EVENT:\n")
                             file.write(f"{realtime}: stopping econ timer reached limit \n")
+                            file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
                             functional_test_save()
                             CURRENT_SETPOINT = SETPOINT_DEFAULT
                             econ_timer = 0
@@ -463,14 +455,9 @@ def ems():
 
 ############### multi-thread ###############
 def main():
-    global ev_percent, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run
-    get_charge()
-    num_clean_periods = get_amount_of_clean_periods()
-    print(num_clean_periods)
-    generate_clean_periods(num_clean_periods)
-    save_clean_periods()
-    load_clean_periods()
+    global ev_charge, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run
 
+    generate_new_clean_periods()
     last_24_hour_run = datetime.now()
 
     try:
@@ -492,13 +479,12 @@ def main():
                 load_dirty_periods()
                 last_24_hour_run = datetime.now()  # Update the last run time
             ############
-            get_is_ev_conn_and_charging()
-            #get_charge()
-            update_inverter_data()
             update_realtime()
-            # get_cooler_temp()
+            get_is_ev_conn_and_charging()
+            update_inverter_data()
+            get_cooler_temp()
             ems()
-            print(f"EV Charge: {ev_percent}%")
+            print(f"EV Charge: {ev_charge}%")
             print(f"PV Output: {pv_output}W")
             print(f"Grid Power: {grid_power}W")
             print(f"Wifi Connected: {wifi_status}")
