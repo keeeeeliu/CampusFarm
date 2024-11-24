@@ -22,6 +22,8 @@ from connections.ev_battery import check_battery
 from WT_nonEMS import generate_clean_periods, save_clean_periods
 from wifistatus import check_wifi_status_ifconfig
 from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
+from WT_accounting import get_wt
+from WT_data_optimization import get_48h_wt
 ##### how to call this? -->  generate_dirty_periods(get_amount_of_dirty_periods())
 
 realtime = datetime.now()
@@ -449,26 +451,28 @@ def ems():
 
 
         # ############## calculation ################
-        # grid_co2_list.append(max(0,aoer * grid_power))
-        # grid_co2 = sum(grid_co2_list)
+        aoer = get_wt("ruleBased", "aoer")
+        moer = get_wt("ruleBased", "moer")
+        grid_co2_list.append(max(0,aoer * grid_power))
+        grid_co2 = sum(grid_co2_list)
 
         # ############## EV reduction ###############
-        # ev_total_load_fraction = ev_p5 / total_power ## total_power: PV used + grid power  (maybe 'Consume' in power map)
-        # ev_grid_load = ev_total_load_fraction * grid_power 
-        # ev_grid_co2_list.append(max(0,aoer * ev_grid_load))
-        # ev_grid_co2 = sum(ev_grid_co2_list)
+        ev_total_load_fraction = ev_p5 / total_power ## total_power: PV used + grid power  (maybe 'Consume' in power map)
+        ev_grid_load = ev_total_load_fraction * grid_power 
+        ev_grid_co2_list.append(max(0,aoer * ev_grid_load))
+        ev_grid_co2 = sum(ev_grid_co2_list)
 
         # ############## PV reduction ###############
-        # solar_saving_list.append(max(0, aoer * solar_power_used))
-        # solar_saving = sum(solar_saving_list)
+        solar_saving_list.append(max(0, aoer * solar_power_used))
+        solar_saving = sum(solar_saving_list)
 
         # ############## rule-based EMS carbon accounting ##########
-        # ev_ems_co2_list.append(max(0,moer * ev_grid_load))
-        # ev_ems_co2 = sum(ev_ems_co2_list)
+        ev_ems_co2_list.append(max(0,moer * ev_grid_load))
+        ev_ems_co2 = sum(ev_ems_co2_list)
 
-        # cooler_grid_load = (cooler_load / total_power) * grid_power
-        # cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
-        # cooler_ems_co2 = sum(cooler_ems_co2_list)
+        cooler_grid_load = (cooler_load / total_power) * grid_power
+        cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
+        cooler_ems_co2 = sum(cooler_ems_co2_list)
 
             # time.sleep(300) # run ems rules to make decisions every 5 mins 
 
