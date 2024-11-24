@@ -67,6 +67,8 @@ solar_saving_list = []
 solar_saving = 0
 ev_ems_co2_list = []
 ev_ems_co2 = 0
+ev_nonEMS_co2_list = []
+ev_nonEMS_co2 = 0
 cooler_ems_co2_list = []
 cooler_ems_co2 = 0
 
@@ -366,6 +368,13 @@ def ems():
         realtime = datetime.now()
         
         if (realtime - charging_timer).total_seconds() > 300:
+
+            ########## for nonEMS EV carbon accounting only ##########
+            if is_realtime_in_clean_periods(realtime, ev_nonEMS_co2_list):
+                moer = get_wt("ruleBased", "moer")
+                ev_nonEMS_co2_list.append(max(0,moer * ev_grid_load))
+                ev_nonEMS_co2 = sum(ev_nonEMS_co2_list)
+            #########################################################
 
             if is_realtime_in_clean_periods(realtime, ev_clean_periods):
                 print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
