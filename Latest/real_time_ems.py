@@ -38,6 +38,7 @@ power_map = {}
 ev_power = 0
 cooler_dirty_periods = []
 ev_clean_periods = []
+ev_nonEMS_charging_periods = []
 ev_charging = False
 coolth_timer = 0
 econ_timer = 0
@@ -114,6 +115,12 @@ def load_clean_periods(filename="ev_clean_periods.json"):
     with open(filename, "r") as file:
         periods = json.load(file)
     ev_clean_periods = periods
+
+def load_nonEMS_charging_periods(filename="ev_nonEMS_charging_periods.json"):
+    global ev_nonEMS_charging_periods
+    with open(filename, "r") as file:
+        periods = json.load(file)
+    ev_nonEMS_charging_periods = periods
 
 # Load dirty periods from JSON file
 def load_dirty_periods(filename="cooler_dirty_periods.json"):
@@ -268,7 +275,9 @@ def generate_new_clean_periods():
     print(num_clean_periods)
     generate_clean_periods(num_clean_periods)
     save_clean_periods()
+    save_nonEMS_charging_periods()
     load_clean_periods()
+    load_nonEMS_charging_periods()
 
 def star_adjust_temp_setpoint_coolth():
     global CURRENT_SETPOINT
