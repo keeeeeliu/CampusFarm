@@ -176,6 +176,12 @@ def get_total_ems_ev_cooler_emissions():
 def bring_in_inverter_data():
     global power_map
     power_map = get_inverter_data()
+    if not power_map:
+        print("reattempt solark")
+        power_map = get_inverter_data()
+    if not power_map:
+        print("reattempt solark 2")
+        power_map = get_inverter_data()
 
 def get_pv():
     global pv_output
@@ -195,6 +201,12 @@ def get_is_ev_conn_and_charging():
     global ev_charging
     global ev_connected
     connection_dict = plugged_in_and_charging()
+    if not connection_dict:
+        print("reattempt enphase")
+        connection_dict = plugged_in_and_charging()
+    if not connection_dict:
+        print("reattempt enphase 2")
+        connection_dict = plugged_in_and_charging()
     ev_connected = connection_dict['connected']
     ev_charging = connection_dict['charging']
 
@@ -246,7 +258,7 @@ def send_charging_decision(OnOFF:bool):
         charger_off()
 
 def generate_new_clean_periods():
-    get_charge()
+    #get_charge()
     num_clean_periods = get_amount_of_clean_periods()
     print(num_clean_periods)
     generate_clean_periods(num_clean_periods)
@@ -254,6 +266,13 @@ def generate_new_clean_periods():
     load_clean_periods()
 
 def star_adjust_temp_setpoint_coolth():
+    global CURRENT_SETPOINT
+    global SETPOINT_COOLTH
+    global MAX_COOLTH_TIME_LIMIT
+    global cooler_indoor_temp
+    global realtime
+    global coolth_timer
+
     with open('output_1123.txt', 'a') as file:
         # adjust temperature setpoint  
         if CURRENT_SETPOINT != SETPOINT_COOLTH:

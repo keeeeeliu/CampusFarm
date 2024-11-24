@@ -3,13 +3,18 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 import undetected_chromedriver as uc
+from selenium import webdriver
+import chromedriver_autoinstaller
+from selenium.webdriver.chrome.service import Service
 import time
 
-# Disable the __del__ method to prevent errors from being printed
-uc.Chrome.__del__ = lambda self: None
+# # Disable the __del__ method to prevent errors from being printed
+# uc.Chrome.__del__ = lambda self: None
 
 def change_value(value):
-    driver = uc.Chrome()
+    chromdriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromdriver_path)
+    driver = webdriver.Chrome(service=service)
     url = "https://cb.storeitcold.com/#/login"
     driver.get(url)
 
@@ -72,12 +77,14 @@ def change_value(value):
         save_tag = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[2]/div/expanding-list-item/div/div/div/button[1]')))
         save_bottom = driver.find_element(By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[2]/div/expanding-list-item/div/div/div/button[1]')
         save_bottom.click()
-
+    driver.quit()
     return current_value
 
 
 def get_sensor_temp():
-    driver = uc.Chrome()
+    chromdriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromdriver_path)
+    driver = webdriver.Chrome(service=service)
     url = "https://www.easylogcloud.com/devices.aspx"
     driver.get(url)
 
@@ -100,13 +107,17 @@ def get_sensor_temp():
     device_page = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="cph1_devicesupdatepanel"]/div[1]/div[2]/div[1]/div[4]')))
     temp_container = driver.find_element(By.XPATH, '//*[@id="channelreading_0_0"]')
     current_temp = float(temp_container.text)
-
+    driver.quit()
     return float(current_temp)
 
 
 def get_coolbot_temp():
-    driver = uc.Chrome()
+    chromdriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromdriver_path)
+    driver = webdriver.Chrome(service=service)
     url = "https://cb.storeitcold.com/#/login"
+    chromedriver_autoinstaller.install()
+    driver = webdriver.Chrome()
     driver.get(url)
 
     wait = WebDriverWait(driver, 20)
@@ -134,7 +145,7 @@ def get_coolbot_temp():
     element = driver.find_element(By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[3]/expanding-list-item[2]/div/div/ion-item[1]/div[1]/span')
     temp = element.text
     temp = temp.split('°')[0]
-
+    driver.quit()
     return float(temp)
 
 def change_setpoint(updated_value):
@@ -175,8 +186,3 @@ def change_setpoint(updated_value):
 
     return temp
     
-def main():
-    change_setpoint(32)
-
-if __name__ == '__main__':
-    main()

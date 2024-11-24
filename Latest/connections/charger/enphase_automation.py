@@ -2,15 +2,20 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from selenium import webdriver
+import chromedriver_autoinstaller
 import undetected_chromedriver as uc
 import time
 
-# Disable the __del__ method to prevent errors from being printed
-uc.Chrome.__del__ = lambda self: None
+# # Disable the __del__ method to prevent errors from being printed
+# uc.Chrome.__del__ = lambda self: None
 
 def charger_on():
     driver = uc.Chrome()
-
+    # chromdriver_path = chromedriver_autoinstaller.install()
+    # service = Service(chromdriver_path)
+    # driver = webdriver.Chrome(service=service)
     # Open the webpage
     driver.get('https://enlighten.enphaseenergy.com')
 
@@ -35,7 +40,7 @@ def charger_on():
     except Exception as e:
         print("Error during login:", e)
 
-    time.sleep(2)
+    time.sleep(3)
 
     # Click the myEnlighten button and switch to the new tab
     try:
@@ -52,7 +57,7 @@ def charger_on():
     except Exception as e:
         print("Error during myEnlighten click or switching tabs:", e)
 
-    time.sleep(2)
+    time.sleep(5)
 
     try:
         # Using XPath to target the button that contains the "Charge Now" text
@@ -73,6 +78,9 @@ def charger_off():
     # chromedriver_path = chromedriver_autoinstaller.install()
     # service = Service(chromedriver_path)
     driver = uc.Chrome()
+    # chromdriver_path = chromedriver_autoinstaller.install()
+    # service = Service(chromdriver_path)
+    # driver = webdriver.Chrome(service=service)
 
     # Open the webpage
     driver.get('https://enlighten.enphaseenergy.com')
@@ -98,7 +106,7 @@ def charger_off():
     except Exception as e:
         print("Error during login:", e)
 
-    time.sleep(2)
+    time.sleep(3)
 
     # Click the myEnlighten button and switch to the new tab
     try:
@@ -115,7 +123,7 @@ def charger_off():
     except Exception as e:
         print("Error during myEnlighten click or switching tabs:", e)
 
-    time.sleep(2)
+    time.sleep(5)
 
     # Locate and click the "Stop" button specifically
     try:
@@ -133,12 +141,14 @@ def charger_off():
 def plugged_in_and_charging():
     # Automatically install and get the path to chromedriver
     driver = uc.Chrome()
-
+    # chromdriver_path = chromedriver_autoinstaller.install()
+    # service = Service(chromdriver_path)
+    # driver = webdriver.Chrome(service=service)
     # Open the webpage
     driver.get('https://enlighten.enphaseenergy.com')
 
     # Wait for the page to load
-    time.sleep(2)
+    time.sleep(5)
 
     ev_connection_status = {}
     # Enter login details
@@ -156,7 +166,7 @@ def plugged_in_and_charging():
     except Exception as e:
         print("Error during login:", e)
 
-    time.sleep(3)
+    time.sleep(10)
 
     # Click the myEnlighten button and switch to the new tab
     try:
