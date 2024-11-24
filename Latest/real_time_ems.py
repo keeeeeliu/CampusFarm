@@ -20,7 +20,7 @@ from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
 from connections.charger.enphase_automation import charger_on, charger_off, plugged_in_and_charging
 from connections.charger.get_charger_consumption import get_miles_added
 from connections.ev_battery import check_battery
-from WT_nonEMS import generate_clean_periods, save_clean_periods
+from WT_nonEMS import generate_clean_periods, save_clean_periods, save_nonEMS_charging_periods
 from wifistatus import check_wifi_status_ifconfig
 from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
 from WT_accounting import get_wt
