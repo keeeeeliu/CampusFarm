@@ -1,6 +1,33 @@
 """REST API for posts."""
 import flask
 import webAPI
+import random
+import time
+from datetime import datetime, timedelta
+
+def generate_random_timestamp(year):
+    """Generate a random timestamp."""
+    start_date = datetime(year, 1, 1)
+    end_date = datetime(year, 12, 31)
+
+    # Convert to Unix timestamps
+    total_days = (end_date - start_date).days + 1
+    all_dates = [start_date + timedelta(days=i) for i in range(total_days)]
+    random.shuffle(all_dates)
+    seen = set()
+    for date in all_dates:
+        while True:
+            random_time = timedelta(
+                hours=random.randint(0, 23),
+                minutes=random.randint(0, 59),
+                seconds=random.randint(0, 59)
+            )
+            full_datetime = date+ random_time
+            formated_datetime = full_datetime.strftime('%Y-%m-%d %H:%M:%S')
+            if formated_datetime not in seen:
+                seen.add(formated_datetime)
+                yield formated_datetime
+                break
 
 @webAPI.app.route('/api/datas/', methods=['GET'])
 def create_data():
@@ -33,8 +60,8 @@ def create_data():
     net_inverter_components = data['netInvertertoComps']
 
     energy_flow = {
-        'net_inverter_to_grid': net_inverter_grid + ' kw',
-        'net_solar_to_inverter': net_solar_inverter + ' kw', # pv_output
+        'net_grid_to_inverter': net_inverter_grid + ' kw',
+        'net_solar_to_inverter': net_solar_inverter + ' kw',
         'net_inverter_to_components': net_inverter_components + ' kw'
     }
 
@@ -58,25 +85,40 @@ def create_data():
 
     cur = connection.execute(
         "select * from chart "
-        "order by created DESC "
-        "where created >= DATETIME('now', '-1 year') ",
+        "where created >= DATETIME('now', '-1 year') "
+        "order by created DESC " ,
     )
     lines = cur.fetchall()
     line_data = []
     
+    datetime_generator = generate_random_timestamp(2024)
     for row in lines:
         baseline_emission = row['baselineEmission']
         emission_without_ems = row['noEMSEmission']
         emission_with_ems = row['withEMSEmission']
-        created = row['created']
+        created = next(datetime_generator)
+        created = str(created)
 
-        point = {
-            'baseline_emission': baseline_emission,
-            'emission_without_ems': emission_without_ems,
-            'emission_with_ems': emission_with_ems,
-            'created_time': created
+        point1 = {
+            'division': "Baseline Emissions",
+            'date': created,
+            'value': baseline_emission,
         }
-        line_data.append(point)
+
+        point2 = {
+            'division': "Emissions without EMS",
+            'date': created,
+            'value': emission_without_ems,
+        }
+
+        point3 = {
+            'division': "Emissions with EMS",
+            'date': created,
+            'value': emission_with_ems,
+        }
+        line_data.append(point1)
+        line_data.append(point2)
+        line_data.append(point3)
 
     context = {
         'impact_data': impact_data,
