@@ -20,3 +20,531 @@ Decision:
 2024-11-24 13:47:56.898158: send_cooler_decision(35, CURRENT_SETPOINT != SETPOINT_COOLTH
 Decision:
 2024-11-24 13:47:56.898158:not in clean period, not charging, do nothing
+realtime: 2024-11-24 13:52:08.025351
+Current Setpoint: 32
+ev charging ? False
+current temp in cooler: 44.7ev_charge: 70, ev_miles_left: 0, pv_output: 502, cooler_indoor_temp: 44.7, ev_connected: True
+total_power: 0, power_map: {'Solar W': '502W', 'Battery W': '22W', 'Grid W': '39W', 'Consumed W': '394W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 39, solar_power_used: 0
+
+realtime: 2024-11-24 13:52:08.025351
+Current Setpoint: 32
+ev charging ? False
+current temp in cooler: 44.2ev_charge: 70, ev_miles_left: 0, pv_output: 502, cooler_indoor_temp: 44.2, ev_connected: True
+total_power: 0, power_map: {'Solar W': '502W', 'Battery W': '22W', 'Grid W': '39W', 'Consumed W': '394W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 39, solar_power_used: 0
+
+Decision:
+2024-11-24 13:52:08.025351: send_cooler_decision(35, CURRENT_SETPOINT != SETPOINT_COOLTH
+Decision:
+2024-11-24 13:52:08.025351:not in clean period, not charging, do nothing
+realtime: 2024-11-24 13:59:35.754239
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 43.8ev_charge: 70, ev_miles_left: 0, pv_output: 566, cooler_indoor_temp: 43.8, ev_connected: True
+total_power: 0, power_map: {'Solar W': '566W', 'Battery W': '19W', 'Grid W': '18W', 'Consumed W': '413W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 18, solar_power_used: 0
+
+realtime: 2024-11-24 13:59:35.754239
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 43.8ev_charge: 70, ev_miles_left: 0, pv_output: 566, cooler_indoor_temp: 43.8, ev_connected: True
+total_power: 0, power_map: {'Solar W': '566W', 'Battery W': '19W', 'Grid W': '18W', 'Consumed W': '413W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 18, solar_power_used: 0
+
+Decision:
+2024-11-24 13:59:35.754239: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 13:59:35.754239:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:06:01.178450
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 43.8ev_charge: 70, ev_miles_left: 0, pv_output: 860, cooler_indoor_temp: 43.8, ev_connected: True
+total_power: 0, power_map: {'Solar W': '860W', 'Battery W': '20W', 'Grid W': '154W', 'Consumed W': '854W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 154, solar_power_used: 0
+
+realtime: 2024-11-24 14:06:01.178450
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 43.8ev_charge: 70, ev_miles_left: 0, pv_output: 860, cooler_indoor_temp: 43.8, ev_connected: True
+total_power: 0, power_map: {'Solar W': '860W', 'Battery W': '20W', 'Grid W': '154W', 'Consumed W': '854W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 154, solar_power_used: 0
+
+Decision:
+2024-11-24 14:06:01.178450: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:06:01.178450:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:12:26.000835
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 546, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '546W', 'Battery W': '17W', 'Grid W': '29W', 'Consumed W': '412W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 29, solar_power_used: 0
+
+realtime: 2024-11-24 14:12:26.000835
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 546, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '546W', 'Battery W': '17W', 'Grid W': '29W', 'Consumed W': '412W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 29, solar_power_used: 0
+
+Decision:
+2024-11-24 14:12:26.000835: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:12:26.000835:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:18:51.004602
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 845, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '845W', 'Battery W': '13W', 'Grid W': '137W', 'Consumed W': '818W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 137, solar_power_used: 0
+
+realtime: 2024-11-24 14:18:51.004602
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 845, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '845W', 'Battery W': '13W', 'Grid W': '137W', 'Consumed W': '818W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 137, solar_power_used: 0
+
+Decision:
+2024-11-24 14:18:51.004602: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:18:51.004602:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:25:16.927779
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 717, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '717W', 'Battery W': '15W', 'Grid W': '125W', 'Consumed W': '679W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 125, solar_power_used: 0
+
+realtime: 2024-11-24 14:25:16.927779
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 717, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '717W', 'Battery W': '15W', 'Grid W': '125W', 'Consumed W': '679W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 125, solar_power_used: 0
+
+Decision:
+2024-11-24 14:25:16.927779: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:25:16.927779:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:31:42.249863
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 522, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '522W', 'Battery W': '17W', 'Grid W': '55W', 'Consumed W': '404W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 55, solar_power_used: 0
+
+realtime: 2024-11-24 14:31:42.249863
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.3ev_charge: 70, ev_miles_left: 0, pv_output: 522, cooler_indoor_temp: 44.3, ev_connected: True
+total_power: 0, power_map: {'Solar W': '522W', 'Battery W': '17W', 'Grid W': '55W', 'Consumed W': '404W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 55, solar_power_used: 0
+
+Decision:
+2024-11-24 14:31:42.249863: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:31:42.249863:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:38:07.077458
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 455, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '455W', 'Battery W': '15W', 'Grid W': '102W', 'Consumed W': '393W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 102, solar_power_used: 0
+
+realtime: 2024-11-24 14:38:07.077458
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 455, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '455W', 'Battery W': '15W', 'Grid W': '102W', 'Consumed W': '393W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 102, solar_power_used: 0
+
+Decision:
+2024-11-24 14:38:07.077458: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:38:07.077458:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:44:34.036157
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 492, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '492W', 'Battery W': '16W', 'Grid W': '76W', 'Consumed W': '402W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 76, solar_power_used: 0
+
+realtime: 2024-11-24 14:44:34.036157
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 492, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '492W', 'Battery W': '16W', 'Grid W': '76W', 'Consumed W': '402W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 76, solar_power_used: 0
+
+Decision:
+2024-11-24 14:44:34.036157: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:44:34.036157:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:50:59.138550
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 549, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '549W', 'Battery W': '14W', 'Grid W': '39W', 'Consumed W': '409W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 39, solar_power_used: 0
+
+realtime: 2024-11-24 14:50:59.138550
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 549, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '549W', 'Battery W': '14W', 'Grid W': '39W', 'Consumed W': '409W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 39, solar_power_used: 0
+
+Decision:
+2024-11-24 14:50:59.138550: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:50:59.138550:not in clean period, not charging, do nothing
+realtime: 2024-11-24 14:57:31.540644
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 540, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '540W', 'Battery W': '15W', 'Grid W': '33W', 'Consumed W': '404W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 33, solar_power_used: 0
+
+realtime: 2024-11-24 14:57:31.540644
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 540, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '540W', 'Battery W': '15W', 'Grid W': '33W', 'Consumed W': '404W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 33, solar_power_used: 0
+
+Decision:
+2024-11-24 14:57:31.540644: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 14:57:31.540644:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:04:38.994728
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 716, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '716W', 'Battery W': '17W', 'Grid W': '119W', 'Consumed W': '663W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 119, solar_power_used: 0
+
+realtime: 2024-11-24 15:04:38.994728
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 716, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '716W', 'Battery W': '17W', 'Grid W': '119W', 'Consumed W': '663W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 119, solar_power_used: 0
+
+Decision:
+2024-11-24 15:04:38.994728: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:04:38.994728:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:11:13.003532
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 876, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '876W', 'Battery W': '12W', 'Grid W': '101W', 'Consumed W': '817W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 101, solar_power_used: 0
+
+realtime: 2024-11-24 15:11:13.003532
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.4ev_charge: 70, ev_miles_left: 0, pv_output: 876, cooler_indoor_temp: 44.4, ev_connected: True
+total_power: 0, power_map: {'Solar W': '876W', 'Battery W': '12W', 'Grid W': '101W', 'Consumed W': '817W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 101, solar_power_used: 0
+
+Decision:
+2024-11-24 15:11:13.003532: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:11:13.003532:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:17:45.875657
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 562, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '562W', 'Battery W': '17W', 'Grid W': '0W', 'Consumed W': '403W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+realtime: 2024-11-24 15:17:45.875657
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 562, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '562W', 'Battery W': '17W', 'Grid W': '0W', 'Consumed W': '403W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+Decision:
+2024-11-24 15:17:45.875657: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:17:45.875657:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:24:19.143400
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 558, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '558W', 'Battery W': '16W', 'Grid W': '22W', 'Consumed W': '412W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 22, solar_power_used: 0
+
+realtime: 2024-11-24 15:24:19.143400
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 558, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '558W', 'Battery W': '16W', 'Grid W': '22W', 'Consumed W': '412W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 22, solar_power_used: 0
+
+Decision:
+2024-11-24 15:24:19.143400: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:24:19.143400:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:30:55.225030
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 45.0ev_charge: 70, ev_miles_left: 0, pv_output: 584, cooler_indoor_temp: 45.0, ev_connected: True
+total_power: 0, power_map: {'Solar W': '584W', 'Battery W': '20W', 'Grid W': '0W', 'Consumed W': '418W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+realtime: 2024-11-24 15:30:55.225030
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 45.0ev_charge: 70, ev_miles_left: 0, pv_output: 584, cooler_indoor_temp: 45.0, ev_connected: True
+total_power: 0, power_map: {'Solar W': '584W', 'Battery W': '20W', 'Grid W': '0W', 'Consumed W': '418W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+Decision:
+2024-11-24 15:30:55.225030: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:30:55.225030:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:37:29.564445
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 45.5ev_charge: 70, ev_miles_left: 0, pv_output: 559, cooler_indoor_temp: 45.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '559W', 'Battery W': '20W', 'Grid W': '0W', 'Consumed W': '403W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+realtime: 2024-11-24 15:37:29.564445
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 45.5ev_charge: 70, ev_miles_left: 0, pv_output: 559, cooler_indoor_temp: 45.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '559W', 'Battery W': '20W', 'Grid W': '0W', 'Consumed W': '403W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+Decision:
+2024-11-24 15:37:29.564445: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:37:29.564445:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:44:02.157986
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 579, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '579W', 'Battery W': '21W', 'Grid W': '0W', 'Consumed W': '410W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+realtime: 2024-11-24 15:44:02.157986
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 579, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '579W', 'Battery W': '21W', 'Grid W': '0W', 'Consumed W': '410W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+Decision:
+2024-11-24 15:44:02.157986: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:44:02.157986:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:50:35.301005
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 477, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '477W', 'Battery W': '18W', 'Grid W': '81W', 'Consumed W': '403W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 81, solar_power_used: 0
+
+realtime: 2024-11-24 15:50:35.301005
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 477, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '477W', 'Battery W': '18W', 'Grid W': '81W', 'Consumed W': '403W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 81, solar_power_used: 0
+
+Decision:
+2024-11-24 15:50:35.301005: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:50:35.301005:not in clean period, not charging, do nothing
+realtime: 2024-11-24 15:57:08.616308
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 578, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '578W', 'Battery W': '19W', 'Grid W': '0W', 'Consumed W': '413W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+realtime: 2024-11-24 15:57:08.616308
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 578, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '578W', 'Battery W': '19W', 'Grid W': '0W', 'Consumed W': '413W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 0, solar_power_used: 0
+
+Decision:
+2024-11-24 15:57:08.616308: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 15:57:08.616308:not in clean period, not charging, do nothing
+realtime: 2024-11-24 16:03:41.775564
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 45.0ev_charge: 70, ev_miles_left: 0, pv_output: 433, cooler_indoor_temp: 45.0, ev_connected: True
+total_power: 0, power_map: {'Solar W': '433W', 'Battery W': '16W', 'Grid W': '126W', 'Consumed W': '405W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 126, solar_power_used: 0
+
+realtime: 2024-11-24 16:03:41.775564
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 45.0ev_charge: 70, ev_miles_left: 0, pv_output: 433, cooler_indoor_temp: 45.0, ev_connected: True
+total_power: 0, power_map: {'Solar W': '433W', 'Battery W': '16W', 'Grid W': '126W', 'Consumed W': '405W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 126, solar_power_used: 0
+
+Decision:
+2024-11-24 16:03:41.775564: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 16:03:41.775564:not in clean period, not charging, do nothing
+realtime: 2024-11-24 16:10:15.289081
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 548, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '548W', 'Battery W': '20W', 'Grid W': '438W', 'Consumed W': '826W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 438, solar_power_used: 0
+
+realtime: 2024-11-24 16:10:15.289081
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 548, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '548W', 'Battery W': '20W', 'Grid W': '438W', 'Consumed W': '826W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 438, solar_power_used: 0
+
+Decision:
+2024-11-24 16:10:15.289081: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 16:10:15.289081:not in clean period, not charging, do nothing
+realtime: 2024-11-24 16:16:50.688620
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 426, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '426W', 'Battery W': '18W', 'Grid W': '144W', 'Consumed W': '405W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 144, solar_power_used: 0
+
+realtime: 2024-11-24 16:16:50.688620
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.5ev_charge: 70, ev_miles_left: 0, pv_output: 426, cooler_indoor_temp: 44.5, ev_connected: True
+total_power: 0, power_map: {'Solar W': '426W', 'Battery W': '18W', 'Grid W': '144W', 'Consumed W': '405W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 144, solar_power_used: 0
+
+Decision:
+2024-11-24 16:16:50.688620: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 16:16:50.688620:not in clean period, not charging, do nothing
+realtime: 2024-11-24 16:23:28.707564
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.55ev_charge: 70, ev_miles_left: 0, pv_output: 343, cooler_indoor_temp: 44.55, ev_connected: True
+total_power: 0, power_map: {'Solar W': '343W', 'Battery W': '18W', 'Grid W': '221W', 'Consumed W': '408W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 221, solar_power_used: 0
+
+realtime: 2024-11-24 16:23:28.707564
+Current Setpoint: 35
+ev charging ? False
+current temp in cooler: 44.55ev_charge: 70, ev_miles_left: 0, pv_output: 343, cooler_indoor_temp: 44.55, ev_connected: True
+total_power: 0, power_map: {'Solar W': '343W', 'Battery W': '18W', 'Grid W': '221W', 'Consumed W': '408W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 221, solar_power_used: 0
+
+Decision:
+2024-11-24 16:23:28.707564: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!
+Decision:
+2024-11-24 16:23:28.707564:not in clean period, not charging, do nothing
