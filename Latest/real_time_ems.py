@@ -41,6 +41,8 @@ ev_clean_periods = []
 ev_charging = False
 coolth_timer = 0
 econ_timer = 0
+rules_timer = 0
+charging_timer = 0
 ev_p5 = 958.33
 cooler_load = 0
 time_interval = 2 # mins
@@ -345,6 +347,8 @@ def ems():
     global CURRENT_SETPOINT
     global TMAX
     global TMIN
+    global rules_timer
+    global charging_timer
    
     with open('output_1124.txt', 'a') as file:
 
@@ -352,145 +356,151 @@ def ems():
 
         realtime = datetime.now()
         
-        if is_realtime_in_clean_periods(realtime, ev_clean_periods):
-            print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
-            if ev_connected:
-                if ev_charging == False: 
-                    send_charging_decision(True)
-                    file.write(f"Decision:\n")
-                    file.write(f"{realtime}: send_charging_decision(True)\n")
-                    functional_test_save()
-                else:
-                    file.write(f"Decision:\n")
-                    file.write(f"{realtime}: send_charging_decision(True), already charging, do nothing\n")
-                    functional_test_save()
+        if (realtime - charging_timer).total_seconds() > 300:
 
-        else:
-            print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
-            if ev_connected:
-                if driving == True:
-                    # returned from a drive
-                    # regen clean periods
-                    driving = False
-                    generate_new_clean_periods()
-                    file.write(f"EVENT/Decision:\n")
-                    file.write(f"{realtime}: back from drive, generate new clean charging schedule\n")
-                    functional_test_save()
-                if ev_charging:
-                    send_charging_decision(False)
-                    file.write(f"Decision:\n")
-                    file.write(f"{realtime}: send_charging_decision(False) - not in clean period turning charging off)\n")
-                    functional_test_save()
-                else: 
-                    file.write(f"Decision:\n")
-                    file.write(f"{realtime}:not in clean period, not charging, do nothing\n")
-                    functional_test_save()
-            else:
-                driving = True
-                file.write(f"EVENT:\n")
-                file.write(f"{realtime}: going on a drive)\n")
-                functional_test_save()
-
-
-        ############### Rules Section ######################
-        if pv_output > total_power: # daytime 
-            if ev_charging:
-                star_adjust_temp_setpoint_coolth()
-           
-            else:
-                if ev_connected and (pv_output*.0833) > ((total_power*.0833) + ev_p5): # multiplying by 0.0833 to get energy for next 5 min
-                    send_charging_decision(True)
-                    file.write(f"Decision:\n")
-                    file.write(f"{realtime}: send_charging_decision(True), excess PV including amount it takes to charge for 5 min\n")
-                    functional_test_save()
-
-                star_adjust_temp_setpoint_coolth()
-
-
-        else: # daytime && night --- no excess PV
-            if realtime not in cooler_dirty_periods:
-                # TODO do some coolth? 
-                cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                file.write(f"Decision:\n")
-                file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, not in a cooler dirty period\n")
-                functional_test_save()
-                CURRENT_SETPOINT = SETPOINT_DEFAULT
-            else:
-                if CURRENT_SETPOINT != SETPOINT_ECON:
-                    cooler_indoor_temp = send_cooler_decision(SETPOINT_ECON)
-                    file.write(f"Decision:\n")
-                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_ECON}, in a cooler dirty period\n")
-                    functional_test_save()
-                    CURRENT_SETPOINT = SETPOINT_ECON
-                else: # avoid econ damage
-                    if cooler_indoor_temp >= SETPOINT_ECON - 2:
-                        # start time counting 
-                        if econ_timer == 0:
-                            econ_timer = time.time()
-                            file.write(f"EVENT:\n")
-                            print("Coolth timer started!")
-                            file.write(f"{realtime}: starting econ timer \n")
-                            functional_test_save()
-
-                        elif (time.time() - econ_timer) >= MAX_ECON_TIME_LIMIT:
-                            cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
-                            file.write(f"Decision/EVENT:\n")
-                            file.write(f"{realtime}: stopping econ timer reached limit \n")
-                            file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
-                            functional_test_save()
-                            CURRENT_SETPOINT = SETPOINT_DEFAULT
-                            econ_timer = 0
-
-                        else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
-                            file.write(f"{realtime}: econ_timer < max econ time limit, do nothing!\n")
-                            functional_test_save()
-
-
-                    else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
-                        file.write(f"{realtime}: else cooler_indoor temp not >= setpoint econ -2, do nothing!\n")
+            if is_realtime_in_clean_periods(realtime, ev_clean_periods):
+                print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
+                if ev_connected:
+                    if ev_charging == False: 
+                        send_charging_decision(True)
+                        file.write(f"Decision:\n")
+                        file.write(f"{realtime}: send_charging_decision(True)\n")
+                        functional_test_save()
+                    else:
+                        file.write(f"Decision:\n")
+                        file.write(f"{realtime}: send_charging_decision(True), already charging, do nothing\n")
                         functional_test_save()
 
+            else:
+                print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
+                if ev_connected:
+                    if driving == True:
+                        # returned from a drive
+                        # regen clean periods
+                        driving = False
+                        generate_new_clean_periods()
+                        file.write(f"EVENT/Decision:\n")
+                        file.write(f"{realtime}: back from drive, generate new clean charging schedule\n")
+                        functional_test_save()
+                    if ev_charging:
+                        send_charging_decision(False)
+                        file.write(f"Decision:\n")
+                        file.write(f"{realtime}: send_charging_decision(False) - not in clean period turning charging off)\n")
+                        functional_test_save()
+                    else: 
+                        file.write(f"Decision:\n")
+                        file.write(f"{realtime}:not in clean period, not charging, do nothing\n")
+                        functional_test_save()
+                else:
+                    driving = True
+                    file.write(f"EVENT:\n")
+                    file.write(f"{realtime}: going on a drive)\n")
+                    functional_test_save()
+            
+            charging_timer = datetime.now()
 
-        # ############## calculation ################
-        aoer = get_wt("ruleBased", "aoer")
-        moer = get_wt("ruleBased", "moer")
-        grid_co2_list.append(max(0,aoer * grid_power))
-        grid_co2 = sum(grid_co2_list)
+        if (realtime - rules_timer).total_seconds() > 900:
 
-        # ############## EV reduction ###############
-        ev_total_load_fraction = ev_p5 / total_power ## total_power: PV used + grid power  (maybe 'Consume' in power map)
-        ev_grid_load = ev_total_load_fraction * grid_power 
-        ev_grid_co2_list.append(max(0,aoer * ev_grid_load))
-        ev_grid_co2 = sum(ev_grid_co2_list)
+            ############### Rules Section ######################
+            if pv_output > total_power: # daytime 
+                if ev_charging:
+                    star_adjust_temp_setpoint_coolth()
+            
+                else:
+                    if ev_connected and (pv_output*.0833) > ((total_power*.0833) + ev_p5): # multiplying by 0.0833 to get energy for next 5 min
+                        send_charging_decision(True)
+                        file.write(f"Decision:\n")
+                        file.write(f"{realtime}: send_charging_decision(True), excess PV including amount it takes to charge for 5 min\n")
+                        functional_test_save()
 
-        # ############## PV reduction ###############
-        solar_saving_list.append(max(0, aoer * solar_power_used))
-        solar_saving = sum(solar_saving_list)
+                    star_adjust_temp_setpoint_coolth()
 
-        # ############## rule-based EMS carbon accounting ##########
-        ev_ems_co2_list.append(max(0,moer * ev_grid_load))
-        ev_ems_co2 = sum(ev_ems_co2_list)
 
-        cooler_grid_load = (cooler_load / total_power) * grid_power
-        cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
-        cooler_ems_co2 = sum(cooler_ems_co2_list)
+            else: # daytime && night --- no excess PV
+                if realtime not in cooler_dirty_periods:
+                    # TODO do some coolth? 
+                    cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, not in a cooler dirty period\n")
+                    functional_test_save()
+                    CURRENT_SETPOINT = SETPOINT_DEFAULT
+                else:
+                    if CURRENT_SETPOINT != SETPOINT_ECON:
+                        cooler_indoor_temp = send_cooler_decision(SETPOINT_ECON)
+                        file.write(f"Decision:\n")
+                        file.write(f"{realtime}: send_cooler_decision({SETPOINT_ECON}, in a cooler dirty period\n")
+                        functional_test_save()
+                        CURRENT_SETPOINT = SETPOINT_ECON
+                    else: # avoid econ damage
+                        if cooler_indoor_temp >= SETPOINT_ECON - 2:
+                            # start time counting 
+                            if econ_timer == 0:
+                                econ_timer = time.time()
+                                file.write(f"EVENT:\n")
+                                print("Coolth timer started!")
+                                file.write(f"{realtime}: starting econ timer \n")
+                                functional_test_save()
 
-        connection = webAPI.model.get_db()
-        cur = connection.execute(
-            "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission, netInvertertoGrid, netSolartoInverter, netInvertertoComps) "
-            "VALUES (?,?,?,?,?,?,?) ",
-            (total_emission_reduction, solar_saving, ev_emission_reduction, ems_emission_reduction, grid_power, solar_power_used, total_power)
-        )
-        connection.commit()
+                            elif (time.time() - econ_timer) >= MAX_ECON_TIME_LIMIT:
+                                cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                                file.write(f"Decision/EVENT:\n")
+                                file.write(f"{realtime}: stopping econ timer reached limit \n")
+                                file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
+                                functional_test_save()
+                                CURRENT_SETPOINT = SETPOINT_DEFAULT
+                                econ_timer = 0
 
-        cur2 = connection.execute(
-            "INSERT INTO chart(baselineEmission, noEMSEmission, withEMSEmission) "
-            "VALUES (?,?,?) ",
-            (baseline_con_emissions, total_baseline_emissions, total_baseline_emissions  - total_emission_reduction)
-        )
-        connection.commit()
+                            else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                                file.write(f"{realtime}: econ_timer < max econ time limit, do nothing!\n")
+                                functional_test_save()
 
-            # time.sleep(300) # run ems rules to make decisions every 5 mins 
+
+                        else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                            file.write(f"{realtime}: else cooler_indoor temp not >= setpoint econ -2, do nothing!\n")
+                            functional_test_save()
+
+
+            # ############## calculation ################
+            aoer = get_wt("ruleBased", "aoer")
+            moer = get_wt("ruleBased", "moer")
+            grid_co2_list.append(max(0,aoer * grid_power))
+            grid_co2 = sum(grid_co2_list)
+
+            # ############## EV reduction ###############
+            ev_total_load_fraction = ev_p5 / total_power ## total_power: PV used + grid power  (maybe 'Consume' in power map)
+            ev_grid_load = ev_total_load_fraction * grid_power 
+            ev_grid_co2_list.append(max(0,aoer * ev_grid_load))
+            ev_grid_co2 = sum(ev_grid_co2_list)
+
+            # ############## PV reduction ###############
+            solar_saving_list.append(max(0, aoer * solar_power_used))
+            solar_saving = sum(solar_saving_list)
+
+            # ############## rule-based EMS carbon accounting ##########
+            ev_ems_co2_list.append(max(0,moer * ev_grid_load))
+            ev_ems_co2 = sum(ev_ems_co2_list)
+
+            cooler_grid_load = (cooler_load / total_power) * grid_power
+            cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
+            cooler_ems_co2 = sum(cooler_ems_co2_list)
+
+            connection = webAPI.model.get_db()
+            cur = connection.execute(
+                "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission, netInvertertoGrid, netSolartoInverter, netInvertertoComps) "
+                "VALUES (?,?,?,?,?,?,?) ",
+                (total_emission_reduction, solar_saving, ev_emission_reduction, ems_emission_reduction, grid_power, solar_power_used, total_power)
+            )
+            connection.commit()
+
+            cur2 = connection.execute(
+                "INSERT INTO chart(baselineEmission, noEMSEmission, withEMSEmission) "
+                "VALUES (?,?,?) ",
+                (baseline_con_emissions, total_baseline_emissions, total_baseline_emissions  - total_emission_reduction)
+            )
+            connection.commit()
+
+            rules_timer = datetime.now()
+
 
 ############### multi-thread ###############
 def main():
