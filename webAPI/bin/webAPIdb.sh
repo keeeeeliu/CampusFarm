@@ -34,7 +34,7 @@ case $1 in
 
     mkdir -p "$initDir"
     sqlite3 "$filePath" < "$schemaPath"
-    sqlite3 "$filePath" < "$dataPath"
+    # sqlite3 "$filePath" < "$dataPath"
     ;;
 
 
