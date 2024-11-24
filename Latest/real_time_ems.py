@@ -8,6 +8,7 @@ import subprocess
 import pytz
 from datetime import datetime, timedelta
 import math
+import webAPI
 
 
 # import curret_watt_time as wt
@@ -473,6 +474,21 @@ def ems():
         cooler_grid_load = (cooler_load / total_power) * grid_power
         cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
         cooler_ems_co2 = sum(cooler_ems_co2_list)
+
+        connection = webAPI.model.get_db()
+        cur = connection.execute(
+            "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission, netInvertertoGrid, netSolartoInverter, netInvertertoComps) "
+            "VALUES (?,?,?,?,?,?,?) ",
+            (total_emission_reduction, solar_saving, ev_emission_reduction, ems_emission_reduction, grid_power, solar_power_used, total_power)
+        )
+        connection.commit()
+
+        cur2 = connection.execute(
+            "INSERT INTO chart(baselineEmission, noEMSEmission, withEMSEmission) "
+            "VALUES (?,?,?) ",
+            (baseline_con_emissions, total_baseline_emissions, total_baseline_emissions  - total_emission_reduction)
+        )
+        connection.commit()
 
             # time.sleep(300) # run ems rules to make decisions every 5 mins 
 
