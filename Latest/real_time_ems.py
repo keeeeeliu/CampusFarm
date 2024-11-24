@@ -25,7 +25,7 @@ from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
 ##### how to call this? -->  generate_dirty_periods(get_amount_of_dirty_periods())
 
 realtime = datetime.now()
-ev_charge = 64
+ev_charge = 70
 ev_miles_left = 0
 pv_output = 0
 cooler_indoor_temp = 37
@@ -88,7 +88,7 @@ SETPOINT_ECON = 48
 CURRENT_SETPOINT = 32 
 MAX_COOLTH_TIME_LIMIT = 40 # min 
 MAX_ECON_TIME_LIMIT = 40
-EV_PERCENT_DESIRED = 85
+EV_PERCENT_DESIRED = 90
 TMIN = 51
 TMAX = 59
 RULE_BASED_MODE = True
@@ -134,7 +134,7 @@ def functional_test_save():
     global ev_charge, ev_miles_left, pv_output, cooler_indoor_temp, ev_connected
     global total_power, power_map, ev_power, cooler_dirty_periods
     global ev_charging, ev_charge, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
-    with open('output_1123.txt', 'a') as file:
+    with open('output_1124.txt', 'a') as file:
         file.write(f"realtime: {realtime}\n")
         file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
         file.write(f"ev charging ? {ev_charging}\n")
@@ -273,7 +273,7 @@ def star_adjust_temp_setpoint_coolth():
     global realtime
     global coolth_timer
 
-    with open('output_1123.txt', 'a') as file:
+    with open('output_1124.txt', 'a') as file:
         # adjust temperature setpoint  
         if CURRENT_SETPOINT != SETPOINT_COOLTH:
             cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
@@ -343,7 +343,7 @@ def ems():
     global TMAX
     global TMIN
    
-    with open('output_1123.txt', 'a') as file:
+    with open('output_1124.txt', 'a') as file:
 
         ############### Charging in clean periods section ###################
 

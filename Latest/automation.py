@@ -116,8 +116,6 @@ def get_coolbot_temp():
     service = Service(chromdriver_path)
     driver = webdriver.Chrome(service=service)
     url = "https://cb.storeitcold.com/#/login"
-    chromedriver_autoinstaller.install()
-    driver = webdriver.Chrome()
     driver.get(url)
 
     wait = WebDriverWait(driver, 20)

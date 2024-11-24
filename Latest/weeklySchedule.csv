@@ -1,4 +1,6 @@
 Description,StartDate,StartTime,EndTime,IsRepeat,DaysOfWeek
 Functional Test 2: Drive 1,08/20/2024,9:15,9:45,True,Sunday
 Functional Test 2: Drive 2,10/10/2024,12:30,13:00,True,Sunday
+Functional Test 3: Drive 1,10/10/2024,8:30,9:30,True,Tuesday
+Functional Test 3: Drive 2,10/10/2024,8:30,9:30,True,Wednesday
 
