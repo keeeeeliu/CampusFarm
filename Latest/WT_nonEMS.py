@@ -17,6 +17,7 @@ filepath = 'weeklySchedule.csv'
 min_time_difference = None
 hours_difference = 0
 clean_periods = []
+normal_periods = []
 
 real_time = datetime.now()
 
@@ -113,6 +114,7 @@ def generate_clean_periods(num_time_slots_wanted):
     global data
     global TIMEZONE
     global clean_periods
+    global normal_periods
         
     # Extract values and times
     values = [entry['value'] for entry in data]
@@ -120,7 +122,7 @@ def generate_clean_periods(num_time_slots_wanted):
 
     # Extract and sort 5-minute periods
     time_slots = [(value, times[i]) for i, value in enumerate(values)]  # Pair values with their timestamps
-
+    normal_s = time_slots
     # Sort by MOER value (ascending)
     time_slots.sort(key=lambda x: x[0])  # Sort by the MOER value (lowest first)
 
@@ -128,8 +130,10 @@ def generate_clean_periods(num_time_slots_wanted):
    # num_time_slots_wanted = get_amount_of_clean_periods()
     print(num_time_slots_wanted)
     selected_slots = time_slots[:num_time_slots_wanted]  # Take the first 84 slots (X hours)
+    normal_slots = normal_s[:num_time_slots_wanted]
     # Extract clean periods with full ISO 8601 timestamps
     clean_periods = [(slot[1].isoformat(), (slot[1] + timedelta(minutes=5)).isoformat()) for slot in selected_slots]
+    normal_periods = [(slot[1].isoformat(), (slot[1] + timedelta(minutes=5)).isoformat()) for slot in normal_slots]
     print(len(selected_slots))
 
 def plot_clean_periods(clean_periods, values, times):
@@ -171,7 +175,14 @@ def save_clean_periods(filename="ev_clean_periods.json"):
         json.dump(clean_periods, file)
     print(f"EV clean periods saved to {filename}")
 
+def save_nonEMS_charging_periods(filename="ev_nonEMS_charging_periods.json"):
+    global normal_periods
+    with open(filename, "w") as file:
+        json.dump(normal_periods, file)
+    print(f"EV clean periods saved to {filename}")
+
 generate_clean_periods(29)
 # # Save the clean periods
 save_clean_periods()
+save_nonEMS_charging_periods()
 
