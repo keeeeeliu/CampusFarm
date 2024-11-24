@@ -1,16 +1,20 @@
-from selenium import webdriver
-import chromedriver_autoinstaller
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
+import undetected_chromedriver as uc
+from selenium import webdriver
+import chromedriver_autoinstaller
+from selenium.webdriver.chrome.service import Service
 import time
 
-def change_value(value):
-    """Function to change the value on website based on the input value and return the current value."""
-    chromedriver_autoinstaller.install()
+# # Disable the __del__ method to prevent errors from being printed
+# uc.Chrome.__del__ = lambda self: None
 
-    driver = webdriver.Chrome()
+def change_value(value):
+    chromdriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromdriver_path)
+    driver = webdriver.Chrome(service=service)
     url = "https://cb.storeitcold.com/#/login"
     driver.get(url)
 
@@ -73,15 +77,14 @@ def change_value(value):
         save_tag = wait.until(EC.element_to_be_clickable((By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[2]/div/expanding-list-item/div/div/div/button[1]')))
         save_bottom = driver.find_element(By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[2]/div/expanding-list-item/div/div/div/button[1]')
         save_bottom.click()
-
+    driver.quit()
     return current_value
 
 
 def get_sensor_temp():
-    """Returns temperature from temperature sensor."""
-    chromedriver_autoinstaller.install()
-
-    driver = webdriver.Chrome()
+    chromdriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromdriver_path)
+    driver = webdriver.Chrome(service=service)
     url = "https://www.easylogcloud.com/devices.aspx"
     driver.get(url)
 
@@ -104,15 +107,14 @@ def get_sensor_temp():
     device_page = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="cph1_devicesupdatepanel"]/div[1]/div[2]/div[1]/div[4]')))
     temp_container = driver.find_element(By.XPATH, '//*[@id="channelreading_0_0"]')
     current_temp = float(temp_container.text)
-
+    driver.quit()
     return float(current_temp)
 
 
 def get_coolbot_temp():
-    """Function to extract current temperature from CoolBot website."""
-    chromedriver_autoinstaller.install()
-
-    driver = webdriver.Chrome()
+    chromdriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromdriver_path)
+    driver = webdriver.Chrome(service=service)
     url = "https://cb.storeitcold.com/#/login"
     driver.get(url)
 
@@ -141,23 +143,23 @@ def get_coolbot_temp():
     element = driver.find_element(By.XPATH, '//*[@id="tabpanel-t0-1"]/page-devices/ion-content/div[2]/div/ion-list/ion-grid/ion-row/ion-col[3]/expanding-list-item[2]/div/div/ion-item[1]/div[1]/span')
     temp = element.text
     temp = temp.split('°')[0]
-
+    driver.quit()
     return float(temp)
 
 def change_setpoint(updated_value):
     """Function that access the CoolBot website and temperature sensor website and change the temperature based on the input value."""
-    coolbot_temp = -1
-    sensor_temp = -1
-    current_value = -1
+    coolbot_temp = None
+    sensor_temp = None
+    current_value = None
     # Extract the temperature from coolbot until success
-    while coolbot_temp == -1:
+    while coolbot_temp == None:
         try:
             coolbot_temp = get_coolbot_temp()
         except Exception as e:
             print(f"An Error has occurred while extracting the coolbot temperature: {e}.")
     
     # Extract the temperature from sensor until success
-    while sensor_temp == -1:
+    while sensor_temp == None:
         try:
             sensor_temp = get_sensor_temp()
         except Exception as e:
@@ -169,7 +171,7 @@ def change_setpoint(updated_value):
     # if the current temperature is within the updated setpoint range
     if updated_value - 2 <= temp and temp <= updated_value + 2:
         print(f"Temperature is within the range of the updated setpoint: {updated_value} - 2 <= {temp} <= {updated_value} + 2")
-        return False
+        return temp
     
     while updated_value != current_value:
         try:
@@ -180,10 +182,5 @@ def change_setpoint(updated_value):
         except Exception as e:
             print(f"An Error has occurred for Cooler Web Automation: {e}")
 
-    return True
+    return temp
     
-def main():
-    change_setpoint(32)
-
-if __name__ == '__main__':
-    main()

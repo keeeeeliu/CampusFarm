@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import matplotlib.dates as mdates
 from closestDelivery import get_next_delivery, read_schedule_from_csv
-# from real_time_ems import get_amount_of_clean_periods
+from real_time_ems import get_amount_of_clean_periods
 # import test as test
 import csv
 import pytz
@@ -16,7 +16,6 @@ DETROIT_TIMEZONE = pytz.timezone("America/Detroit")
 filepath = 'weeklySchedule.csv'
 min_time_difference = None
 hours_difference = 0
-clean_periods = []
 
 real_time = datetime.now()
 
@@ -88,7 +87,7 @@ def get_moer(token):
     params = {
         "region": "MISO_DETROIT",
         "signal_type": "co2_moer",
-        "horizon_hours": hours_difference
+        "horizon_hours": 48
     }
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
@@ -107,71 +106,15 @@ for entry in pre_data['data']:
         "value": entry['value']
     })
 
-# print(data)
+# print(len(data))
+downsampled_data = data[::6]
+print(type(downsampled_data))
 
-def generate_clean_periods(num_time_slots_wanted):
-    global data
-    global TIMEZONE
-    global clean_periods
-        
-    # Extract values and times
-    values = [entry['value'] for entry in data]
-    times = [datetime.fromisoformat(entry['point_time']).astimezone(TIMEZONE) for entry in data]
+def get_48h_wt():
+    global downsampled_data
+    return downsampled_data
 
-    # Extract and sort 5-minute periods
-    time_slots = [(value, times[i]) for i, value in enumerate(values)]  # Pair values with their timestamps
-
-    # Sort by MOER value (ascending)
-    time_slots.sort(key=lambda x: x[0])  # Sort by the MOER value (lowest first)
-
-    # Select up to X hours worth of 5-minute periods (X*12 periods)
-   # num_time_slots_wanted = get_amount_of_clean_periods()
-    print(num_time_slots_wanted)
-    selected_slots = time_slots[:num_time_slots_wanted]  # Take the first 84 slots (X hours)
-    # Extract clean periods with full ISO 8601 timestamps
-    clean_periods = [(slot[1].isoformat(), (slot[1] + timedelta(minutes=5)).isoformat()) for slot in selected_slots]
-    print(len(selected_slots))
-
-def plot_clean_periods(clean_periods, values, times):
-    """
-    Visualize clean periods on a time-value plot.
-    - Clean periods: Green
-    - Other periods: Black
-    """
-    plt.figure(figsize=(12, 6))
-
-    # Plot the entire dataset in blue
-    plt.plot(times, values, color="blue", label="MOER Values")
-
-    # Highlight clean periods in green
-    for start, end in clean_periods:
-        # Convert clean period times (HH:MM) into datetime objects
-# Parse full ISO 8601 timestamps for start and end
-        start_dt = datetime.fromisoformat(start)
-        end_dt = datetime.fromisoformat(end)
-
-    # Customize plot
-    plt.xlabel("Time")
-    plt.ylabel("MOER (lbs CO₂/MWh)")
-    plt.title(f"Clean Time Periods - Region: Detroit")
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-    plt.xticks(rotation=45)
-    plt.legend(loc="upper right")
-
-    # Save and show the plot
-    plt.savefig("clean_periods.png")
-    plt.show()
+print(get_48h_wt())
 
 
-# plot_clean_periods(clean_periods,values,times)
-# Save clean periods to a JSON file
-def save_clean_periods(filename="ev_clean_periods.json"):
-    global clean_periods
-    with open(filename, "w") as file:
-        json.dump(clean_periods, file)
-    print(f"EV clean periods saved to {filename}")
-
-generate_clean_periods(29)
-# # Save the clean periods
-save_clean_periods()
 

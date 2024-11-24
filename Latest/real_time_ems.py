@@ -9,37 +9,46 @@ import pytz
 from datetime import datetime, timedelta
 import math
 
+
 # import curret_watt_time as wt
 import csv
 from astral import LocationInfo
 from astral.sun import sun 
 from connections.charger.solArk_inverter import get_inverter_data
 from automation import change_setpoint, get_coolbot_temp, get_sensor_temp
-from connections.charger.enphase_automation import charger_on, charger_off, plugged_in
+from connections.charger.enphase_automation import charger_on, charger_off, plugged_in_and_charging
 from connections.charger.get_charger_consumption import get_miles_added
 from connections.ev_battery import check_battery
+from WT_nonEMS import generate_clean_periods, save_clean_periods
+from wifistatus import check_wifi_status_ifconfig
+from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
+from WT_accounting import get_wt
+from WT_data_optimization import get_48h_wt
+##### how to call this? -->  generate_dirty_periods(get_amount_of_dirty_periods())
 
 realtime = datetime.now()
-ev_charge = 0
+ev_charge = 70
 ev_miles_left = 0
 pv_output = 0
-cooler_indoor_temp = 0
+cooler_indoor_temp = 37
 ev_connected = True # EV charger plugged in? 
 total_power = 0
 power_map = {}
 ev_power = 0
 cooler_dirty_periods = []
 ev_clean_periods = []
-ev_charging = True
+ev_charging = False
 coolth_timer = 0
 econ_timer = 0
-ev_percent = 80 # EV battery percentage
-ev_p5 = 0 
+ev_p5 = 958.33
 cooler_load = 0
-time_interval = 5 # mins
+time_interval = 2 # mins
 ev_miles_travelled = 0 # 
 grid_power = 0 ##### read from inverter ('Grid' in power map)
 solar_power_used = 0 
+driving = False
+dirtytime_threshold = 3 # hours 
+last_24_hour_run = datetime.now()
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
@@ -63,24 +72,25 @@ ev_emission_reduction = 0 # relative to baseline
 pv_emission_reduction = 0
 ems_emission_reduction = 0
 total_emission_reduction = 0 # gonna be the sum(pv,ems,ev... reduction)
+wifi_status = True 
 
 
 ############# constants #################
-EV_CHARGING_RATE = 13.7 ## kWh 
-EV_CAPPACITY = 131 ## kW
+EV_CHARGING_RATE = 11.5 ## kW 
+EV_CAPPACITY = 131 ## kWh
 
 ############## Test Mode ################
 EMS_EV = True
 EMS_Cooler = True
 
 ############## input from UI ############
-SETPOINT_DEFAULT = 55
-SETPOINT_COOLTH = 53
-SETPOINT_ECON = 57
-CURRENT_SETPOINT = 55 
+SETPOINT_DEFAULT = 41
+SETPOINT_COOLTH = 35
+SETPOINT_ECON = 48
+CURRENT_SETPOINT = 32 
 MAX_COOLTH_TIME_LIMIT = 40 # min 
 MAX_ECON_TIME_LIMIT = 40
-EV_PERCENT_DESIRED = 100
+EV_PERCENT_DESIRED = 90
 TMIN = 51
 TMAX = 59
 RULE_BASED_MODE = True
@@ -102,6 +112,13 @@ def load_clean_periods(filename="ev_clean_periods.json"):
         periods = json.load(file)
     ev_clean_periods = periods
 
+# Load dirty periods from JSON file
+def load_dirty_periods(filename="cooler_dirty_periods.json"):
+    global cooler_dirty_periods
+    with open(filename, "r") as file:
+        periods = json.load(file)
+    cooler_dirty_periods = periods
+
 # Function to check if current time is in clean periods
 def is_realtime_in_clean_periods(realtime, clean_periods):
     adjusted_realtime = realtime - timedelta(hours=5)
@@ -112,6 +129,25 @@ def is_realtime_in_clean_periods(realtime, clean_periods):
         if start_dt <= adjusted_realtime.astimezone(pytz.UTC) < end_dt:
             return True
     return False
+
+def functional_test_save():
+    #save all variables to csv
+    global realtime
+    global ev_charge, ev_miles_left, pv_output, cooler_indoor_temp, ev_connected
+    global total_power, power_map, ev_power, cooler_dirty_periods
+    global ev_charging, ev_charge, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
+    with open('output_1124.txt', 'a') as file:
+        file.write(f"realtime: {realtime}\n")
+        file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
+        file.write(f"ev charging ? {ev_charging}\n")
+        file.write(f"current temp in cooler: {cooler_indoor_temp}")
+        file.write(f"ev_charge: {ev_charge}, ev_miles_left: {ev_miles_left}, pv_output: {pv_output}, cooler_indoor_temp: {cooler_indoor_temp}, ev_connected: {ev_connected}\n")
+        file.write(f"total_power: {total_power}, power_map: {power_map}, ev_power: {ev_power}, cooler_dirty_periods: {cooler_dirty_periods}\n")
+        file.write(f"ev_charging: {ev_charging}, driving: {driving}\n")
+        file.write(f"ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
+        file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n\n")
+
+        
 
 ########### Carbon Accounting Getters #############
 baseline_con_emissions = ev_miles_travelled * 1.590 # lbs CO2/mile
@@ -142,6 +178,12 @@ def get_total_ems_ev_cooler_emissions():
 def bring_in_inverter_data():
     global power_map
     power_map = get_inverter_data()
+    if not power_map:
+        print("reattempt solark")
+        power_map = get_inverter_data()
+    if not power_map:
+        print("reattempt solark 2")
+        power_map = get_inverter_data()
 
 def get_pv():
     global pv_output
@@ -149,47 +191,66 @@ def get_pv():
     pv = int(pv.replace("W", ""))
     pv_output = pv 
 
+def update_realtime():
+    global realtime
+    realtime = datetime.now()
+
 def get_cooler_temp():
     global cooler_indoor_temp
     cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
 
-def get_ev_connection():
+def get_is_ev_conn_and_charging():
+    global ev_charging
     global ev_connected
-    ev_connected = plugged_in()
+    connection_dict = plugged_in_and_charging()
+    if not connection_dict:
+        print("reattempt enphase")
+        connection_dict = plugged_in_and_charging()
+    if not connection_dict:
+        print("reattempt enphase 2")
+        connection_dict = plugged_in_and_charging()
+    ev_connected = connection_dict['connected']
+    ev_charging = connection_dict['charging']
 
 def get_total_power():
-    global coolEV_power
+    global total_power
     consumption = power_map["Consumed W"]
     consumption = int(consumption.replace("W", ""))
-    coolEV_power = consumption
+    total_power = consumption
 
 def get_charge():
     global ev_charge
     global ev_miles_left
 
     ev_battery_dict = check_battery()
-    ev_charge = ev_battery_dict['percentage']
-    ev_miles_left = ev_battery_dict['miles_left']
+    ev_charge = int(ev_battery_dict['percentage'])
+    ev_miles_left = int(ev_battery_dict['miles_left'])
 
 
 def get_amount_of_clean_periods():
     global EV_CHARGING_RATE
     global EV_CAPPACITY
-    global ev_percent
+    global ev_charge
     global EV_PERCENT_DESIRED
     global time_interval
-    result = (((EV_PERCENT_DESIRED - ev_percent)/100 * EV_CAPPACITY) / EV_CHARGING_RATE) * 60 / time_interval
+    result = (((EV_PERCENT_DESIRED - ev_charge)/100 * EV_CAPPACITY) / EV_CHARGING_RATE) * 60 / time_interval
     return math.ceil(result)
+
+def get_amount_of_dirty_periods():
+    global dirtytime_threshold
+    return dirtytime_threshold * 12 
 
 def get_ev_miles_travelled():
     global ev_miles_travelled
     ev_miles_travelled += get_miles_added()
     return ev_miles_travelled
 
+def get_wifi_status():
+    global wifi_status
+    wifi_status = check_wifi_status_ifconfig()
 
 ############### control commands ###############
 def send_cooler_decision(setpoint):
-    """Return true if setpoint changed, false otherwise."""
     return change_setpoint(setpoint)
 
 def send_charging_decision(OnOFF:bool):
@@ -197,6 +258,54 @@ def send_charging_decision(OnOFF:bool):
         charger_on()
     else:
         charger_off()
+
+def generate_new_clean_periods():
+    #get_charge()
+    num_clean_periods = get_amount_of_clean_periods()
+    print(num_clean_periods)
+    generate_clean_periods(num_clean_periods)
+    save_clean_periods()
+    load_clean_periods()
+
+def star_adjust_temp_setpoint_coolth():
+    global CURRENT_SETPOINT
+    global SETPOINT_COOLTH
+    global MAX_COOLTH_TIME_LIMIT
+    global cooler_indoor_temp
+    global realtime
+    global coolth_timer
+
+    with open('output_1124.txt', 'a') as file:
+        # adjust temperature setpoint  
+        if CURRENT_SETPOINT != SETPOINT_COOLTH:
+            cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
+            file.write(f"Decision:\n")
+            file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}, CURRENT_SETPOINT != SETPOINT_COOLTH\n")
+            functional_test_save()
+            CURRENT_SETPOINT = SETPOINT_COOLTH
+        else:  # avoid coolth damage 
+            if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
+                # start time 
+                if coolth_timer == 0:
+                    coolth_timer = time.time()
+                    file.write(f"EVENT:\n")
+                    print("Coolth timer started!")
+                    file.write(f"{realtime}: starting coolth timer \n")
+                    functional_test_save()
+
+                elif (time.time() - coolth_timer) >= MAX_COOLTH_TIME_LIMIT:
+                    cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                    file.write(f"DECISION/EVENT:\n")
+                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, max coolth time limit hit!\n")
+                    functional_test_save()
+                    CURRENT_SETPOINT = SETPOINT_DEFAULT
+                    coolth_timer = 0
+
+            else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                file.write(f"Decision:\n")
+                file.write(f"{realtime}: else coolth timer not >= MAX COOLTH TIME LIMIT, do nothing!\n")
+                functional_test_save()
+
 
 ############### updater ###############
 def update_inverter_data():
@@ -216,99 +325,148 @@ def update_inverter_data():
 ############### decision rules ###############
 def ems():
     global pv_output 
-    global coolEV_power
     global total_power
     global ev_charging
     global cooler_indoor_temp
     global realtime 
     global ev_connected 
-    while True:
+    global ev_p5  
+    global realtime
+    global driving
+    global cooler_indoor_temp
+    global coolth_timer
+    global econ_timer
+    global EV_CHARGING_RATE
+    global EV_CAPPACITY
+    global SETPOINT_DEFAULT
+    global SETPOINT_COOLTH
+    global SETPOINT_ECON
+    global CURRENT_SETPOINT
+    global TMAX
+    global TMIN
+   
+    with open('output_1124.txt', 'a') as file:
+
+        ############### Charging in clean periods section ###################
+
+        realtime = datetime.now()
+        
+        if is_realtime_in_clean_periods(realtime, ev_clean_periods):
+            print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
+            if ev_connected:
+                if ev_charging == False: 
+                    send_charging_decision(True)
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_charging_decision(True)\n")
+                    functional_test_save()
+                else:
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_charging_decision(True), already charging, do nothing\n")
+                    functional_test_save()
+
+        else:
+            print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
+            if ev_connected:
+                if driving == True:
+                    # returned from a drive
+                    # regen clean periods
+                    driving = False
+                    generate_new_clean_periods()
+                    file.write(f"EVENT/Decision:\n")
+                    file.write(f"{realtime}: back from drive, generate new clean charging schedule\n")
+                    functional_test_save()
+                if ev_charging:
+                    send_charging_decision(False)
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_charging_decision(False) - not in clean period turning charging off)\n")
+                    functional_test_save()
+                else: 
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}:not in clean period, not charging, do nothing\n")
+                    functional_test_save()
+            else:
+                driving = True
+                file.write(f"EVENT:\n")
+                file.write(f"{realtime}: going on a drive)\n")
+                functional_test_save()
+
+
+        ############### Rules Section ######################
         if pv_output > total_power: # daytime 
             if ev_charging:
-                # adjust temperature setpoint  
-                if CURRENT_SETPOINT != SETPOINT_COOLTH:
-                    send_cooler_decision(SETPOINT_COOLTH)
-                    CURRENT_SETPOINT = SETPOINT_COOLTH
-                else:  # avoid coolth damage 
-                    if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
-                        # start time 
-                        if coolth_timer == 0:
-                            # TODO: set a timer here 
-                            pass
-                        elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
-                            send_cooler_decision(SETPOINT_DEFAULT)
-            elif ev_charging == False and ev_connected == True:
-                if pv_output > total_power + ev_p5:
+                star_adjust_temp_setpoint_coolth()
+           
+            else:
+                if ev_connected and (pv_output*.0833) > ((total_power*.0833) + ev_p5): # multiplying by 0.0833 to get energy for next 5 min
                     send_charging_decision(True)
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_charging_decision(True), excess PV including amount it takes to charge for 5 min\n")
+                    functional_test_save()
 
-                    # star
-                    if CURRENT_SETPOINT != SETPOINT_COOLTH:
-                        send_cooler_decision(SETPOINT_COOLTH)
-                        CURRENT_SETPOINT = SETPOINT_COOLTH
-                    else:  # avoid coolth damage 
-                        if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
-                            # start time 
-                            if coolth_timer == 0:
-                                # TODO: set a timer here 
-                                pass
-                            elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
-                                send_cooler_decision(SETPOINT_DEFAULT)
-                else:
-                    # star 
-                    if CURRENT_SETPOINT != SETPOINT_COOLTH:
-                        send_cooler_decision(SETPOINT_COOLTH)
-                        CURRENT_SETPOINT = SETPOINT_COOLTH
-                    else:  # avoid coolth damage 
-                        if cooler_indoor_temp <= SETPOINT_COOLTH + 2:
-                            # start time 
-                            if coolth_timer == 0:
-                                # TODO: set a timer here 
-                                pass
-                            elif coolth_timer >= MAX_COOLTH_TIME_LIMIT:
-                                send_cooler_decision(SETPOINT_DEFAULT)
+                star_adjust_temp_setpoint_coolth()
 
-        else: # daytime && night 
+
+        else: # daytime && night --- no excess PV
             if realtime not in cooler_dirty_periods:
                 # TODO do some coolth? 
-                send_cooler_decision(SETPOINT_DEFAULT)
+                cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                file.write(f"Decision:\n")
+                file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, not in a cooler dirty period\n")
+                functional_test_save()
+                CURRENT_SETPOINT = SETPOINT_DEFAULT
             else:
                 if CURRENT_SETPOINT != SETPOINT_ECON:
-                    send_cooler_decision(SETPOINT_ECON)
+                    cooler_indoor_temp = send_cooler_decision(SETPOINT_ECON)
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: send_cooler_decision({SETPOINT_ECON}, in a cooler dirty period\n")
+                    functional_test_save()
                     CURRENT_SETPOINT = SETPOINT_ECON
                 else: # avoid econ damage
                     if cooler_indoor_temp >= SETPOINT_ECON - 2:
                         # start time counting 
                         if econ_timer == 0:
-                            # TODO: set a timer here
-                            pass
-                        elif econ_timer >= MAX_ECON_TIME_LIMIT:
-                            send_cooler_decision(SETPOINT_DEFAULT)
+                            econ_timer = time.time()
+                            file.write(f"EVENT:\n")
+                            print("Coolth timer started!")
+                            file.write(f"{realtime}: starting econ timer \n")
+                            functional_test_save()
 
-        if EMS_EV:  # test EMS + EV 
-            if is_realtime_in_clean_periods(realtime, ev_clean_periods):
-                print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
-                if ev_connected:
-                    send_charging_decision(True)
-            else:
-                print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
-                if ev_connected:
-                    send_charging_decision(False)
+                        elif (time.time() - econ_timer) >= MAX_ECON_TIME_LIMIT:
+                            cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                            file.write(f"Decision/EVENT:\n")
+                            file.write(f"{realtime}: stopping econ timer reached limit \n")
+                            file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")
+                            functional_test_save()
+                            CURRENT_SETPOINT = SETPOINT_DEFAULT
+                            econ_timer = 0
 
-        ############## calculation ################
+                        else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                            file.write(f"{realtime}: econ_timer < max econ time limit, do nothing!\n")
+                            functional_test_save()
+
+
+                    else:############### DELETE THIS BLOCK WHEN FOR FINAL CODE ONLY FOR DEBUGGING ###################
+                        file.write(f"{realtime}: else cooler_indoor temp not >= setpoint econ -2, do nothing!\n")
+                        functional_test_save()
+
+
+        # ############## calculation ################
+        aoer = get_wt("ruleBased", "aoer")
+        moer = get_wt("ruleBased", "moer")
         grid_co2_list.append(max(0,aoer * grid_power))
         grid_co2 = sum(grid_co2_list)
 
-        ############## EV reduction ###############
+        # ############## EV reduction ###############
         ev_total_load_fraction = ev_p5 / total_power ## total_power: PV used + grid power  (maybe 'Consume' in power map)
         ev_grid_load = ev_total_load_fraction * grid_power 
         ev_grid_co2_list.append(max(0,aoer * ev_grid_load))
         ev_grid_co2 = sum(ev_grid_co2_list)
 
-        ############## PV reduction ###############
+        # ############## PV reduction ###############
         solar_saving_list.append(max(0, aoer * solar_power_used))
         solar_saving = sum(solar_saving_list)
 
-        ############## rule-based EMS carbon accounting ##########
+        # ############## rule-based EMS carbon accounting ##########
         ev_ems_co2_list.append(max(0,moer * ev_grid_load))
         ev_ems_co2 = sum(ev_ems_co2_list)
 
@@ -316,73 +474,56 @@ def ems():
         cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
         cooler_ems_co2 = sum(cooler_ems_co2_list)
 
-
-
-
-        # if is_daytime() == False: # nighttime: charge during clean periods
-            
-        #     if ev_connected:
-        #         if realtime in clean_periods:
-        #             # send command: ev charge on 
-        #             send_charging_decision(True)
-        #         else:
-        #             # send command: ev charge off
-        #             send_charging_decision(False)
-            
-        #     if realtime in clean_periods:
-        #         # send command: cooler temp default
-        #         send_cooler_decision(SETPOINT_DEFAULT)
-        #     else:
-        #         # send command: cooler temp eco
-        #         send_cooler_decision(SETPOINT_ECO)
-
-        # if is_daytime() == True: # daytime: lower temp setpoint when excess PV
-        #     if pv_output >= coolEV_power:
-        #         # send command: cooler temp coolth
-        #         send_cooler_decision(SETPOINT_COOLTH)
-        #     else:
-        #         # send command: cooler temp default 
-        #         send_cooler_decision(SETPOINT_DEFAULT)
-        time.sleep(300) # run ems rules to make decisions every 5 mins 
+            # time.sleep(300) # run ems rules to make decisions every 5 mins 
 
 ############### multi-thread ###############
 def main():
+    global ev_charge, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run
 
-    # Start the ems script thread
-    # main_thread = threading.Thread(target=ems)
-    # main_thread.daemon = True  # Daemonize thread to exit when ems thread exits
-    # main_thread.start()
-
-
-    # # Start data updating thread
-    # inverter_thread = threading.Thread(target=update_inverter_data)
-    # inverter_thread.daemon = True
-    # inverter_thread.start()
-
-    # charge_thread = threading.Thread(target=update_charge_data)
-    # charge_thread.daemon = True
-    # charge_thread.start()
+    generate_new_clean_periods()
+    last_24_hour_run = datetime.now()
 
     try:
         while True:
             # print(f"Current ev_charge: {ev_charge}")
             # print(f"Realtime: {datetime.now()}")
-
-            # get_charge()
+            #get_wifi_status()
+            # if wifi_status:
+            #     get_is_ev_conn_and_charging()
+            #     #get_charge()
+            #     update_inverter_data()
+            #     update_realtime()
+            #     # get_cooler_temp()
+            #     ems()
+            ########### this block: generate dirty periods sheet once per day
+            if datetime.now() - last_24_hour_run >= timedelta(hours=24):
+                generate_dirty_periods(get_amount_of_clean_periods)
+                save_dirty_periods()
+                load_dirty_periods()
+                last_24_hour_run = datetime.now()  # Update the last run time
+            ############
+            update_realtime()
+            get_is_ev_conn_and_charging()
             update_inverter_data()
             get_cooler_temp()
-            print(f"EV Charge: {ev_percent}%")
+            ems()
+            print(f"EV Charge: {ev_charge}%")
             print(f"PV Output: {pv_output}W")
             print(f"Grid Power: {grid_power}W")
+            print(f"Wifi Connected: {wifi_status}")
+            print(f"EV Charging Status: {ev_charging}")
             print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
-            # print(f"Current Setpoint: {CURRENT_SETPOINT}")
-            time.sleep(90)  # Adjust this interval as needed to monitor `ev_charge`
+            print(f"Current Setpoint: {CURRENT_SETPOINT}")
+            time.sleep(300)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
     
 
 if __name__ == "__main__":
     main()
+    # print(get_amount_of_clean_periods())
+
+    # print(ev_charging)
 
     ######## check cooler command functionality ########
     # send_cooler_decision(34)
