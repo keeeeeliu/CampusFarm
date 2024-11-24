@@ -540,7 +540,6 @@ def main():
             print(f"EV Charging Status: {ev_charging}")
             print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
             print(f"Current Setpoint: {CURRENT_SETPOINT}")
-            time.sleep(300)  # Adjust this interval as needed to monitor `ev_charge`
     except KeyboardInterrupt:
         print("Program interrupted and stopped.")
     
