@@ -1,22 +1,28 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 import chromedriver_autoinstaller
 import time
+import undetected_chromedriver as uc
+
+# # Disable the __del__ method to prevent errors from being printed
+# uc.Chrome.__del__ = lambda self: None
 
 
 def get_inverter_data():
-    # Automatically install and get the path to chromedriver
-    chromedriver_path = chromedriver_autoinstaller.install()
-    service = Service(chromedriver_path)
+    #driver = uc.Chrome()
+    chromdriver_path = chromedriver_autoinstaller.install()
+    service = Service(chromdriver_path)
     driver = webdriver.Chrome(service=service)
 
     # Open the webpage
     driver.get('https://www.solarkcloud.com/login')
+    time.sleep(5)
 
     try:
+        # Increment attempt counter
         email_field = WebDriverWait(driver, 60).until(
             EC.presence_of_element_located((By.XPATH, "//input[@placeholder='Please input your E-mail']"))
         )
@@ -38,7 +44,7 @@ def get_inverter_data():
     except Exception as e:
         print("Error during login:", e)
 
-    time.sleep(2)
+    time.sleep(5)
 
     try:
         campus_farm_link = driver.find_element(By.LINK_TEXT, "campus farm")
