@@ -9,6 +9,7 @@ import pytz
 from datetime import datetime, timedelta
 import math
 import webAPI
+import requests
 
 
 # import curret_watt_time as wt
@@ -208,8 +209,16 @@ def update_realtime():
     realtime = datetime.now()
 
 def get_cooler_temp():
+    url="http://192.168.0.160:5000/temperature"
     global cooler_indoor_temp
-    cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
+    try:
+        print("temp sensor worked!")
+        response = requests.get(url)
+        response.raise_for_status() 
+        cooler_indoor_temp = float(response.text.strip())
+    except (requests.exceptions.RequestException, ValueError) as e:
+        print(f"An error occurred with the temp sensor trying automation: {e}")
+        cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
 
 def get_is_ev_conn_and_charging():
     global ev_charging
