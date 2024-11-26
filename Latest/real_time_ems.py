@@ -29,7 +29,7 @@ from WT_data_optimization import get_48h_wt
 ##### how to call this? -->  generate_dirty_periods(get_amount_of_dirty_periods())
 
 realtime = datetime.now()
-ev_charge = 71
+ev_charge = 100
 ev_miles_left = 0
 pv_output = 0
 cooler_indoor_temp = 41
@@ -489,12 +489,12 @@ def ems():
     
 
         ############### Rules Section ######################
-        if pv_output > total_power: # daytime 
+        if pv_output > total_power and grid_power == 0: # daytime 
             if ev_charging:
                 star_adjust_temp_setpoint_coolth()
         
             else:
-                if ev_connected and (pv_output*.0833) > ((total_power*.0833) + ev_p5): # multiplying by 0.0833 to get energy for next 5 min
+                if ev_connected and ((pv_output*.0833) > ((total_power*.0833) + ev_p5)) and ev_charge != 100: # multiplying by 0.0833 to get energy for next 5 min
                     send_charging_decision(True)
                     file.write(f"Decision:\n")
                     file.write(f"{realtime}: send_charging_decision(True), excess PV including amount it takes to charge for 5 min\n")

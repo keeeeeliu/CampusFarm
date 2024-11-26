@@ -6,7 +6,6 @@ import undetected_chromedriver as uc
 from selenium import webdriver
 import chromedriver_autoinstaller
 from selenium.webdriver.chrome.service import Service
-from real_time_ems import send_temp_to_automation
 import time
 
 # # Disable the __del__ method to prevent errors from being printed
@@ -148,10 +147,11 @@ def get_coolbot_temp():
     return float(temp)
 
 def change_setpoint(updated_value):
+    from real_time_ems import send_temp_to_automation
     """Function that access the CoolBot website and temperature sensor website and change the temperature based on the input value."""
     # coolbot_temp = None
     # sensor_temp = None
-    # current_value = None
+    current_value = None
     # # Extract the temperature from coolbot until success
     # while coolbot_temp == None:
     #     try:
