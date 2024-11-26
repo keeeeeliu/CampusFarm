@@ -61,5 +61,5 @@ def check_battery():
         return battery
 
     except Exception as e:
-        print(f"Attempt {attempt} failed. Error extracting data: {e}")
+        print(f"Attempt failed. Error extracting data: {e}")
 
