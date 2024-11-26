@@ -244,6 +244,14 @@ def get_charge():
     global ev_miles_left
 
     ev_battery_dict = check_battery()
+    if not ev_battery_dict:
+       print("reattempt ford")
+       ev_battery_dict = check_battery() 
+
+    if not ev_battery_dict:
+       print("reattempt ford 2")
+       ev_battery_dict = check_battery() 
+    
     ev_charge = int(ev_battery_dict['percentage'])
     ev_miles_left = int(ev_battery_dict['miles_left'])
 

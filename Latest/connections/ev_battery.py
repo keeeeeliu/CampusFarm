@@ -17,11 +17,11 @@ def check_battery():
     try:
         # Wait for the email input field to become available
         email_field = wait.until(EC.presence_of_element_located((By.ID, 'signInName')))
-        email_field.send_keys('campusfarm@umich.edu') 
+        email_field.send_keys('nelfigs@umich.edu') 
 
         # Wait for the password input field to become available
         password_field = wait.until(EC.presence_of_element_located((By.ID, 'password')))
-        password_field.send_keys('cFSPC&EV!1')  
+        password_field.send_keys('cAmpusFarm$1')  
 
         # Wait for the sign-in button to be clickable and click it
         sign_in_button = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, 'button[type="submit"]')))
@@ -37,38 +37,29 @@ def check_battery():
 
     time.sleep(25)
     # Wait for the next page to load and the Charge Level element to be visible
-    max_retries = 3  # Set the maximum number of retries
-    attempt = 0
-    battery = {}
 
-    while attempt < max_retries:
-        try:
-            # Increment attempt counter
-            attempt += 1
-            
-            # Wait and extract charge level
-            charge_level_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box2-value"]')))
-            charge_level = charge_level_element.text.strip('%')  # Remove the % sign
-            print(f"Charge Level: {charge_level}")
+    try:
+        # Increment attempt counter
+        
+        
+        # Wait and extract charge level
+        charge_level_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box2-value"]')))
+        charge_level = charge_level_element.text.strip('%')  # Remove the % sign
+        print(f"Charge Level: {charge_level}")
 
-            # Wait and extract estimated distance
-            est_distance_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box3-value"]')))
-            est_distance = est_distance_element.text.strip(' mi')  # Remove the mi suffix
-            print(f"Estimated Distance: {est_distance}")
+        # Wait and extract estimated distance
+        est_distance_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box3-value"]')))
+        est_distance = est_distance_element.text.strip(' mi')  # Remove the mi suffix
+        print(f"Estimated Distance: {est_distance}")
 
-            # Update battery dictionary
-            battery['miles_left'] = est_distance
-            battery['percentage'] = charge_level
-            
-            # Close the driver and return data
-            driver.quit()
-            return battery
+        # Update battery dictionary
+        battery['miles_left'] = est_distance
+        battery['percentage'] = charge_level
+        
+        # Close the driver and return data
+        driver.quit()
+        return battery
 
-        except Exception as e:
-            print(f"Attempt {attempt} failed. Error extracting data: {e}")
-            
-            if attempt == max_retries:
-                print("Max retries reached. Exiting...")
-                driver.quit()
-                return None
+    except Exception as e:
+        print(f"Attempt {attempt} failed. Error extracting data: {e}")
 
