@@ -184,36 +184,25 @@ def plugged_in_and_charging():
 
     time.sleep(3)
 
-    max_retries = 3  # Set the maximum number of retries
-    attempt = 0
+    try:
+        # Locate the span element using its class name
+        status_box = driver.find_element(By.CLASS_NAME, 'ev_info_icon_section')
+        
+        # Extract the text content
+        status_text = status_box.text.strip()
+        print(f"Status text: {status_text}")
+        
+        # Check if the text matches "Not Charging: Manual override"
+        if "Not Charging: Manual override" in status_text or "Charging" in status_text or "Not Charging" in status_text:
+            connected = True
+            print("connected")
+        else:
+            connected = False
+            print("not connected")
 
-    while attempt < max_retries:
+    except Exception as e:
+        print("Error checking plug-in status:", e)
 
-        try:
-            attempt += 1
-            # Locate the span element using its class name
-            status_box = driver.find_element(By.CLASS_NAME, 'ev_info_icon_section')
-            
-            # Extract the text content
-            status_text = status_box.text.strip()
-            print(f"Status text: {status_text}")
-            
-            # Check if the text matches "Not Charging: Manual override"
-            if "Not Charging: Manual override" in status_text or "Charging" in status_text or "Not Charging" in status_text:
-                connected = True
-                print("connected")
-                attempt = 4
-            else:
-                connected = False
-                print("not connected")
-                attempt = 4
-
-        except Exception as e:
-            print("Error checking plug-in status:", e)
-            if attempt == max_retries:
-                    print("Max retries reached. Exiting...")
-                    driver.quit()
-                    return None
 
     ev_connection_status['connected'] = connected
     if connected == False:

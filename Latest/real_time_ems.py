@@ -45,6 +45,7 @@ coolth_timer = 0
 econ_timer = 0
 rules_timer = datetime.now()
 charging_timer = datetime.now()
+enphase_down = False
 ev_p5 = 958.33
 cooler_load = 0
 time_interval = 2 # mins
@@ -149,9 +150,11 @@ def functional_test_save():
     global ev_charge, ev_miles_left, pv_output, cooler_indoor_temp, ev_connected
     global total_power, power_map, ev_power, cooler_dirty_periods
     global ev_charging, ev_charge, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
+    global enphase_down
     with open('output_1125.txt', 'a') as file:
         file.write(f"realtime: {realtime}\n")
         file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
+        file.write(f"Enphase website down? {enphase_down}\n")
         file.write(f"ev charging ? {ev_charging}\n")
         file.write(f"current temp in cooler: {cooler_indoor_temp}")
         file.write(f"ev_charge: {ev_charge}, ev_miles_left: {ev_miles_left}, pv_output: {pv_output}, cooler_indoor_temp: {cooler_indoor_temp}, ev_connected: {ev_connected}\n")
@@ -190,6 +193,7 @@ def get_total_ems_ev_cooler_emissions():
 ############### data inputs ###############
 def bring_in_inverter_data():
     global power_map
+    old_power_map = power_map
     power_map = get_inverter_data()
     if not power_map:
         print("reattempt solark")
@@ -197,6 +201,17 @@ def bring_in_inverter_data():
     if not power_map:
         print("reattempt solark 2")
         power_map = get_inverter_data()
+    if not power_map:
+        print("reattempt solark 3")
+        power_map = get_inverter_data()
+    if not power_map:
+        print("reattempt solark 4")
+        power_map = get_inverter_data()
+    if not power_map:
+        print("reattempt solark 5")
+        power_map = get_inverter_data()
+    if not power_map:
+        power_map = old_power_map
 
 def get_pv():
     global pv_output
@@ -224,15 +239,29 @@ def get_cooler_temp():
 def get_is_ev_conn_and_charging():
     global ev_charging
     global ev_connected
+    global enphase_down
     connection_dict = plugged_in_and_charging()
-    if not connection_dict:
+    enphase_down = False
+    if len(connection_dict) != 2: #should be size two if it worked
         print("reattempt enphase")
         connection_dict = plugged_in_and_charging()
-    if not connection_dict:
+    if len(connection_dict) != 2:
         print("reattempt enphase 2")
         connection_dict = plugged_in_and_charging()
-    ev_connected = connection_dict['connected']
-    ev_charging = connection_dict['charging']
+    if len(connection_dict) != 2:
+        print("reattempt enphase 3")
+        connection_dict = plugged_in_and_charging()
+    if len(connection_dict) != 2:
+        print("reattempt enphase 4")
+        connection_dict = plugged_in_and_charging()
+    if len(connection_dict) != 2:
+        print("reattempt enphase 5")
+        connection_dict = plugged_in_and_charging()
+        enphase_down = True
+    
+    if enphase_down == False:
+        ev_connected = connection_dict['connected']
+        ev_charging = connection_dict['charging']
 
 def get_total_power():
     global total_power
@@ -244,6 +273,9 @@ def get_charge():
     global ev_charge
     global ev_miles_left
 
+    old_ev_charge = ev_charge
+    old_ev_miles_left = ev_miles_left
+
     ev_battery_dict = check_battery()
     if not ev_battery_dict:
        print("reattempt ford")
@@ -253,8 +285,25 @@ def get_charge():
        print("reattempt ford 2")
        ev_battery_dict = check_battery() 
     
-    ev_charge = int(ev_battery_dict['percentage'])
-    ev_miles_left = int(ev_battery_dict['miles_left'])
+    if not ev_battery_dict:
+       print("reattempt ford 3")
+       ev_battery_dict = check_battery() 
+    
+    if not ev_battery_dict:
+       print("reattempt ford 4")
+       ev_battery_dict = check_battery() 
+
+    if not ev_battery_dict:
+       print("reattempt ford 5")
+       ev_battery_dict = check_battery() 
+    
+    if not ev_battery_dict:
+       print("setting to old battery values")
+       ev_charge = old_ev_charge
+       ev_miles_left = old_ev_miles_left
+    else:
+        ev_charge = int(ev_battery_dict['percentage'])
+        ev_miles_left = int(ev_battery_dict['miles_left'])
 
 
 def get_amount_of_clean_periods():
@@ -543,8 +592,9 @@ def main():
     generate_new_clean_periods()
     last_24_hour_run = datetime.now()
 
-    try:
-        while True:
+    
+    while True:
+        try:
             # print(f"Current ev_charge: {ev_charge}")
             # print(f"Realtime: {datetime.now()}")
             #get_wifi_status()
@@ -575,8 +625,8 @@ def main():
             print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
             print(f"Current Setpoint: {CURRENT_SETPOINT}")
             time.sleep(300)
-    except KeyboardInterrupt:
-        print("Program interrupted and stopped.")
+        except KeyboardInterrupt:
+            print("Program interrupted and stopped.")
     
 
 if __name__ == "__main__":
