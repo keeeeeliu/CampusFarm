@@ -332,6 +332,10 @@ def get_wifi_status():
 def send_cooler_decision(setpoint):
     return change_setpoint(setpoint)
 
+def send_temp_to_automation():
+    global cooler_indoor_temp
+    return cooler_indoor_temp
+
 def send_charging_decision(OnOFF:bool):
     if OnOFF:
         charger_on()
@@ -359,7 +363,7 @@ def star_adjust_temp_setpoint_coolth():
     with open('output_1126.txt', 'a') as file:
         # adjust temperature setpoint  
         if CURRENT_SETPOINT != SETPOINT_COOLTH:
-            cooler_indoor_temp = send_cooler_decision(SETPOINT_COOLTH)
+            send_cooler_decision(SETPOINT_COOLTH)
             file.write(f"Decision:\n")
             file.write(f"{realtime}: send_cooler_decision({SETPOINT_COOLTH}, CURRENT_SETPOINT != SETPOINT_COOLTH\n")
             functional_test_save()
@@ -375,7 +379,7 @@ def star_adjust_temp_setpoint_coolth():
                     functional_test_save()
 
                 elif (time.time() - coolth_timer) >= MAX_COOLTH_TIME_LIMIT:
-                    cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                    send_cooler_decision(SETPOINT_DEFAULT)
                     file.write(f"DECISION/EVENT:\n")
                     file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, max coolth time limit hit!\n")
                     functional_test_save()
@@ -502,14 +506,14 @@ def ems():
         else: # daytime && night --- no excess PV
             if realtime not in cooler_dirty_periods and CURRENT_SETPOINT != SETPOINT_DEFAULT:
                 # TODO do some coolth? 
-                cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                send_cooler_decision(SETPOINT_DEFAULT)
                 file.write(f"Decision:\n")
                 file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, not in a cooler dirty period\n")
                 functional_test_save()
                 CURRENT_SETPOINT = SETPOINT_DEFAULT
             else:
                 if CURRENT_SETPOINT != SETPOINT_ECON:
-                    cooler_indoor_temp = send_cooler_decision(SETPOINT_ECON)
+                    send_cooler_decision(SETPOINT_ECON)
                     file.write(f"Decision:\n")
                     file.write(f"{realtime}: send_cooler_decision({SETPOINT_ECON}, in a cooler dirty period\n")
                     functional_test_save()
@@ -525,7 +529,7 @@ def ems():
                             functional_test_save()
 
                         elif (time.time() - econ_timer) >= MAX_ECON_TIME_LIMIT:
-                            cooler_indoor_temp = send_cooler_decision(SETPOINT_DEFAULT)
+                            send_cooler_decision(SETPOINT_DEFAULT)
                             file.write(f"Decision/EVENT:\n")
                             file.write(f"{realtime}: stopping econ timer reached limit \n")
                             file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}\n")

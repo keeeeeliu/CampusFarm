@@ -6,6 +6,7 @@ import undetected_chromedriver as uc
 from selenium import webdriver
 import chromedriver_autoinstaller
 from selenium.webdriver.chrome.service import Service
+from real_time_ems import send_temp_to_automation
 import time
 
 # # Disable the __del__ method to prevent errors from being printed
@@ -148,30 +149,31 @@ def get_coolbot_temp():
 
 def change_setpoint(updated_value):
     """Function that access the CoolBot website and temperature sensor website and change the temperature based on the input value."""
-    coolbot_temp = None
-    sensor_temp = None
-    current_value = None
-    # Extract the temperature from coolbot until success
-    while coolbot_temp == None:
-        try:
-            coolbot_temp = get_coolbot_temp()
-        except Exception as e:
-            print(f"An Error has occurred while extracting the coolbot temperature: {e}.")
+    # coolbot_temp = None
+    # sensor_temp = None
+    # current_value = None
+    # # Extract the temperature from coolbot until success
+    # while coolbot_temp == None:
+    #     try:
+    #         coolbot_temp = get_coolbot_temp()
+    #     except Exception as e:
+    #         print(f"An Error has occurred while extracting the coolbot temperature: {e}.")
     
-    # Extract the temperature from sensor until success
-    while sensor_temp == None:
-        try:
-            sensor_temp = get_sensor_temp()
-        except Exception as e:
-            print("An Error has occured while extracting the sensor temperature: {e}.")
+    # # Extract the temperature from sensor until success
+    # while sensor_temp == None:
+    #     try:
+    #         sensor_temp = get_sensor_temp()
+    #     except Exception as e:
+    #         print("An Error has occured while extracting the sensor temperature: {e}.")
     
-    print(f"Temperature from Sensor: {sensor_temp}, Temperature from CoolBot: {coolbot_temp}")
+    # print(f"Temperature from Sensor: {sensor_temp}, Temperature from CoolBot: {coolbot_temp}")
 
-    temp = (coolbot_temp + sensor_temp) / 2
+    # temp = (coolbot_temp + sensor_temp) / 2
+    temp = send_temp_to_automation()
     # if the current temperature is within the updated setpoint range
     if updated_value - 2 <= temp and temp <= updated_value + 2:
         print(f"Temperature is within the range of the updated setpoint: {updated_value} - 2 <= {temp} <= {updated_value} + 2")
-        return temp
+        #return temp
     
     while updated_value != current_value:
         try:
@@ -182,5 +184,5 @@ def change_setpoint(updated_value):
         except Exception as e:
             print(f"An Error has occurred for Cooler Web Automation: {e}")
 
-    return temp
+    #return temp
     
