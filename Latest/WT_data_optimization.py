@@ -4,7 +4,7 @@ import numpy as np
 from datetime import datetime, timedelta
 import matplotlib.dates as mdates
 from closestDelivery import get_next_delivery, read_schedule_from_csv
-from real_time_ems import get_amount_of_clean_periods
+# from real_time_ems import get_amount_of_clean_periods
 # import test as test
 import csv
 import pytz
