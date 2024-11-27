@@ -85,6 +85,8 @@ def get_moer(token):
     global hours_difference
     print(hours_difference)
     print(min_time_difference)
+    if hours_difference > 72:
+        hours_difference = 72
 
     params = {
         "region": "MISO_DETROIT",
