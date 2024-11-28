@@ -192,8 +192,7 @@ def plugged_in_and_charging():
         status_text = status_box.text.strip()
         print(f"Status text: {status_text}")
         
-        # Check if the text matches "Not Charging: Manual override"
-        if "Not Charging: Manual override" in status_text or "Charging" in status_text or "Not Charging" in status_text:
+        if "Not Charging: Manual override" in status_text or "Charging" in status_text or "Not Charging" in status_text or "Not Charging: EV not ready" in status_text:
             connected = True
             print("connected")
         else:
