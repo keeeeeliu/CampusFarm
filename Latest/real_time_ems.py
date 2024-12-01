@@ -253,6 +253,7 @@ def get_is_ev_conn_and_charging():
     if len(connection_dict) != 2:
         print("reattempt enphase 5")
         connection_dict = plugged_in_and_charging()
+    if len(connection_dict) != 2:
         enphase_down = True
     
     if enphase_down == False:
