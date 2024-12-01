@@ -489,7 +489,7 @@ def ems():
     
 
         ############### Rules Section ######################
-        if pv_output > total_power and grid_power == 0: # daytime 
+        if grid_power == 0 and (pv_output > total_power): # daytime 
             if ev_charging:
                 star_adjust_temp_setpoint_coolth()
         

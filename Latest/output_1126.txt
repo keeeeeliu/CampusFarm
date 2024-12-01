@@ -22,3 +22,483 @@ ev_miles_travelled: 0, grid_power: 53, solar_power_used: 0
 
 Decision:
 2024-11-26 16:06:54.038631: send_charging_decision(True)
+realtime: 2024-11-26 16:13:22.692181
+Current Setpoint: 32
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 41.56ev_charge: 100, ev_miles_left: 256, pv_output: 610, cooler_indoor_temp: 41.56, ev_connected: True
+total_power: 0, power_map: {'Solar W': '610W', 'Battery W': '14W', 'Grid W': '132W', 'Consumed W': '587W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 132, solar_power_used: 0
+
+realtime: 2024-11-26 16:13:22.692181
+Current Setpoint: 32
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 41.56ev_charge: 100, ev_miles_left: 256, pv_output: 610, cooler_indoor_temp: 41.56, ev_connected: True
+total_power: 0, power_map: {'Solar W': '610W', 'Battery W': '14W', 'Grid W': '132W', 'Consumed W': '587W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 132, solar_power_used: 0
+
+Decision:
+2024-11-26 16:13:22.692181: send_charging_decision(True)
+Decision:
+2024-11-26 16:13:22.692181: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 16:20:42.930203
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 39.76ev_charge: 100, ev_miles_left: 256, pv_output: 2238, cooler_indoor_temp: 39.76, ev_connected: True
+total_power: 0, power_map: {'Solar W': '2238W', 'Battery W': '12W', 'Grid W': '319W', 'Consumed W': '2413W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 319, solar_power_used: 0
+
+realtime: 2024-11-26 16:20:42.930203
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 39.76ev_charge: 100, ev_miles_left: 256, pv_output: 2238, cooler_indoor_temp: 39.76, ev_connected: True
+total_power: 0, power_map: {'Solar W': '2238W', 'Battery W': '12W', 'Grid W': '319W', 'Consumed W': '2413W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 319, solar_power_used: 0
+
+Decision:
+2024-11-26 16:20:42.930203: send_charging_decision(True), already charging, do nothing
+Decision:
+2024-11-26 16:20:42.930203: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 16:28:03.772697
+Current Setpoint: 32
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 40.89ev_charge: 100, ev_miles_left: 256, pv_output: 2086, cooler_indoor_temp: 40.89, ev_connected: True
+total_power: 0, power_map: {'Solar W': '2086W', 'Battery W': '10W', 'Grid W': '37W', 'Consumed W': '1891W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 37, solar_power_used: 0
+
+realtime: 2024-11-26 16:28:03.772697
+Current Setpoint: 32
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 40.89ev_charge: 100, ev_miles_left: 256, pv_output: 2086, cooler_indoor_temp: 40.89, ev_connected: True
+total_power: 0, power_map: {'Solar W': '2086W', 'Battery W': '10W', 'Grid W': '37W', 'Consumed W': '1891W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 37, solar_power_used: 0
+
+Decision:
+2024-11-26 16:28:03.772697: send_charging_decision(True)
+Decision:
+2024-11-26 16:28:03.772697: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 16:35:31.103207
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 39.2ev_charge: 100, ev_miles_left: 256, pv_output: 1873, cooler_indoor_temp: 39.2, ev_connected: True
+total_power: 0, power_map: {'Solar W': '1873W', 'Battery W': '8W', 'Grid W': '658W', 'Consumed W': '2383W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 658, solar_power_used: 0
+
+realtime: 2024-11-26 16:35:31.103207
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 39.2ev_charge: 100, ev_miles_left: 256, pv_output: 1873, cooler_indoor_temp: 39.2, ev_connected: True
+total_power: 0, power_map: {'Solar W': '1873W', 'Battery W': '8W', 'Grid W': '658W', 'Consumed W': '2383W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 658, solar_power_used: 0
+
+Decision:
+2024-11-26 16:35:31.103207: send_charging_decision(True), already charging, do nothing
+Decision:
+2024-11-26 16:35:31.103207: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 16:42:06.710164
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 40.1ev_charge: 100, ev_miles_left: 256, pv_output: 1145, cooler_indoor_temp: 40.1, ev_connected: True
+total_power: 0, power_map: {'Solar W': '1145W', 'Battery W': '10W', 'Grid W': '932W', 'Consumed W': '1929W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 932, solar_power_used: 0
+
+realtime: 2024-11-26 16:42:06.710164
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 40.1ev_charge: 100, ev_miles_left: 256, pv_output: 1145, cooler_indoor_temp: 40.1, ev_connected: True
+total_power: 0, power_map: {'Solar W': '1145W', 'Battery W': '10W', 'Grid W': '932W', 'Consumed W': '1929W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 932, solar_power_used: 0
+
+Decision:
+2024-11-26 16:42:06.710164: send_charging_decision(True), already charging, do nothing
+Decision:
+2024-11-26 16:42:06.710164: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 16:49:02.655008
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 38.64ev_charge: 100, ev_miles_left: 256, pv_output: 241, cooler_indoor_temp: 38.64, ev_connected: True
+total_power: 0, power_map: {'Solar W': '241W', 'Battery W': '10W', 'Grid W': '2364W', 'Consumed W': '2433W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 2364, solar_power_used: 0
+
+realtime: 2024-11-26 16:49:02.655008
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 38.64ev_charge: 100, ev_miles_left: 256, pv_output: 241, cooler_indoor_temp: 38.64, ev_connected: True
+total_power: 0, power_map: {'Solar W': '241W', 'Battery W': '10W', 'Grid W': '2364W', 'Consumed W': '2433W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 2364, solar_power_used: 0
+
+Decision:
+2024-11-26 16:49:02.655008: send_charging_decision(True), already charging, do nothing
+Decision:
+2024-11-26 16:49:02.655008: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 16:55:42.646375
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 39.42ev_charge: 100, ev_miles_left: 256, pv_output: 181, cooler_indoor_temp: 39.42, ev_connected: True
+total_power: 0, power_map: {'Solar W': '181W', 'Battery W': '13W', 'Grid W': '1904W', 'Consumed W': '1927W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 1904, solar_power_used: 0
+
+realtime: 2024-11-26 16:55:42.646375
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? True
+current temp in cooler: 39.42ev_charge: 100, ev_miles_left: 256, pv_output: 181, cooler_indoor_temp: 39.42, ev_connected: True
+total_power: 0, power_map: {'Solar W': '181W', 'Battery W': '13W', 'Grid W': '1904W', 'Consumed W': '1927W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: True, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 1904, solar_power_used: 0
+
+Decision:
+2024-11-26 16:55:42.646375: send_charging_decision(True), already charging, do nothing
+Decision:
+2024-11-26 16:55:42.646375: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 17:02:35.814484
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.96ev_charge: 100, ev_miles_left: 256, pv_output: 100, cooler_indoor_temp: 37.96, ev_connected: True
+total_power: 0, power_map: {'Solar W': '100W', 'Battery W': '12W', 'Grid W': '823W', 'Consumed W': '769W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 823, solar_power_used: 0
+
+realtime: 2024-11-26 17:02:35.814484
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.96ev_charge: 100, ev_miles_left: 256, pv_output: 100, cooler_indoor_temp: 37.96, ev_connected: True
+total_power: 0, power_map: {'Solar W': '100W', 'Battery W': '12W', 'Grid W': '823W', 'Consumed W': '769W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 823, solar_power_used: 0
+
+Decision:
+2024-11-26 17:02:35.814484: send_charging_decision(True)
+Decision:
+2024-11-26 17:02:35.814484: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 17:09:41.108028
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 38.86ev_charge: 100, ev_miles_left: 256, pv_output: 78, cooler_indoor_temp: 38.86, ev_connected: True
+total_power: 0, power_map: {'Solar W': '78W', 'Battery W': '13W', 'Grid W': '359W', 'Consumed W': '279W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 359, solar_power_used: 0
+
+realtime: 2024-11-26 17:09:41.108028
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 38.86ev_charge: 100, ev_miles_left: 256, pv_output: 78, cooler_indoor_temp: 38.86, ev_connected: True
+total_power: 0, power_map: {'Solar W': '78W', 'Battery W': '13W', 'Grid W': '359W', 'Consumed W': '279W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 359, solar_power_used: 0
+
+Decision:
+2024-11-26 17:09:41.108028: send_charging_decision(True)
+Decision:
+2024-11-26 17:09:41.108028: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 17:16:52.625402
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.96ev_charge: 100, ev_miles_left: 256, pv_output: 49, cooler_indoor_temp: 37.96, ev_connected: True
+total_power: 0, power_map: {'Solar W': '49W', 'Battery W': '13W', 'Grid W': '393W', 'Consumed W': '277W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 393, solar_power_used: 0
+
+realtime: 2024-11-26 17:16:52.625402
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.96ev_charge: 100, ev_miles_left: 256, pv_output: 49, cooler_indoor_temp: 37.96, ev_connected: True
+total_power: 0, power_map: {'Solar W': '49W', 'Battery W': '13W', 'Grid W': '393W', 'Consumed W': '277W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 393, solar_power_used: 0
+
+Decision:
+2024-11-26 17:16:52.625402: send_charging_decision(True)
+Decision:
+2024-11-26 17:16:52.625402: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 17:23:51.728048
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 38.64ev_charge: 100, ev_miles_left: 256, pv_output: 47, cooler_indoor_temp: 38.64, ev_connected: True
+total_power: 0, power_map: {'Solar W': '47W', 'Battery W': '12W', 'Grid W': '395W', 'Consumed W': '279W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 395, solar_power_used: 0
+
+realtime: 2024-11-26 17:23:51.728048
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 38.64ev_charge: 100, ev_miles_left: 256, pv_output: 47, cooler_indoor_temp: 38.64, ev_connected: True
+total_power: 0, power_map: {'Solar W': '47W', 'Battery W': '12W', 'Grid W': '395W', 'Consumed W': '279W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 395, solar_power_used: 0
+
+Decision:
+2024-11-26 17:23:51.728048: send_charging_decision(True)
+Decision:
+2024-11-26 17:23:51.728048: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 17:31:18.411577
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.95ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.95, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '16W', 'Grid W': '765W', 'Consumed W': '650W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 765, solar_power_used: 0
+
+realtime: 2024-11-26 17:31:18.411577
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.95ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.95, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '16W', 'Grid W': '765W', 'Consumed W': '650W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 765, solar_power_used: 0
+
+Decision:
+2024-11-26 17:31:18.411577: send_charging_decision(True)
+Decision:
+2024-11-26 17:31:18.411577: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 17:38:24.001715
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.96ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 37.96, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '13W', 'Grid W': '396W', 'Consumed W': '280W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 396, solar_power_used: 0
+
+realtime: 2024-11-26 17:38:24.001715
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.96ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 37.96, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '13W', 'Grid W': '396W', 'Consumed W': '280W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 396, solar_power_used: 0
+
+Decision:
+2024-11-26 17:38:24.001715: send_charging_decision(True)
+Decision:
+2024-11-26 17:38:24.001715: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 17:45:46.354728
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.95ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.95, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '16W', 'Grid W': '810W', 'Consumed W': '696W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 810, solar_power_used: 0
+
+realtime: 2024-11-26 17:45:46.354728
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.95ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.95, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '16W', 'Grid W': '810W', 'Consumed W': '696W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 810, solar_power_used: 0
+
+Decision:
+2024-11-26 17:45:46.354728: send_charging_decision(True)
+Decision:
+2024-11-26 17:45:46.354728: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 17:52:44.776864
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.51ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 37.51, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '17W', 'Grid W': '400W', 'Consumed W': '285W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 400, solar_power_used: 0
+
+realtime: 2024-11-26 17:52:44.776864
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.51ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 37.51, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '17W', 'Grid W': '400W', 'Consumed W': '285W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 400, solar_power_used: 0
+
+Decision:
+2024-11-26 17:52:44.776864: send_charging_decision(True)
+Decision:
+2024-11-26 17:52:44.776864: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 18:00:04.359907
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.61ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.61, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '19W', 'Grid W': '825W', 'Consumed W': '709W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 825, solar_power_used: 0
+
+realtime: 2024-11-26 18:00:04.359907
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.61ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.61, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '19W', 'Grid W': '825W', 'Consumed W': '709W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 825, solar_power_used: 0
+
+Decision:
+2024-11-26 18:00:04.359907: send_charging_decision(True)
+Decision:
+2024-11-26 18:00:04.359907: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 18:07:07.050554
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.17ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 37.17, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '20W', 'Grid W': '395W', 'Consumed W': '280W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 395, solar_power_used: 0
+
+realtime: 2024-11-26 18:07:07.050554
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 37.17ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 37.17, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '20W', 'Grid W': '395W', 'Consumed W': '280W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 395, solar_power_used: 0
+
+Decision:
+2024-11-26 18:07:07.050554: send_charging_decision(True)
+Decision:
+2024-11-26 18:07:07.050554: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 18:14:30.533792
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.39ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.39, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '22W', 'Grid W': '921W', 'Consumed W': '807W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 921, solar_power_used: 0
+
+realtime: 2024-11-26 18:14:30.533792
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.39ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.39, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '22W', 'Grid W': '921W', 'Consumed W': '807W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 921, solar_power_used: 0
+
+Decision:
+2024-11-26 18:14:30.533792: send_charging_decision(True)
+Decision:
+2024-11-26 18:14:30.533792: send_cooler_decision(48, in a cooler dirty period
+realtime: 2024-11-26 18:21:27.231731
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.84ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.84, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '17W', 'Grid W': '728W', 'Consumed W': '613W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 728, solar_power_used: 0
+
+realtime: 2024-11-26 18:21:27.231731
+Current Setpoint: 48
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 36.84ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 36.84, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '17W', 'Grid W': '728W', 'Consumed W': '613W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 728, solar_power_used: 0
+
+Decision:
+2024-11-26 18:21:27.231731: send_charging_decision(True)
+Decision:
+2024-11-26 18:21:27.231731: send_cooler_decision(41, not in a cooler dirty period
+realtime: 2024-11-26 18:28:51.954777
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 35.94ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 35.94, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '18W', 'Grid W': '398W', 'Consumed W': '282W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 398, solar_power_used: 0
+
+realtime: 2024-11-26 18:28:51.954777
+Current Setpoint: 41
+Enphase website down? False
+ev charging ? False
+current temp in cooler: 35.94ev_charge: 100, ev_miles_left: 256, pv_output: 0, cooler_indoor_temp: 35.94, ev_connected: True
+total_power: 0, power_map: {'Solar W': '0W', 'Battery W': '18W', 'Grid W': '398W', 'Consumed W': '282W'}, ev_power: 0, cooler_dirty_periods: []
+ev_charging: False, driving: False
+ev_p5: 958.33, cooler_load: 0
+ev_miles_travelled: 0, grid_power: 398, solar_power_used: 0
+
+Decision:
+2024-11-26 18:28:51.954777: send_charging_decision(True)
+Decision:
+2024-11-26 18:28:51.954777: send_cooler_decision(48, in a cooler dirty period
