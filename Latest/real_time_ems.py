@@ -1,19 +1,15 @@
+############## Imports ###############
+
 import tkinter as tk
-import threading
 import time
 from datetime import datetime
-from tkinter import messagebox
 import json
-import subprocess
 import pytz
 from datetime import datetime, timedelta
 import math
-import webAPI
+#import webAPI
 import requests
 
-
-# import curret_watt_time as wt
-import csv
 from astral import LocationInfo
 from astral.sun import sun 
 from connections.charger.solArk_inverter import get_inverter_data
@@ -26,8 +22,9 @@ from wifistatus import check_wifi_status_ifconfig
 from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
 from WT_accounting import get_wt
 from WT_data_optimization import get_48h_wt
-##### how to call this? -->  generate_dirty_periods(get_amount_of_dirty_periods())
 
+
+############## Globals ###################
 realtime = datetime.now()
 ev_charge = 100
 ev_miles_left = 0
@@ -36,7 +33,6 @@ cooler_indoor_temp = 41
 ev_connected = True # EV charger plugged in? 
 total_power = 0
 power_map = {}
-ev_power = 0
 cooler_dirty_periods = []
 ev_clean_periods = []
 ev_nonEMS_charging_periods = []
@@ -85,7 +81,7 @@ wifi_status = True
 
 ############# constants #################
 EV_CHARGING_RATE = 11.5 ## kW 
-EV_CAPPACITY = 131 ## kWh
+EV_CAPACITY = 131 ## kWh
 
 ############## Test Mode ################
 EMS_EV = True
@@ -148,7 +144,7 @@ def functional_test_save():
     #save all variables to csv
     global realtime
     global ev_charge, ev_miles_left, pv_output, cooler_indoor_temp, ev_connected
-    global total_power, power_map, ev_power, cooler_dirty_periods
+    global total_power, power_map, cooler_dirty_periods
     global ev_charging, ev_charge, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
     global enphase_down
     with open('output_1126.txt', 'a') as file:
@@ -158,7 +154,7 @@ def functional_test_save():
         file.write(f"ev charging ? {ev_charging}\n")
         file.write(f"current temp in cooler: {cooler_indoor_temp}")
         file.write(f"ev_charge: {ev_charge}, ev_miles_left: {ev_miles_left}, pv_output: {pv_output}, cooler_indoor_temp: {cooler_indoor_temp}, ev_connected: {ev_connected}\n")
-        file.write(f"total_power: {total_power}, power_map: {power_map}, ev_power: {ev_power}, cooler_dirty_periods: {cooler_dirty_periods}\n")
+        file.write(f"total_power: {total_power}, power_map: {power_map}, cooler_dirty_periods: {cooler_dirty_periods}\n")
         file.write(f"ev_charging: {ev_charging}, driving: {driving}\n")
         file.write(f"ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
         file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n\n")
@@ -308,11 +304,11 @@ def get_charge():
 
 def get_amount_of_clean_periods():
     global EV_CHARGING_RATE
-    global EV_CAPPACITY
+    global EV_CAPACITY
     global ev_charge
     global EV_PERCENT_DESIRED
     global time_interval
-    result = (((EV_PERCENT_DESIRED - ev_charge)/100 * EV_CAPPACITY) / EV_CHARGING_RATE) * 60 / time_interval
+    result = (((EV_PERCENT_DESIRED - ev_charge)/100 * EV_CAPACITY) / EV_CHARGING_RATE) * 60 / time_interval
     return math.ceil(result)
 
 def get_amount_of_dirty_periods():
@@ -397,15 +393,10 @@ def update_inverter_data():
     global power_map
     global pv_output
     global grid_power
-    # while True:
     bring_in_inverter_data()
     pv_output = int(power_map["Solar W"][:-1])
     grid_power = int(power_map["Grid W"][:-1])
 
-# def update_charge_data():
-#     while True:
-#         get_charge()
-#         time.sleep(300)  # Update every 5 minutes
 
 ############### decision rules ###############
 def ems():
@@ -422,7 +413,7 @@ def ems():
     global coolth_timer
     global econ_timer
     global EV_CHARGING_RATE
-    global EV_CAPPACITY
+    global EV_CAPACITY
     global SETPOINT_DEFAULT
     global SETPOINT_COOLTH
     global SETPOINT_ECON
@@ -589,7 +580,7 @@ def ems():
         rules_timer = datetime.now()
 
 
-############### multi-thread ###############
+############### main ###############
 def main():
     global ev_charge, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run
     get_cooler_temp()
@@ -601,64 +592,31 @@ def main():
         try:
             # print(f"Current ev_charge: {ev_charge}")
             # print(f"Realtime: {datetime.now()}")
-            #get_wifi_status()
-            # if wifi_status:
-            #     get_is_ev_conn_and_charging()
-            #     #get_charge()
-            #     update_inverter_data()
-            #     update_realtime()
-            #     # get_cooler_temp()
-            #     ems()
-            ########### this block: generate dirty periods sheet once per day
-            if datetime.now() - last_24_hour_run >= timedelta(hours=24):
-                generate_dirty_periods(get_amount_of_clean_periods)
-                save_dirty_periods()
-                load_dirty_periods()
-                last_24_hour_run = datetime.now()  # Update the last run time
-            ############
-            update_realtime()
-            get_is_ev_conn_and_charging()
-            update_inverter_data()
-            get_cooler_temp()
-            ems()
-            print(f"EV Charge: {ev_charge}%")
-            print(f"PV Output: {pv_output}W")
-            print(f"Grid Power: {grid_power}W")
-            print(f"Wifi Connected: {wifi_status}")
-            print(f"EV Charging Status: {ev_charging}")
-            print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
-            print(f"Current Setpoint: {CURRENT_SETPOINT}")
-            time.sleep(300)
+            get_wifi_status()
+            if wifi_status:
+                ########### this block: generate dirty periods sheet once per day
+                if datetime.now() - last_24_hour_run >= timedelta(hours=24):
+                    generate_dirty_periods(get_amount_of_clean_periods)
+                    save_dirty_periods()
+                    load_dirty_periods()
+                    last_24_hour_run = datetime.now()  # Update the last run time
+                ############
+                update_realtime()
+                get_is_ev_conn_and_charging()
+                update_inverter_data()
+                get_cooler_temp()
+                ems()
+                print(f"EV Charge: {ev_charge}%")
+                print(f"PV Output: {pv_output}W")
+                print(f"Grid Power: {grid_power}W")
+                print(f"Wifi Connected: {wifi_status}")
+                print(f"EV Charging Status: {ev_charging}")
+                print(f"Cooler Indoor Temp: {cooler_indoor_temp}F")
+                print(f"Current Setpoint: {CURRENT_SETPOINT}")
+                time.sleep(300)
         except KeyboardInterrupt:
             print("Program interrupted and stopped.")
     
 
 if __name__ == "__main__":
     main()
-    # print(get_amount_of_clean_periods())
-
-    # print(ev_charging)
-
-    ######## check cooler command functionality ########
-    # send_cooler_decision(34)
-
-
-    ######### check ev connection functionality ########
-    # get_ev_connection()
-    # print(ev_connected)
-    # get_charge()
-    # print(ev_charge)
-    # print(ev_miles_left)
-
-    ######### check clean periods extraction functionality ########
-    # load_clean_periods()
-    # if is_realtime_in_clean_periods(realtime,ev_clean_periods):
-    #     print(f"Current time {realtime.strftime('%H:%M')} is within a clean period.")
-    # else:
-    #     print(f"Current time {realtime.strftime('%H:%M')} is NOT within a clean period.")
-
-    ######### check inverter #########
-    # bring_in_inverter_data()
-    # print(power_map)
-
-    
