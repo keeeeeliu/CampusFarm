@@ -5,9 +5,9 @@ import csv
 import os
 
 def check_wifi_status_ifconfig():
-    result = subprocess.run(['ifconfig'], capture_output=True, text=True)
+    result = subprocess.run(["netsh", "wlan", "show", "interfaces"], capture_output=True, text=True)
     # print(result)
-    if 'status: active' in result.stdout:
+    if 'State' in result.stdout and "connected" in result.stdout.lower():
         # print("Wi-Fi is active.")
         return True 
         # return "active"

@@ -203,12 +203,15 @@ def plugged_in_and_charging():
         print("Error checking plug-in status:", e)
 
 
-    ev_connection_status['connected'] = connected
-    if connected == False:
-        ev_connection_status['charging'] = False
-        driver.quit()
-        print("Therefore not charging")
-        return ev_connection_status
+    try:
+        ev_connection_status['connected'] = connected
+        if connected == False:
+            ev_connection_status['charging'] = False
+            driver.quit()
+            print("Therefore not charging")
+            return ev_connection_status
+    except Exception as e:
+        print("Error checking plug-in status: ", e)
 
     time.sleep(5)  # Ensure the new tab's content loads completely
 

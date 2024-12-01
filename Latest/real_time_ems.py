@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import math
 #import webAPI
 import requests
+import subprocess
 
 from astral import LocationInfo
 from astral.sun import sun 
