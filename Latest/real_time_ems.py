@@ -30,7 +30,7 @@ realtime = datetime.now()
 ev_charge = 100
 ev_miles_left = 0
 pv_output = 0
-cooler_indoor_temp = 41
+cooler_indoor_temp = 33
 ev_connected = True # EV charger plugged in? 
 total_power = 0
 power_map = {}
@@ -148,7 +148,7 @@ def functional_test_save():
     global total_power, power_map, cooler_dirty_periods
     global ev_charging, ev_charge, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
     global enphase_down
-    with open('output_1126.txt', 'a') as file:
+    with open('output_1202.txt', 'a') as file:
         file.write(f"realtime: {realtime}\n")
         file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
         file.write(f"Enphase website down? {enphase_down}\n")
@@ -358,7 +358,7 @@ def star_adjust_temp_setpoint_coolth():
     global realtime
     global coolth_timer
 
-    with open('output_1126.txt', 'a') as file:
+    with open('output_1202.txt', 'a') as file:
         # adjust temperature setpoint  
         if CURRENT_SETPOINT != SETPOINT_COOLTH:
             send_cooler_decision(SETPOINT_COOLTH)
@@ -425,7 +425,7 @@ def ems():
     global rules_timer
     global charging_timer
    
-    with open('output_1126.txt', 'a') as file:
+    with open('output_1202.txt', 'a') as file:
 
         ############### Charging in clean periods section ###################
 
