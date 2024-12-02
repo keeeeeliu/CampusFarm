@@ -45,7 +45,7 @@ charging_timer = datetime.now()
 enphase_down = False
 ev_p5 = 958.33
 cooler_load = 0
-time_interval = 2 # mins
+time_interval = 5 # mins
 ev_miles_travelled = 0 # 
 grid_power = 0 ##### read from inverter ('Grid' in power map)
 solar_power_used = 0 
@@ -310,7 +310,14 @@ def get_amount_of_clean_periods():
     global ev_charge
     global EV_PERCENT_DESIRED
     global time_interval
-    result = (((EV_PERCENT_DESIRED - ev_charge)/100 * EV_CAPACITY) / EV_CHARGING_RATE) * 60 / time_interval
+    if EV_PERCENT_DESIRED - ev_charge <= 0:
+        result = 0
+    else:
+        #result = (((EV_PERCENT_DESIRED - ev_charge)/100 * EV_CAPACITY) / EV_CHARGING_RATE) * 60 / time_interval
+        charge_needed_percentage = EV_PERCENT_DESIRED - ev_charge
+        charge_needed_kWh = (charge_needed_percentage / 100) * EV_CAPACITY
+        charging_time_hours = charge_needed_kWh / EV_CHARGING_RATE
+        result = (charging_time_hours * 60) / time_interval
     return math.ceil(result)
 
 def get_amount_of_dirty_periods():
