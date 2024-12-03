@@ -52,6 +52,9 @@ solar_power_used = 0
 driving = False
 dirtytime_threshold = 3 # hours 
 last_24_hour_run = datetime.now()
+#### globals for outdoor temp
+outdoor_temp = 0 # read from temp sensor
+vent_open = False
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
@@ -232,6 +235,35 @@ def get_cooler_temp():
     except (requests.exceptions.RequestException, ValueError) as e:
         print(f"An error occurred with the temp sensor trying automation: {e}")
         cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
+
+#### Get outdoor temp from temp sensor
+def get_outdoor_temp():
+    global outdoor_temp
+    pass
+
+#### Function to control the vent
+def open_vent():
+    global vent_open
+    vent_open = True
+    pass
+
+def close_vent():
+    global vent_open
+    vent_open = False
+    pass
+
+def change_vent():
+    global vent_open
+    global cooler_indoor_temp
+    global outdoor_temp, TMIN
+
+    if outdoor_temp < cooler_indoor_temp and cooler_indoor_temp > TMIN and not vent_open:
+        open_vent()
+    else:
+        if vent_open:
+            close_vent()
+    
+    return vent_open
 
 def get_is_ev_conn_and_charging():
     global ev_charging
