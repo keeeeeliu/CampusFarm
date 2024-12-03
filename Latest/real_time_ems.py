@@ -105,6 +105,30 @@ RULE_BASED_MODE = True
 OPTIMIZATION_MODE = True
 
 ############## utility function ##############
+
+# Load variables from JSON
+def load_UI_data():
+    global SETPOINT_COOLTH, SETPOINT_COOLTH, SETPOINT_ECON, MAX_COOLTH_TIME_LIMIT, MAX_ECON_TIME_LIMIT, EV_PERCENT_DESIRED, TMIN, TMAX, RULE_BASED_MODE, OPTIMIZATION_MODE, CURRENT_SETPOINT
+    with open("config.json", "r") as json_file:
+        config = json.load(json_file)
+
+    # Access variables
+    CURRENT_SETPOINT = config["current_temperature"]
+    TMIN = config["tmin"]
+    TMAX = config["tmax"]
+    SETPOINT_COOLTH = config["coolth"]
+    SETPOINT_ECON = config["econ"]
+    MAX_COOLTH_TIME_LIMIT = config["tolerance_time"]
+    MAX_ECON_TIME_LIMIT = config["tolerance_time"]
+    EV_PERCENT_DESIRED = config["current_charge"]
+    if config["current_mode"] == "Rule-Based":
+        RULE_BASED_MODE = True
+        OPTIMIZATION_MODE = False
+    elif config["current_mode"] == "optimization":
+        RULE_BASED_MODE = False
+        OPTIMIZATION_MODE = True
+
+
 def is_daytime(city="Detroit", country="USA"):
     location = LocationInfo(city, country)
     s = sun(location.observer, date=datetime.now().date())
