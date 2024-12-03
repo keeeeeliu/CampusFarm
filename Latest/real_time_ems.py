@@ -10,6 +10,7 @@ import math
 #import webAPI
 import requests
 import subprocess
+import re
 
 from astral import LocationInfo
 from astral.sun import sun 
@@ -250,46 +251,59 @@ def update_realtime():
     realtime = datetime.now()
 
 def get_cooler_temp():
-    url="http://192.168.0.160:5000/temperature"
+    url="http://192.168.0.160:5000/temperatures"
     global cooler_indoor_temp
+    global outdoor_temp
     try:
         print("temp sensor worked!")
         response = requests.get(url)
         response.raise_for_status() 
-        cooler_indoor_temp = float(response.text.strip())
-        print(cooler_indoor_temp)
+
+        temps = response.text
+
+        # Use regex to extract the numbers
+        numbers = re.findall(r"[-+]?\d*\.\d+|\d+", temps)
+
+        # Convert the extracted strings to floats
+        parsed_numbers = [float(num) for num in numbers]
+
+        # Separate and print them
+        cooler_indoor_temp = parsed_numbers[0]
+        outdoor_temp = parsed_numbers[1] 
+
     except (requests.exceptions.RequestException, ValueError) as e:
         print(f"An error occurred with the temp sensor trying automation: {e}")
         cooler_indoor_temp = (get_coolbot_temp() + get_sensor_temp()) / 2
 
-#### Get outdoor temp from temp sensor
-def get_outdoor_temp():
-    global outdoor_temp
-    pass
-
 #### Function to control the vent
-def open_vent():
+def toggle_vent():
     global vent_open
-    vent_open = True
-    pass
+    if vent_open:
+        vent_open = False
+    else:
+        vent_open = True
 
-def close_vent():
-    global vent_open
-    vent_open = False
-    pass
+    url = "http://192.168.0.160:5000/toggle_vent"
+    try:
+        response = requests.post(url)
+        if response.status_code == 200:
+            print("Vent toggled successfully!")
+        else:
+            print(f"Failed to toggle vent. Status code: {response.status_code}, Response: {response.text}")
+    except requests.RequestException as e:
+        print(f"An error occurred: {e}")
 
+        
 def change_vent():
     global vent_open
     global cooler_indoor_temp
     global outdoor_temp, TMIN
 
     if outdoor_temp < cooler_indoor_temp and cooler_indoor_temp > TMIN and not vent_open:
-        open_vent()
+        toggle_vent()
     else:
         if vent_open:
-            close_vent()
-    
-    return vent_open
+            toggle_vent()
 
 def get_is_ev_conn_and_charging():
     global ev_charging
@@ -701,6 +715,7 @@ def main():
                 get_is_ev_conn_and_charging()
                 update_inverter_data()
                 get_cooler_temp()
+                change_vent()
                 ems()
                 print(f"EV Charge: {ev_charge}%")
                 print(f"PV Output: {pv_output}W")
