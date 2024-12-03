@@ -124,7 +124,7 @@ def load_UI_data():
     if config["current_mode"] == "Rule-Based":
         RULE_BASED_MODE = True
         OPTIMIZATION_MODE = False
-    elif config["current_mode"] == "optimization":
+    elif config["current_mode"] == "Optimization":
         RULE_BASED_MODE = False
         OPTIMIZATION_MODE = True
 
