@@ -23,6 +23,7 @@ from wifistatus import check_wifi_status_ifconfig
 from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
 from WT_accounting import get_wt
 from WT_data_optimization import get_48h_wt
+from ems_UI import save_to_json, ui_main
 
 
 ############## Globals ###################
@@ -108,6 +109,7 @@ OPTIMIZATION_MODE = True
 
 # Load variables from JSON
 def load_UI_data():
+    save_to_json()
     global SETPOINT_COOLTH, SETPOINT_COOLTH, SETPOINT_ECON, MAX_COOLTH_TIME_LIMIT, MAX_ECON_TIME_LIMIT, EV_PERCENT_DESIRED, TMIN, TMAX, RULE_BASED_MODE, OPTIMIZATION_MODE, CURRENT_SETPOINT
     with open("config.json", "r") as json_file:
         config = json.load(json_file)
@@ -665,6 +667,7 @@ def main():
     get_cooler_temp()
     generate_new_clean_periods()
     last_24_hour_run = datetime.now()
+    ui_main()
 
     
     while True:
@@ -672,6 +675,7 @@ def main():
             # print(f"Current ev_charge: {ev_charge}")
             # print(f"Realtime: {datetime.now()}")
             get_wifi_status()
+            
             if wifi_status:
                 ########### this block: generate dirty periods sheet once per day
                 if datetime.now() - last_24_hour_run >= timedelta(hours=24):

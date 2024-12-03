@@ -603,7 +603,7 @@ def save_to_json():
     except Exception as e:
         print(f"Error saving configuration: {e}")
     
-def main():
+def ui_main():
     global tasks
     tasks = load_tasks_from_csv()
     # Start the main script thread
