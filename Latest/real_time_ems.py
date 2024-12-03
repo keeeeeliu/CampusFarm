@@ -522,26 +522,40 @@ def ems():
 
         ############### Rules Section ######################
         if grid_power == 0 and (pv_output > total_power): # daytime 
-            if ev_charging:
+
+            if cooler_indoor_temp < TMIN:
+                if CURRENT_SETPOINT != SETPOINT_ECON:
+                    send_cooler_decision(SETPOINT_ECON)
+                    CURRENT_SETPOINT = SETPOINT_ECON
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: setting cooler decision to ECON - too cold inside the cooler!\n")
+                    functional_test_save()
+            else:
                 star_adjust_temp_setpoint_coolth()
         
-            else:
+            if ev_charging == False:
                 if ev_connected and ((pv_output*.0833) > ((total_power*.0833) + ev_p5)) and ev_charge != 100: # multiplying by 0.0833 to get energy for next 5 min
                     send_charging_decision(True)
                     file.write(f"Decision:\n")
                     file.write(f"{realtime}: send_charging_decision(True), excess PV including amount it takes to charge for 5 min\n")
                     functional_test_save()
 
-                star_adjust_temp_setpoint_coolth()
-
-
         else: # daytime && night --- no excess PV
-            if realtime not in cooler_dirty_periods and CURRENT_SETPOINT != SETPOINT_DEFAULT:
+            if cooler_indoor_temp < TMIN:
+                if CURRENT_SETPOINT != SETPOINT_ECON:
+                    send_cooler_decision(SETPOINT_ECON)
+                    CURRENT_SETPOINT = SETPOINT_ECON
+                    file.write(f"Decision:\n")
+                    file.write(f"{realtime}: setting cooler decision to ECON - too cold inside the cooler!\n")
+                    functional_test_save()
+
+            elif realtime not in cooler_dirty_periods and CURRENT_SETPOINT != SETPOINT_DEFAULT:
                 # TODO do some coolth? 
                 send_cooler_decision(SETPOINT_DEFAULT)
                 file.write(f"Decision:\n")
                 file.write(f"{realtime}: send_cooler_decision({SETPOINT_DEFAULT}, not in a cooler dirty period\n")
                 functional_test_save()
+
                 CURRENT_SETPOINT = SETPOINT_DEFAULT
             else:
                 if CURRENT_SETPOINT != SETPOINT_ECON:
