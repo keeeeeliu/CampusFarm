@@ -122,7 +122,7 @@ def load_UI_data():
     SETPOINT_ECON = config["econ"]
     MAX_COOLTH_TIME_LIMIT = config["tolerance_time"]
     MAX_ECON_TIME_LIMIT = config["tolerance_time"]
-    EV_PERCENT_DESIRED = config["current_charge"]
+    EV_PERCENT_DESIRED = config["current_charge_setpoint"]
     if config["current_mode"] == "Rule-Based":
         RULE_BASED_MODE = True
         OPTIMIZATION_MODE = False
@@ -664,10 +664,19 @@ def ems():
 ############### main ###############
 def main():
     global ev_charge, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run
+    print("BEFORE UI INPUT")
+    print(f"TMIN: {TMIN}")
+    print(f"TMIN: {TMAX}")
+    print(f"TMIN: {EV_PERCENT_DESIRED}\n")
+    ui_main()
+    load_UI_data()
+    print("AFTER UI INPUT")
+    print(f"TMIN: {TMIN}")
+    print(f"TMIN: {TMAX}")
+    print(f"TMIN: {EV_PERCENT_DESIRED}\n")
     get_cooler_temp()
     generate_new_clean_periods()
     last_24_hour_run = datetime.now()
-    ui_main()
 
     
     while True:
@@ -677,6 +686,10 @@ def main():
             get_wifi_status()
             
             if wifi_status:
+                print("INSIDE WHILE")
+                print(f"TMIN: {TMIN}")
+                print(f"TMIN: {TMAX}")
+                print(f"TMIN: {EV_PERCENT_DESIRED}\n")
                 ########### this block: generate dirty periods sheet once per day
                 if datetime.now() - last_24_hour_run >= timedelta(hours=24):
                     generate_dirty_periods(get_amount_of_clean_periods)

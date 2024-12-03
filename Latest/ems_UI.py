@@ -553,6 +553,7 @@ def main_script():
         current_day = now.strftime('%A')  # e.g., 'Monday'
         current_date = now.date()
         current_time = now.strftime('%H:%M')
+        save_to_json()
 
         for task in tasks.copy():
             task_date = task['start_date'].date()
@@ -574,8 +575,9 @@ def main_script():
                         # Here, you can add the code to perform the actual task
                         tasks.remove(task)
                         print(f"One-time task '{task['description']}' executed and removed from the list.")
+        
 
-        time.sleep(60)
+        time.sleep(5)
 
 def save_to_json():
     global current_charge_setpoint, current_temperature, tmin, tmax, coolth, econ, tolerance_time, current_mode
@@ -599,7 +601,7 @@ def save_to_json():
         # Save to JSON file
         with open(file_path, "w") as json_file:
             json.dump(config, json_file, indent=4)
-        print(f"Configuration saved to {file_path}.")
+        # print(f"Configuration saved to {file_path}.")
     except Exception as e:
         print(f"Error saving configuration: {e}")
     
@@ -611,20 +613,10 @@ def ui_main():
     main_thread.daemon = True  # Daemonize thread to exit when main thread exits
     main_thread.start()
 
-    # Start the real-time charge (walking steps) update thread
-    charge_update_thread = threading.Thread(target=update_realtime_charge)
-    charge_update_thread.daemon = True  # Daemon thread for step updates
-    charge_update_thread.start()
-
-
-    transfer_thread = threading.Thread(target=save_to_json)
-    transfer_thread.daemon = True  # Daemon thread for step updates
-    transfer_thread.start()
     # Run the main GUI in the main thread
     run_main_gui()
-    print(realtime_charge)
     save_tasks_to_csv(tasks)
 
 
 if __name__ == "__main__":
-    main()
+    ui_main()
