@@ -110,12 +110,12 @@ OPTIMIZATION_MODE = True
 # Load variables from JSON
 def load_UI_data():
     save_to_json()
-    global SETPOINT_COOLTH, SETPOINT_COOLTH, SETPOINT_ECON, MAX_COOLTH_TIME_LIMIT, MAX_ECON_TIME_LIMIT, EV_PERCENT_DESIRED, TMIN, TMAX, RULE_BASED_MODE, OPTIMIZATION_MODE, CURRENT_SETPOINT
+    global SETPOINT_DEFAULT, SETPOINT_COOLTH, SETPOINT_ECON, MAX_COOLTH_TIME_LIMIT, MAX_ECON_TIME_LIMIT, EV_PERCENT_DESIRED, TMIN, TMAX, RULE_BASED_MODE, OPTIMIZATION_MODE, CURRENT_SETPOINT
     with open("config.json", "r") as json_file:
         config = json.load(json_file)
 
     # Access variables
-    CURRENT_SETPOINT = config["current_temperature"]
+    SETPOINT_DEFAULT= config["current_temperature"]
     TMIN = config["tmin"]
     TMAX = config["tmax"]
     SETPOINT_COOLTH = config["coolth"]
