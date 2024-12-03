@@ -5,18 +5,25 @@ from datetime import datetime
 from tkinter import messagebox
 import json
 import subprocess
-import currentWattTime as wt
+# import currentWattTime as wt
 import csv
+import os
 
 
 current_temperature = 55.0
-current_charge = 70.0
+tmin = 51.0
+tmax = 59.0
+coolth = 35.0
+econ = 48.0
+tolerance_time = 40 #min 
+current_mode = "Rule-Based" 
+current_charge_setpoint = 70.0
 global realtime_charge
 global realtime_MOER
 global realtime 
 realtime = datetime.now()
 
-realtime_MOER = wt.get_current_wattT()
+# realtime_MOER = wt.get_current_wattT()
 realtime_charge = 0.0
 
 tasks = []
@@ -43,21 +50,6 @@ def load_tasks_from_csv(file_name='weeklySchedule.csv'):
         print("No schedule file found, starting with an empty task list.")
     return tasks
 
-# def save_tasks_to_csv(tasks, file_name='weeklySchedule.csv'):
-#     with open(file_name, mode='w', newline='') as file:
-#         fieldnames = ['Description', 'StartDate', 'StartTime', 'EndTime', 'IsRepeat', 'DaysOfWeek']
-#         writer = csv.DictWriter(file, fieldnames=fieldnames)
-
-#         writer.writeheader()
-#         for task in tasks:
-#             writer.writerow({
-#                 'Description': task['description'],
-#                 'StartDate': task['start_date'].strftime("%m/%d/%Y"),
-#                 'StartTime': task['time'],
-#                 'EndTime': task['endTime'],
-#                 'IsRepeat': task['is_repeat'],
-#                 'DaysOfWeek': ', '.join(task['days'])
-#             })
 def save_tasks_to_csv(tasks, file_name='weeklySchedule.csv'):
     try:
         print("Saving the following tasks to CSV:")
@@ -104,59 +96,137 @@ def fetch_and_update_charge_label(realtime_charge_label):
     # Schedule the next update after 1000 milliseconds (1 second)
     realtime_charge_label.after(1000, fetch_and_update_charge_label, realtime_charge_label)
         
-def fetch_and_update_MOER_label(current_MOER_label):
-    realtime_MOER = wt.get_current_wattT()
-    current_MOER_label.config(text=f"Current MOER: {realtime_MOER} lbs CO2/MWh at {datetime.now()}")
-    current_MOER_label.after(60000, fetch_and_update_MOER_label, current_MOER_label)
+# def fetch_and_update_MOER_label(current_MOER_label):
+#     realtime_MOER = wt.get_current_wattT()
+#     current_MOER_label.config(text=f"Current MOER: {realtime_MOER} lbs CO2/MWh at {datetime.now()}")
+#     current_MOER_label.after(60000, fetch_and_update_MOER_label, current_MOER_label)
 
 
      
-
 def open_temp_setting():
     def reset_temperature():
         global current_temperature
+        global tmin
+        global tmax, coolth, econ, tolerance_time
         try:
-            new_temp = float(temp_entry.get())
-            current_temperature = new_temp
-            # Update the displayed current temperature
-            current_temp_label.config(text=f"Current Temperature Setpoint: {current_temperature}°F")
-            # Clear the entry field
+            # Update current temperature
+            if temp_entry.get():
+                new_temp = float(temp_entry.get())
+                current_temperature = new_temp
+                current_temp_label.config(text=f"Current Temperature Setpoint: {current_temperature}°F")
+            
+            # Update Tmin
+            if tmin_entry.get():
+                new_tmin = float(tmin_entry.get())
+                tmin = new_tmin
+                current_tmin_label.config(text=f"Current Tmin: {tmin}°F")
+
+            # Update Tmax
+            if tmax_entry.get():
+                new_tmax = float(tmax_entry.get())
+                tmax = new_tmax
+                current_tmax_label.config(text=f"Current Tmax: {tmax}°F")
+
+            # Update Coolth
+            if coolth_entry.get():
+                new_coolth = float(coolth_entry.get())
+                coolth = new_coolth
+                current_coolth_label.config(text=f"Current Coolth Setpoint : {coolth}°F")
+
+            # Update Econ
+            if econ_entry.get():
+                new_econ = float(econ_entry.get())
+                econ = new_econ
+                current_econ_label.config(text=f"Current Econ Setpoint: {econ}°F")
+
+            # Update tolerance Time 
+            if tolerance_entry.get():
+                new_tolerance = float(tolerance_entry.get())
+                tolerance_time = new_tolerance
+                current_tolerance_label.config(text=f"Current Coolth/Econ Tolerance Time: {tolerance_time}min")
+
+            # Clear all entry fields
             temp_entry.delete(0, tk.END)
-            messagebox.showinfo("Success", f"Temperature reset to {current_temperature}°F.")
+            tmin_entry.delete(0, tk.END)
+            tmax_entry.delete(0, tk.END)
+            coolth_entry.delete(0, tk.END)
+            econ_entry.delete(0, tk.END)
+            tolerance_entry.delete(0, tk.END)
+
+            messagebox.showinfo("Success", "Temperature settings updated successfully.")
         except ValueError:
             messagebox.showerror("Invalid Input", "Please enter a valid number.")
 
     temp_window = tk.Toplevel()
     temp_window.title("Temperature Settings")
-    temp_window.geometry("300x200")
+    temp_window.geometry("300x600")
 
-    # Current Temperature Label
+    # Current Temperature
     current_temp_label = tk.Label(temp_window, text=f"Current Temperature Setpoint: {current_temperature}°F")
-    current_temp_label.pack(pady=10)
-
-    temp_label = tk.Label(temp_window, text="Reset to: ")
-    temp_label.pack(pady=10)
-
-    # Entry to input new temperature
+    current_temp_label.pack(pady=5)
+    temp_label = tk.Label(temp_window, text="Reset Current Temperature:")
+    temp_label.pack()
     temp_entry = tk.Entry(temp_window)
     temp_entry.pack(pady=5)
 
-    # Reset Temperature Button
+    # Current Tmin
+    current_tmin_label = tk.Label(temp_window, text=f"Current Tmin: {tmin}°F")
+    current_tmin_label.pack(pady=5)
+    tmin_label = tk.Label(temp_window, text="Reset Tmin:")
+    tmin_label.pack()
+    tmin_entry = tk.Entry(temp_window)
+    tmin_entry.pack(pady=5)
+
+    # Current Tmax
+    current_tmax_label = tk.Label(temp_window, text=f"Current Tmax: {tmax}°F")
+    current_tmax_label.pack(pady=5)
+    tmax_label = tk.Label(temp_window, text="Reset Tmax:")
+    tmax_label.pack()
+    tmax_entry = tk.Entry(temp_window)
+    tmax_entry.pack(pady=5)
+
+    # Current coolth
+    current_coolth_label = tk.Label(temp_window, text=f"Current Coolth Setpoint: {coolth}°F")
+    current_coolth_label.pack(pady=5)
+    coolth_label = tk.Label(temp_window, text="Reset Coolth Setpoint:")
+    coolth_label.pack()
+    coolth_entry = tk.Entry(temp_window)
+    coolth_entry.pack(pady=5)
+
+    # Current econ
+    current_econ_label = tk.Label(temp_window, text=f"Current Econ Setpoint: {econ}°F")
+    current_econ_label.pack(pady=5)
+    econ_label = tk.Label(temp_window, text="Reset Econ Setpoint:")
+    econ_label.pack()
+    econ_entry = tk.Entry(temp_window)
+    econ_entry.pack(pady=5)
+
+    # Current tolerance 
+    current_tolerance_label = tk.Label(temp_window, text=f"Current Coolth/Econ Tolerance Time: {tolerance_time} min")
+    current_tolerance_label.pack(pady=5)
+    tolerance_label = tk.Label(temp_window, text="Reset To:")
+    tolerance_label.pack()
+    tolerance_entry = tk.Entry(temp_window)
+    tolerance_entry.pack(pady=5)
+
+
+
+    # Reset Button
     reset_temp_button = tk.Button(temp_window, text="Save", command=reset_temperature)
     reset_temp_button.pack(pady=10)
 
 def open_charging_setting():
     def reset_charge():
-        global current_charge
+        global current_charge_setpoint
         global realtime_charge
         try:
             new_charge = float(charge_entry.get())
-            current_charge= new_charge
+            current_charge_setpoint= new_charge
             # Update the displayed current temperature
-            current_charge_label.config(text=f"Current Charge Setpoint: {current_charge}%")
+            current_charge_label.config(text=f"Current Charge Setpoint: {current_charge_setpoint}%")
             # Clear the entry field
             charge_entry.delete(0, tk.END)
-            messagebox.showinfo("Success", f"Charge reset to {current_charge}%.")
+            messagebox.showinfo("Success", f"Charge reset to {current_charge_setpoint}%.")
         except ValueError:
             messagebox.showerror("Invalid Input", "Please enter a valid number.")
 
@@ -165,7 +235,7 @@ def open_charging_setting():
     charge_window.geometry("300x300")
 
     # Current Charge Label
-    current_charge_label = tk.Label(charge_window, text=f"Current Charge Setpoint: {current_charge}%")
+    current_charge_label = tk.Label(charge_window, text=f"Current Charge Setpoint: {current_charge_setpoint}%")
     current_charge_label.pack(pady=10)
 
     # Realtime charge
@@ -392,17 +462,48 @@ def view_today_schedules():
     # Populate today's tasks
     update_today_tasks()
 
-def open_moer_setting():
+# def open_moer_setting():
 
-    moer_window = tk.Toplevel()
-    moer_window.title("MOER")
-    moer_window.geometry("300x300")
+#     moer_window = tk.Toplevel()
+#     moer_window.title("MOER")
+#     moer_window.geometry("300x300")
 
-    current_MOER_label = tk.Label(moer_window, text=f"Current MOER: {realtime_MOER} lbs CO2/MWh at {datetime.now()}")
-    current_MOER_label.pack(pady=10)
+#     current_MOER_label = tk.Label(moer_window, text=f"Current MOER: {realtime_MOER} lbs CO2/MWh at {datetime.now()}")
+#     current_MOER_label.pack(pady=10)
 
-    fetch_and_update_MOER_label(current_MOER_label)
+#     fetch_and_update_MOER_label(current_MOER_label)
 
+def open_mode_setting():
+    def set_mode():
+        global current_mode
+        current_mode = mode_var.get()
+        # Update the label to reflect the new mode
+        current_mode_label.config(text=f"Current Mode: {current_mode}")
+        messagebox.showinfo("Mode Updated", f"System mode updated to: {current_mode}")
+
+    mode_window = tk.Toplevel()
+    mode_window.title("System Mode")
+    mode_window.geometry("300x200")
+
+    # Current Mode Label
+    current_mode_label = tk.Label(mode_window, text=f"Current Mode: {current_mode}")
+    current_mode_label.pack(pady=10)
+
+    # Instructions
+    instruction_label = tk.Label(mode_window, text="Choose a system mode:")
+    instruction_label.pack(pady=5)
+
+    # Mode Selection Radiobuttons
+    mode_var = tk.StringVar(value=current_mode)  # Bind variable to radiobuttons
+    rule_based_button = tk.Radiobutton(mode_window, text="Rule-Based", variable=mode_var, value="Rule-Based")
+    optimization_button = tk.Radiobutton(mode_window, text="Optimization", variable=mode_var, value="Optimization")
+
+    rule_based_button.pack(anchor="w", padx=20)
+    optimization_button.pack(anchor="w", padx=20)
+
+    # Save Mode Button
+    save_button = tk.Button(mode_window, text="Save", command=set_mode)
+    save_button.pack(pady=20)
 
 def run_main_gui():
 
@@ -413,8 +514,11 @@ def run_main_gui():
     main_window.geometry("300x250")
 
 
-    open_MOER_button = tk.Button(main_window, text="Current MOER", command=open_moer_setting)
-    open_MOER_button.pack(pady=10)
+    # open_MOER_button = tk.Button(main_window, text="Current MOER", command=open_moer_setting)
+    # open_MOER_button.pack(pady=10)
+
+    open_mode_button = tk.Button(main_window, text="System Mode", command=open_mode_setting)
+    open_mode_button.pack(pady=10)
 
     # Button to open Temperature Setting GUI
     open_temp_button = tk.Button(main_window, text="Temperature Settings", command=open_temp_setting)
@@ -473,16 +577,32 @@ def main_script():
 
         time.sleep(60)
 
-# def run_draftCharger():
-#     return subprocess.Popen(["python", "draftCharger.py"])
-
-# def stop_draftCharger(process):
-#     if process:
-#         process.terminate()
-#         process.wait()
-
-
-        
+def save_to_json():
+    global current_charge_setpoint, current_temperature, tmin, tmax, coolth, econ, tolerance_time, current_mode
+    config = {
+        "current_temperature": current_temperature,
+        "tmin": tmin,
+        "tmax": tmax,
+        "coolth": coolth,
+        "econ": econ,
+        "tolerance_time": tolerance_time,
+        "current_mode": current_mode,
+        "current_charge_setpoint": current_charge_setpoint
+    }
+    # Define the file path
+    file_path = "config.json"
+    
+    if not os.path.exists(file_path):
+        print(f"{file_path} does not exist. Creating a new file.")
+    
+    try:
+        # Save to JSON file
+        with open(file_path, "w") as json_file:
+            json.dump(config, json_file, indent=4)
+        print(f"Configuration saved to {file_path}.")
+    except Exception as e:
+        print(f"Error saving configuration: {e}")
+    
 def main():
     global tasks
     tasks = load_tasks_from_csv()
@@ -495,10 +615,16 @@ def main():
     charge_update_thread = threading.Thread(target=update_realtime_charge)
     charge_update_thread.daemon = True  # Daemon thread for step updates
     charge_update_thread.start()
+
+
+    transfer_thread = threading.Thread(target=save_to_json)
+    transfer_thread.daemon = True  # Daemon thread for step updates
+    transfer_thread.start()
     # Run the main GUI in the main thread
     run_main_gui()
     print(realtime_charge)
     save_tasks_to_csv(tasks)
+
 
 if __name__ == "__main__":
     main()
