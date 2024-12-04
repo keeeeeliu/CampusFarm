@@ -57,6 +57,7 @@ last_24_hour_run = datetime.now()
 #### globals for outdoor temp
 outdoor_temp = 0 # read from temp sensor
 vent_open = False
+num_clean_periods = 0
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
@@ -421,6 +422,7 @@ def send_charging_decision(OnOFF:bool):
 
 def generate_new_clean_periods():
     get_charge()
+    global num_clean_periods
     num_clean_periods = get_amount_of_clean_periods()
     print(num_clean_periods)
     generate_clean_periods(num_clean_periods)
