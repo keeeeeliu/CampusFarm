@@ -58,6 +58,7 @@ last_24_hour_run = datetime.now()
 outdoor_temp = 0 # read from temp sensor
 vent_open = False
 num_clean_periods = 0
+periods_to_next_delivery = 0
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
