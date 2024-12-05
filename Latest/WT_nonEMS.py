@@ -22,16 +22,19 @@ normal_periods = []
 real_time = datetime.now()
 
 def perform_action_based_on_next_delivery():
-    global min_time_difference
-    global hours_difference
+    try:
+        global min_time_difference
+        global hours_difference
 
-    schedule = read_schedule_from_csv(filepath)
-    current_time = datetime.now(DETROIT_TIMEZONE)
-    # Find the next delivery
-    next_delivery, next_delivery_time, min_time_difference = get_next_delivery(schedule, current_time)
-    hours_difference = min_time_difference.total_seconds() / 3600  # Convert to hours
-    hours_difference = math.floor(hours_difference)  # Get the floored value
-    return hours_difference
+        schedule = read_schedule_from_csv(filepath)
+        current_time = datetime.now(DETROIT_TIMEZONE)
+        # Find the next delivery
+        next_delivery, next_delivery_time, min_time_difference = get_next_delivery(schedule, current_time)
+        hours_difference = min_time_difference.total_seconds() / 3600  # Convert to hours
+        hours_difference = math.floor(hours_difference)  # Get the floored value
+        return hours_difference
+    except Exception as e:
+        print(f"An error occurred with perform_action_based_on_next_delivery: {e}")
 
 perform_action_based_on_next_delivery()
 
@@ -114,30 +117,33 @@ for entry in pre_data['data']:
 # print(data)
 
 def generate_clean_periods(num_time_slots_wanted):
-    global data
-    global TIMEZONE
-    global clean_periods
-    global normal_periods
-        
-    # Extract values and times
-    values = [entry['value'] for entry in data]
-    times = [datetime.fromisoformat(entry['point_time']).astimezone(TIMEZONE) for entry in data]
+    try:
+        global data
+        global TIMEZONE
+        global clean_periods
+        global normal_periods
+            
+        # Extract values and times
+        values = [entry['value'] for entry in data]
+        times = [datetime.fromisoformat(entry['point_time']).astimezone(TIMEZONE) for entry in data]
 
-    # Extract and sort 5-minute periods
-    time_slots = [(value, times[i]) for i, value in enumerate(values)]  # Pair values with their timestamps
-    normal_s = time_slots
-    # Sort by MOER value (ascending)
-    time_slots.sort(key=lambda x: x[0])  # Sort by the MOER value (lowest first)
+        # Extract and sort 5-minute periods
+        time_slots = [(value, times[i]) for i, value in enumerate(values)]  # Pair values with their timestamps
+        normal_s = time_slots
+        # Sort by MOER value (ascending)
+        time_slots.sort(key=lambda x: x[0])  # Sort by the MOER value (lowest first)
 
-    # Select up to X hours worth of 5-minute periods (X*12 periods)
-   # num_time_slots_wanted = get_amount_of_clean_periods()
-    print(num_time_slots_wanted)
-    selected_slots = time_slots[:num_time_slots_wanted]  # Take the first 84 slots (X hours)
-    normal_slots = normal_s[:num_time_slots_wanted]
-    # Extract clean periods with full ISO 8601 timestamps
-    clean_periods = [(slot[1].isoformat(), (slot[1] + timedelta(minutes=5)).isoformat()) for slot in selected_slots]
-    normal_periods = [(slot[1].isoformat(), (slot[1] + timedelta(minutes=5)).isoformat()) for slot in normal_slots]
-    print(len(selected_slots))
+        # Select up to X hours worth of 5-minute periods (X*12 periods)
+    # num_time_slots_wanted = get_amount_of_clean_periods()
+        print(num_time_slots_wanted)
+        selected_slots = time_slots[:num_time_slots_wanted]  # Take the first 84 slots (X hours)
+        normal_slots = normal_s[:num_time_slots_wanted]
+        # Extract clean periods with full ISO 8601 timestamps
+        clean_periods = [(slot[1].isoformat(), (slot[1] + timedelta(minutes=5)).isoformat()) for slot in selected_slots]
+        normal_periods = [(slot[1].isoformat(), (slot[1] + timedelta(minutes=5)).isoformat()) for slot in normal_slots]
+        print(len(selected_slots))
+    except Exception as e:
+        print(f"An error occurred with generate_clean_periods: {e}")
 
 def plot_clean_periods(clean_periods, values, times):
     """
@@ -173,16 +179,22 @@ def plot_clean_periods(clean_periods, values, times):
 # plot_clean_periods(clean_periods,values,times)
 # Save clean periods to a JSON file
 def save_clean_periods(filename="ev_clean_periods.json"):
-    global clean_periods
-    with open(filename, "w") as file:
-        json.dump(clean_periods, file)
-    print(f"EV clean periods saved to {filename}")
+    try:
+        global clean_periods
+        with open(filename, "w") as file:
+            json.dump(clean_periods, file)
+        print(f"EV clean periods saved to {filename}")
+    except Exception as e:
+        print(f"An error occurred with save_clean_periods: {e}")
 
 def save_nonEMS_charging_periods(filename="ev_nonEMS_charging_periods.json"):
-    global normal_periods
-    with open(filename, "w") as file:
-        json.dump(normal_periods, file)
-    print(f"EV clean periods saved to {filename}")
+    try:
+        global normal_periods
+        with open(filename, "w") as file:
+            json.dump(normal_periods, file)
+        print(f"EV clean periods saved to {filename}")
+    except Exception as e:
+        print(f"An error occurred with save_nonEMS_charging_periods: {e}")
 
 generate_clean_periods(29)
 # # Save the clean periods

@@ -115,66 +115,84 @@ OPTIMIZATION_MODE = True
 
 # Load variables from JSON
 def load_UI_data():
-    save_to_json()
-    global SETPOINT_DEFAULT, SETPOINT_COOLTH, SETPOINT_ECON, MAX_COOLTH_TIME_LIMIT, MAX_ECON_TIME_LIMIT, EV_PERCENT_DESIRED, TMIN, TMAX, RULE_BASED_MODE, OPTIMIZATION_MODE, CURRENT_SETPOINT
-    with open("config.json", "r") as json_file:
-        config = json.load(json_file)
+    try:
+        save_to_json()
+        global SETPOINT_DEFAULT, SETPOINT_COOLTH, SETPOINT_ECON, MAX_COOLTH_TIME_LIMIT, MAX_ECON_TIME_LIMIT, EV_PERCENT_DESIRED, TMIN, TMAX, RULE_BASED_MODE, OPTIMIZATION_MODE, CURRENT_SETPOINT
+        with open("config.json", "r") as json_file:
+            config = json.load(json_file)
 
-    # Access variables
-    SETPOINT_DEFAULT= config["current_temperature"]
-    TMIN = config["tmin"]
-    TMAX = config["tmax"]
-    SETPOINT_COOLTH = config["coolth"]
-    SETPOINT_ECON = config["econ"]
-    MAX_COOLTH_TIME_LIMIT = config["tolerance_time"]
-    MAX_ECON_TIME_LIMIT = config["tolerance_time"]
-    EV_PERCENT_DESIRED = config["current_charge_setpoint"]
-    if config["current_mode"] == "Rule-Based":
-        RULE_BASED_MODE = True
-        OPTIMIZATION_MODE = False
-    elif config["current_mode"] == "Optimization":
-        RULE_BASED_MODE = False
-        OPTIMIZATION_MODE = True
+        # Access variables
+        SETPOINT_DEFAULT= config["current_temperature"]
+        TMIN = config["tmin"]
+        TMAX = config["tmax"]
+        SETPOINT_COOLTH = config["coolth"]
+        SETPOINT_ECON = config["econ"]
+        MAX_COOLTH_TIME_LIMIT = config["tolerance_time"]
+        MAX_ECON_TIME_LIMIT = config["tolerance_time"]
+        EV_PERCENT_DESIRED = config["current_charge_setpoint"]
+        if config["current_mode"] == "Rule-Based":
+            RULE_BASED_MODE = True
+            OPTIMIZATION_MODE = False
+        elif config["current_mode"] == "Optimization":
+            RULE_BASED_MODE = False
+            OPTIMIZATION_MODE = True
+    except Exception as e:
+        print(f"An error occurred with load_UI_data: {e}")
 
 
 def is_daytime(city="Detroit", country="USA"):
-    location = LocationInfo(city, country)
-    s = sun(location.observer, date=datetime.now().date())
-    now = datetime.now().replace(tzinfo=None)
-    sunrise = s['sunrise'].replace(tzinfo=None)
-    sunset = s['sunset'].replace(tzinfo=None)
-    return sunrise <= now <= sunset
+    try:
+        location = LocationInfo(city, country)
+        s = sun(location.observer, date=datetime.now().date())
+        now = datetime.now().replace(tzinfo=None)
+        sunrise = s['sunrise'].replace(tzinfo=None)
+        sunset = s['sunset'].replace(tzinfo=None)
+        return sunrise <= now <= sunset
+    except Exception as e:
+        print(f"An error occurred with is_daytime: {e}")
 
 # Load clean periods from JSON file
 def load_clean_periods(filename="ev_clean_periods.json"):
-    global ev_clean_periods
-    with open(filename, "r") as file:
-        periods = json.load(file)
-    ev_clean_periods = periods
+    try:
+        global ev_clean_periods
+        with open(filename, "r") as file:
+            periods = json.load(file)
+        ev_clean_periods = periods
+    except Exception as e:
+        print(f"An error occurred with load_clean_periods: {e}")
 
 def load_nonEMS_charging_periods(filename="ev_nonEMS_charging_periods.json"):
-    global ev_nonEMS_charging_periods
-    with open(filename, "r") as file:
-        periods = json.load(file)
-    ev_nonEMS_charging_periods = periods
+    try:
+        global ev_nonEMS_charging_periods
+        with open(filename, "r") as file:
+            periods = json.load(file)
+        ev_nonEMS_charging_periods = periods
+    except Exception as e:
+        print(f"An error occurred with load_nonEMS_charging_periods: {e}")
 
 # Load dirty periods from JSON file
 def load_dirty_periods(filename="cooler_dirty_periods.json"):
-    global cooler_dirty_periods
-    with open(filename, "r") as file:
-        periods = json.load(file)
-    cooler_dirty_periods = periods
+    try:
+        global cooler_dirty_periods
+        with open(filename, "r") as file:
+            periods = json.load(file)
+        cooler_dirty_periods = periods
+    except Exception as e:
+        print(f"An error occurred with load_dirty_periods: {e}")
 
 # Function to check if current time is in clean periods
 def is_realtime_in_clean_periods(realtime, clean_periods):
-    adjusted_realtime = realtime - timedelta(hours=5)
-    for start, end in clean_periods:
-        # Parse start and end times from ISO 8601 format
-        start_dt = datetime.fromisoformat(start).astimezone(pytz.UTC)
-        end_dt = datetime.fromisoformat(end).astimezone(pytz.UTC)
-        if start_dt <= adjusted_realtime.astimezone(pytz.UTC) < end_dt:
-            return True
-    return False
+    try:
+        adjusted_realtime = realtime - timedelta(hours=5)
+        for start, end in clean_periods:
+            # Parse start and end times from ISO 8601 format
+            start_dt = datetime.fromisoformat(start).astimezone(pytz.UTC)
+            end_dt = datetime.fromisoformat(end).astimezone(pytz.UTC)
+            if start_dt <= adjusted_realtime.astimezone(pytz.UTC) < end_dt:
+                return True
+        return False
+    except Exception as e:
+        print(f"An error occurred with is_realtime_in_clean_periods: {e}")
 
 def functional_test_save():
     #save all variables to csv
@@ -201,18 +219,24 @@ def functional_test_save():
 baseline_con_emissions = ev_miles_travelled * 1.590 # lbs CO2/mile
 
 def get_total_baseline_emissions():
-    global total_baseline_emissions
-    global baseline_con_emissions
-    global grid_co2
-    total_baseline_emissions = baseline_con_emissions + grid_co2
-    return total_baseline_emissions
+    try:
+        global total_baseline_emissions
+        global baseline_con_emissions
+        global grid_co2
+        total_baseline_emissions = baseline_con_emissions + grid_co2
+        return total_baseline_emissions
+    except Exception as e:
+        print(f"An error occurred with get_total_baseline_emissions: {e}")
 
 def get_ev_emission_reduction():
-    global ev_emission_reduction
-    global baseline_con_emissions
-    global ev_grid_co2
-    ev_emission_reduction = baseline_con_emissions - ev_grid_co2
-    return ev_emission_reduction
+    try:
+        global ev_emission_reduction
+        global baseline_con_emissions
+        global ev_grid_co2
+        ev_emission_reduction = baseline_con_emissions - ev_grid_co2
+        return ev_emission_reduction
+    except Exception as e:
+        print(f"An error occurred with get_ev_emission_reduction: {e}")
 
 def get_pv_emission_reduction():
     global solar_saving
@@ -224,26 +248,29 @@ def get_total_ems_ev_cooler_emissions():
 
 ############### data inputs ###############
 def bring_in_inverter_data():
-    global power_map
-    old_power_map = power_map
-    power_map = get_inverter_data()
-    if not power_map:
-        print("reattempt solark")
+    try:
+        global power_map
+        old_power_map = power_map
         power_map = get_inverter_data()
-    if not power_map:
-        print("reattempt solark 2")
-        power_map = get_inverter_data()
-    if not power_map:
-        print("reattempt solark 3")
-        power_map = get_inverter_data()
-    if not power_map:
-        print("reattempt solark 4")
-        power_map = get_inverter_data()
-    if not power_map:
-        print("reattempt solark 5")
-        power_map = get_inverter_data()
-    if not power_map:
-        power_map = old_power_map
+        if not power_map:
+            print("reattempt solark")
+            power_map = get_inverter_data()
+        if not power_map:
+            print("reattempt solark 2")
+            power_map = get_inverter_data()
+        if not power_map:
+            print("reattempt solark 3")
+            power_map = get_inverter_data()
+        if not power_map:
+            print("reattempt solark 4")
+            power_map = get_inverter_data()
+        if not power_map:
+            print("reattempt solark 5")
+            power_map = get_inverter_data()
+        if not power_map:
+            power_map = old_power_map
+    except Exception as e:
+        print(f"An error occurred with bring_in_inverter_data: {e}")
 
 def get_pv():
     global pv_output
