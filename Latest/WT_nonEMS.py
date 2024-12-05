@@ -31,6 +31,7 @@ def perform_action_based_on_next_delivery():
     next_delivery, next_delivery_time, min_time_difference = get_next_delivery(schedule, current_time)
     hours_difference = min_time_difference.total_seconds() / 3600  # Convert to hours
     hours_difference = math.floor(hours_difference)  # Get the floored value
+    return hours_difference
 
 perform_action_based_on_next_delivery()
 

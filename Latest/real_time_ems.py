@@ -725,8 +725,8 @@ def main():
                 print(f"TMIN: {TMAX}")
                 print(f"TMIN: {EV_PERCENT_DESIRED}\n")
                 ########### this block: generate dirty periods sheet once per day
-                if datetime.now() - last_24_hour_run >= timedelta(hours=24):
-                    generate_dirty_periods(get_amount_of_clean_periods)
+                if datetime.now() - last_24_hour_run >= timedelta(hours=8):
+                    generate_dirty_periods(24) ############# 2 hours of dirty periods
                     save_dirty_periods()
                     load_dirty_periods()
                     last_24_hour_run = datetime.now()  # Update the last run time
