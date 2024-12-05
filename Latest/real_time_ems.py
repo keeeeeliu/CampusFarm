@@ -25,6 +25,9 @@ from genDirtyPeriods import generate_dirty_periods, save_dirty_periods
 from WT_accounting import get_wt
 from WT_data_optimization import get_48h_wt
 from ems_UI import save_to_json, ui_main
+from pyscipopt import Model, quicksum
+from datetime import datetime, timedelta
+import numpy as np
 
 
 ############## Globals ###################
@@ -635,8 +638,19 @@ def ems():
                             file.write(f"{realtime}: else cooler_indoor temp not >= setpoint econ -2, do nothing!\n")
                             functional_test_save()
         elif OPTIMIZATION_MODE == True and RULE_BASED_MODE == False:
-            ##### Nolan: optimization code here 
-            x = 1 ##### remove this line after optimization implementation 
+            ##### Nolan TODO: optimization code below 
+
+
+            ##### 
+            optimized_decision_temp_setpoint = 0 #### Nolan TODO: Tset
+            optimized_decision_charging_decision = True #### Nolan TODO: output from optimization rules: True/False (Power_deicison)
+            CURRENT_SETPOINT = optimized_decision_temp_setpoint
+            send_cooler_decision(CURRENT_SETPOINT)
+            send_charging_decision(optimized_decision_charging_decision)
+            file.write(f"Optimized Decision:\n")
+            file.write(f"{realtime}: send_charging_decision({optimized_decision_charging_decision}))\n")
+
+
 
         # # ############## calculation ################
         # aoer = get_wt("ruleBased", "aoer")
