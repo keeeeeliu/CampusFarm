@@ -8,22 +8,13 @@ import chromedriver_autoinstaller
 import undetected_chromedriver as uc
 import time
 
-# # Disable the __del__ method to prevent errors from being printed
-# uc.Chrome.__del__ = lambda self: None
-
 def charger_on():
-    driver = uc.Chrome()
-    # chromdriver_path = chromedriver_autoinstaller.install()
-    # service = Service(chromdriver_path)
-    # driver = webdriver.Chrome(service=service)
-    # Open the webpage
-    driver.get('https://enlighten.enphaseenergy.com')
-
-    # Wait for the page to load
-    time.sleep(2)
-
-    # Enter login details
     try:
+        driver = uc.Chrome()
+        driver.get('https://enlighten.enphaseenergy.com')
+
+        # Wait for the page to load
+        time.sleep(2)
         # Find the email input field and enter your email
         email_field = driver.find_element(By.ID, 'user_email') 
         email_field.send_keys('campusfarm@umich.edu') 
@@ -74,22 +65,15 @@ def charger_on():
     driver.quit()
 
 def charger_off():
-    # Automatically install and get the path to chromedriver
-    # chromedriver_path = chromedriver_autoinstaller.install()
-    # service = Service(chromedriver_path)
-    driver = uc.Chrome()
-    # chromdriver_path = chromedriver_autoinstaller.install()
-    # service = Service(chromdriver_path)
-    # driver = webdriver.Chrome(service=service)
-
-    # Open the webpage
-    driver.get('https://enlighten.enphaseenergy.com')
-
-    # Wait for the page to load
-    time.sleep(2)
-
-    # Enter login details
     try:
+        driver = uc.Chrome()
+        # Open the webpage
+        driver.get('https://enlighten.enphaseenergy.com')
+
+        # Wait for the page to load
+        time.sleep(2)
+
+        # Enter login details
         # Find the email input field and enter your email
         email_field = driver.find_element(By.ID, 'user_email') 
         email_field.send_keys('campusfarm@umich.edu') 
@@ -139,20 +123,17 @@ def charger_off():
     driver.quit() 
 
 def plugged_in_and_charging():
-    # Automatically install and get the path to chromedriver
-    driver = uc.Chrome()
-    # chromdriver_path = chromedriver_autoinstaller.install()
-    # service = Service(chromdriver_path)
-    # driver = webdriver.Chrome(service=service)
-    # Open the webpage
-    driver.get('https://enlighten.enphaseenergy.com')
-
-    # Wait for the page to load
-    time.sleep(5)
-
-    ev_connection_status = {}
-    # Enter login details
     try:
+        # Automatically install and get the path to chromedriver
+        driver = uc.Chrome()
+        # Open the webpage
+        driver.get('https://enlighten.enphaseenergy.com')
+
+        # Wait for the page to load
+        time.sleep(5)
+
+        ev_connection_status = {}
+        # Enter login details
         email_field = driver.find_element(By.ID, 'user_email') 
         email_field.send_keys('campusfarm@umich.edu') 
 
