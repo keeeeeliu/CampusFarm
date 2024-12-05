@@ -8,13 +8,14 @@ import undetected_chromedriver as uc
 uc.Chrome.__del__ = lambda self: None
 
 def check_battery():
-    battery = {}
-    driver = uc.Chrome()
-    driver.get('https://www.ford.com/myaccount/account-dashboard')
-
-    # Wait for the page to load and email input field to be present
-    wait = WebDriverWait(driver, 20)  # Set maximum wait time (in seconds)
     try:
+        battery = {}
+        driver = uc.Chrome()
+        driver.get('https://www.ford.com/myaccount/account-dashboard')
+
+        # Wait for the page to load and email input field to be present
+        wait = WebDriverWait(driver, 20)  # Set maximum wait time (in seconds)
+
         # Wait for the email input field to become available
         email_field = wait.until(EC.presence_of_element_located((By.ID, 'signInName')))
         email_field.send_keys('nelfigs@umich.edu') 
@@ -29,7 +30,6 @@ def check_battery():
 
         print("Logged in successfully!")
 
-       
     except Exception as e:
         print("Error during login:", e)
         driver.quit()
@@ -39,9 +39,6 @@ def check_battery():
     # Wait for the next page to load and the Charge Level element to be visible
 
     try:
-        # Increment attempt counter
-        
-        
         # Wait and extract charge level
         charge_level_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '[data-testid="mmota-box2-value"]')))
         charge_level = charge_level_element.text.strip('%')  # Remove the % sign
