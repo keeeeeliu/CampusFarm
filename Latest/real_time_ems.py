@@ -48,7 +48,9 @@ econ_timer = 0
 rules_timer = datetime.now()
 charging_timer = datetime.now()
 enphase_down = False
-ev_p5 = 958.33
+ev_p5 = 958.33 ### Wh
+ev_E_5 = 0.9583 #### kWh 
+num_periods_to_charged = 0
 cooler_load = 0
 time_interval = 5 # mins
 ev_miles_travelled = 0 # 
@@ -88,13 +90,15 @@ pv_emission_reduction = 0
 ems_emission_reduction = 0
 total_emission_reduction = 0 # gonna be the sum(pv,ems,ev... reduction)
 
-
 total_emissions_ems = 0
 total_emissions_no_ems = 0
 total_emissions_baseline = 0
 EREMS = 0
 grid_load_no_ems = 0
 total_load_baseline = 0
+ev_load_E_no_ems = 0
+cooler_load_E_no_ems = 0
+additional_load_E = 0
 
 
 wifi_status = True 
@@ -464,7 +468,9 @@ def send_charging_decision(OnOFF:bool):
 def generate_new_clean_periods():
     get_charge()
     global num_clean_periods
+    global num_periods_to_charged
     num_clean_periods = get_amount_of_clean_periods()
+    num_periods_to_charged = num_clean_periods
     print(num_clean_periods)
     generate_clean_periods(num_clean_periods)
     save_clean_periods()
@@ -521,6 +527,14 @@ def update_inverter_data():
     pv_output = int(power_map["Solar W"][:-1])
     grid_power = int(power_map["Grid W"][:-1])
 
+def get_total_ev_no_ems_E():
+    global num_periods_to_charged
+    global ev_E_5
+    if(num_periods_to_charged - 1 >= 0):
+        return ev_E_5
+    else:
+        return 0
+
 
 ############### decision rules ###############
 def ems():
@@ -546,6 +560,8 @@ def ems():
     global TMIN
     global rules_timer
     global charging_timer
+    global total_emissions_ems, total_emissions_no_ems, total_emissions_baseline, EREMS, grid_load_no_ems, total_load_baseline, ev_load_E_no_ems, cooler_load_E_no_ems, additional_load_E
+
     with open('output_1203.txt', 'a') as file:
 
         if RULE_BASED_MODE == True and OPTIMIZATION_MODE == False:
@@ -700,12 +716,13 @@ def ems():
 
         watt_to_kWh_5_min_factor = 0.0000833 ##### watts*.001*(5/60)
 
-
-        EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor)
+        ev_load_E_no_ems = get_total_ev_no_ems_E()
+        grid_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E - (pv_output*watt_to_kWh_5_min_factor)
+        EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor) 
         total_emissions_no_ems = grid_load_no_ems*moer
         total_emissions_ems = total_emissions_no_ems - EREMS
 
-        
+
         # aoer = get_wt("ruleBased", "aoer")
         # moer = get_wt("ruleBased", "moer")
         # grid_co2_list.append(max(0,aoer * grid_power))
@@ -750,7 +767,6 @@ def ems():
 ############### main ###############
 def main():
     global ev_charge, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run, periods_to_next_delivery
-    global total_emissions_ems, total_emissions_no_ems, total_emissions_baseline, EREMS, grid_load_no_ems, total_load_baseline
     print("BEFORE UI INPUT")
     print(f"TMIN: {TMIN}")
     print(f"TMIN: {TMAX}")
