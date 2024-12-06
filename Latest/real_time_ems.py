@@ -64,6 +64,8 @@ outdoor_temp = 0 # read from temp sensor
 vent_open = False
 num_clean_periods = 0
 periods_to_next_delivery = 0
+miles_before_drive = 0
+
 
 temps_to_cooler_E = {
     30: 0.00667, # 280 W
@@ -108,7 +110,8 @@ grid_load_no_ems = 0
 total_load_baseline = 0
 ev_load_E_no_ems = 0
 cooler_load_E_no_ems = 0
-additional_load_E = 0
+additional_load_E = 0.0167 # kWh (5 min)
+kWh_to_full_charge = 0
 
 
 wifi_status = True 
@@ -236,11 +239,6 @@ def functional_test_save():
         file.write(f"ev_charging: {ev_charging}, driving: {driving}\n")
         file.write(f"ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
         file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n\n")
-
-        
-
-########### Carbon Accounting Getters #############
-baseline_con_emissions = ev_miles_travelled * 1.590 # lbs CO2/mile
 
 def get_total_baseline_emissions():
     try:
@@ -395,7 +393,7 @@ def get_total_power():
     consumption = int(consumption.replace("W", ""))
     total_power = consumption
 
-def get_charge():
+def get_charge(leaving_for_drive):
     global ev_charge
     global ev_miles_left
 
@@ -427,9 +425,13 @@ def get_charge():
        print("setting to old battery values")
        ev_charge = old_ev_charge
        ev_miles_left = old_ev_miles_left
+       if leaving_for_drive:
+           miles_before_drive = ev_miles_left
     else:
         ev_charge = int(ev_battery_dict['percentage'])
         ev_miles_left = int(ev_battery_dict['miles_left'])
+        if leaving_for_drive:
+           miles_before_drive = ev_miles_left
 
 
 def get_amount_of_clean_periods():
@@ -452,10 +454,13 @@ def get_amount_of_dirty_periods():
     global dirtytime_threshold
     return dirtytime_threshold * 12 
 
+
 def get_ev_miles_travelled():
     global ev_miles_travelled
-    ev_miles_travelled += get_miles_added()
-    return ev_miles_travelled
+    global kWh_to_full_charge
+    ev_miles_travelled = miles_before_drive - ev_miles_left
+    kWh_to_full_charge = 
+
 
 def get_wifi_status():
     global wifi_status
@@ -476,7 +481,7 @@ def send_charging_decision(OnOFF:bool):
         charger_off()
 
 def generate_new_clean_periods():
-    get_charge()
+    get_charge(leaving_for_drive=False)
     global num_clean_periods
     global num_periods_to_charged
     num_clean_periods = get_amount_of_clean_periods()
@@ -544,6 +549,10 @@ def get_total_ev_no_ems_E():
         return ev_E_5
     else:
         return 0
+    
+def get_combustion_vehicle_emissions():
+
+    print(5)
 
 
 ############### decision rules ###############
@@ -609,6 +618,7 @@ def ems():
                         generate_new_clean_periods()
                         file.write(f"EVENT/Decision:\n")
                         file.write(f"{realtime}: back from drive, generate new clean charging schedule\n")
+                        get_ev_miles_travelled()
                         functional_test_save()
                     if ev_charging:
                         send_charging_decision(False)
@@ -623,6 +633,7 @@ def ems():
                     driving = True
                     file.write(f"EVENT:\n")
                     file.write(f"{realtime}: going on a drive)\n")
+                    get_charge(leaving_for_drive=True)
                     functional_test_save()
             
             charging_timer = datetime.now()
@@ -726,12 +737,15 @@ def ems():
 
         watt_to_kWh_5_min_factor = 0.0000833 ##### watts*.001*(5/60)
 
-        cooler_load_E_no_ems = 0
+
+        cooler_load_E_no_ems = cooler_load_E_no_ems[math.ceil(outdoor_temp)]
         ev_load_E_no_ems = get_total_ev_no_ems_E()
         grid_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E - (pv_output*watt_to_kWh_5_min_factor)
         EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor) 
+        total_load_baseline = cooler_load_E_no_ems + additional_load_E
         total_emissions_no_ems = grid_load_no_ems*moer
         total_emissions_ems = total_emissions_no_ems - EREMS
+        total_emissions_baseline = (total_load_baseline*moer) + get_combustion_vehicle_emissions()
 
 
         # aoer = get_wt("ruleBased", "aoer")
