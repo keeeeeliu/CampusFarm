@@ -65,6 +65,16 @@ vent_open = False
 num_clean_periods = 0
 periods_to_next_delivery = 0
 
+temps_to_cooler_E = {
+    30: 0.00667, # 280 W
+    40: 0.0273, # 427 W
+    50: 0.045, # 640 W
+    60: 0.0487, # 684 W
+    70: .0622, # 846 W
+    80: .0686, # 923 W
+    90: .0735 # 982 W
+}
+
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
 moer = [] # marginal operating emission rate
@@ -716,6 +726,7 @@ def ems():
 
         watt_to_kWh_5_min_factor = 0.0000833 ##### watts*.001*(5/60)
 
+        cooler_load_E_no_ems = 0
         ev_load_E_no_ems = get_total_ev_no_ems_E()
         grid_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E - (pv_output*watt_to_kWh_5_min_factor)
         EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor) 
