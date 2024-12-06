@@ -87,6 +87,16 @@ ev_emission_reduction = 0 # relative to baseline
 pv_emission_reduction = 0
 ems_emission_reduction = 0
 total_emission_reduction = 0 # gonna be the sum(pv,ems,ev... reduction)
+
+
+total_emissions_ems = 0
+total_emissions_no_ems = 0
+total_emissions_baseline = 0
+EREMS = 0
+grid_load_no_ems = 0
+total_load_baseline = 0
+
+
 wifi_status = True 
 
 
@@ -680,6 +690,22 @@ def ems():
 
 
         # # ############## calculation ################
+
+
+        ################# Three Lines Plot #############
+        #aoer_MWh = get_wt("ruleBased", "aoer")##### still no api access
+        moer_MWh = get_wt("ruleBased", "moer")
+        moer = moer_MWh/1000 ###### converting unit to be over kWh
+
+
+        watt_to_kWh_5_min_factor = 0.0000833 ##### watts*.001*(5/60)
+
+
+        EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor)
+        total_emissions_no_ems = grid_load_no_ems*moer
+        total_emissions_ems = total_emissions_no_ems - EREMS
+
+        
         # aoer = get_wt("ruleBased", "aoer")
         # moer = get_wt("ruleBased", "moer")
         # grid_co2_list.append(max(0,aoer * grid_power))
@@ -724,6 +750,7 @@ def ems():
 ############### main ###############
 def main():
     global ev_charge, pv_output, grid_power, ev_charging, cooler_indoor_temp, wifi_status, last_24_hour_run, periods_to_next_delivery
+    global total_emissions_ems, total_emissions_no_ems, total_emissions_baseline, EREMS, grid_load_no_ems, total_load_baseline
     print("BEFORE UI INPUT")
     print(f"TMIN: {TMIN}")
     print(f"TMIN: {TMAX}")
