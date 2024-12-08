@@ -239,9 +239,9 @@ def open_charging_setting():
     current_charge_label.pack(pady=10)
 
     # Realtime charge
-    realtime_charge_lable = tk.Label(charge_window, text=f"Current Charge: {realtime_charge}%")
-    realtime_charge_lable.pack(pady=10)
-    fetch_and_update_charge_label(realtime_charge_lable)
+    # realtime_charge_lable = tk.Label(charge_window, text=f"Current Charge: {realtime_charge}%")
+    # realtime_charge_lable.pack(pady=10)
+    # fetch_and_update_charge_label(realtime_charge_lable)
 
     # Reset
     charge_label = tk.Label(charge_window, text="Reset to: ")
@@ -345,70 +345,75 @@ def manage_delivery():
 
     todo_window = tk.Toplevel()
     todo_window.title("Delivery Manager")
-    todo_window.geometry("450x800")
 
-    # Label for All Tasks
-    todo_label = tk.Label(todo_window, text="All Tasks:")
+    # Create a canvas and scrollbar
+    canvas = tk.Canvas(todo_window, width=450, height=800)
+    scrollbar = tk.Scrollbar(todo_window, orient=tk.VERTICAL, command=canvas.yview)
+    scrollable_frame = tk.Frame(canvas)
+
+    scrollable_frame.bind(
+        "<Configure>",
+        lambda e: canvas.configure(scrollregion=canvas.bbox("all"))
+    )
+
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+    canvas.configure(yscrollcommand=scrollbar.set)
+
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    # Add widgets to the scrollable_frame instead of todo_window
+    todo_label = tk.Label(scrollable_frame, text="All Tasks:")
     todo_label.pack(pady=10)
 
-    # Frame for All Tasks Listbox and Scrollbar
-    all_tasks_frame = tk.Frame(todo_window)
+    all_tasks_frame = tk.Frame(scrollable_frame)
     all_tasks_frame.pack()
 
-    # Scrollbar for All Tasks
     task_scrollbar = tk.Scrollbar(all_tasks_frame, orient=tk.VERTICAL)
     task_listbox = tk.Listbox(all_tasks_frame, width=50, height=15, yscrollcommand=task_scrollbar.set)
     task_scrollbar.config(command=task_listbox.yview)
     task_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
     task_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-    # Task Description Entry
-    task_label = tk.Label(todo_window, text="Task Description:")
+    task_label = tk.Label(scrollable_frame, text="Task Description:")
     task_label.pack(pady=5)
-    task_entry = tk.Entry(todo_window, width=40)
+    task_entry = tk.Entry(scrollable_frame, width=40)
     task_entry.pack(pady=5)
-    # Update the date label and entry
-    date_label = tk.Label(todo_window, text="Start Date (MM/DD/YYYY):")
+
+    date_label = tk.Label(scrollable_frame, text="Start Date (MM/DD/YYYY):")
     date_label.pack(pady=5)
-    date_entry = tk.Entry(todo_window, width=20)
+    date_entry = tk.Entry(scrollable_frame, width=20)
     date_entry.pack(pady=5)
-        # Repeat Task Checkbox
+
     repeat_var = tk.BooleanVar()
-    repeat_checkbox = tk.Checkbutton(todo_window, text="Repeat Task", variable=repeat_var)
+    repeat_checkbox = tk.Checkbutton(scrollable_frame, text="Repeat Task", variable=repeat_var)
     repeat_checkbox.pack(pady=5)
 
-    # Days of the week checkboxes
     day_vars = {}
-    day_checkboxes = {}
     days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-    days_label = tk.Label(todo_window, text="Repeat on Days:")
+    days_label = tk.Label(scrollable_frame, text="Repeat on Days:")
     days_label.pack(pady=5)
     for day in days_of_week:
         day_vars[day] = tk.BooleanVar()
-        day_checkboxes[day] = tk.Checkbutton(todo_window, text=day, variable=day_vars[day])
-        day_checkboxes[day].pack(anchor='w')
+        day_checkbox = tk.Checkbutton(scrollable_frame, text=day, variable=day_vars[day])
+        day_checkbox.pack(anchor='w')
 
-    # Start Time Entry
-    time_label = tk.Label(todo_window, text="Start Time (HH:MM, 24-hour):")
+    time_label = tk.Label(scrollable_frame, text="Start Time (HH:MM, 24-hour):")
     time_label.pack(pady=5)
-    time_entry = tk.Entry(todo_window, width=20)
+    time_entry = tk.Entry(scrollable_frame, width=20)
     time_entry.pack(pady=5)
 
-    # End Time Entry
-    time_label2 = tk.Label(todo_window, text="End Time (HH:MM, 24-hour):")
+    time_label2 = tk.Label(scrollable_frame, text="End Time (HH:MM, 24-hour):")
     time_label2.pack(pady=5)
-    time_entry2 = tk.Entry(todo_window, width=20)
+    time_entry2 = tk.Entry(scrollable_frame, width=20)
     time_entry2.pack(pady=5)
 
-    # Add Task Button
-    add_task_button = tk.Button(todo_window, text="Add Task", command=add_task)
+    add_task_button = tk.Button(scrollable_frame, text="Add Task", command=add_task)
     add_task_button.pack(pady=10)
 
-    # Delete Task Button
-    delete_task_button = tk.Button(todo_window, text="Delete Selected Task(s)", command=delete_task)
+    delete_task_button = tk.Button(scrollable_frame, text="Delete Selected Task(s)", command=delete_task)
     delete_task_button.pack(pady=5)
 
-    # Initially populate the task list
     update_task_list()
 
 
