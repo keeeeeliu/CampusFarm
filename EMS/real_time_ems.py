@@ -136,19 +136,11 @@ aoer = [] # average operatinig emission rate
 moer = [] # marginal operating emission rate
 
 ############ Carbon Accounting ##########
-grid_co2_list = []
-grid_co2 = 0 
-ev_grid_co2_list = []
-ev_grid_co2 = 0
-solar_saving_list = []
-solar_saving = 0
-ev_ems_co2_list = []
-ev_ems_co2 = 0
-ev_nonEMS_co2_list = []
-ev_nonEMS_co2 = 0
-cooler_ems_co2_list = []
-cooler_ems_co2 = 0
-
+total_emissions_saved = 0
+emissions_saved_from_solar = 0
+emissions_saved_from_ev = 0
+ev_grid_emissions_no_ems = 0
+emissions_saved_from_ems = 0
 baseline_con_emissions = 0
 total_baseline_emissions = 0
 ev_emission_reduction = 0 # relative to baseline 
@@ -636,7 +628,7 @@ def ems():
     global rules_timer
     global charging_timer
     global total_emissions_ems, total_emissions_no_ems, total_emissions_baseline, EREMS, grid_load_no_ems, total_load_baseline, ev_load_E_no_ems, cooler_load_E_no_ems, additional_load_E
-
+    global emissions_saved_from_ev, emissions_saved_from_ems, emissions_saved_from_solar, ev_grid_emissions_no_ems, total_emissions_saved
     with open('output_1205.txt', 'a') as file:
 
         if RULE_BASED_MODE == True and OPTIMIZATION_MODE == False:
@@ -790,60 +782,38 @@ def ems():
         moer_MWh = get_wt("ruleBased", "moer")
         moer = moer_MWh/1000 ###### converting unit to be over kWh
         MT_co2_to_lbs_co2 = 2.20462e9
-
+        
 
         watt_to_kWh_5_min_factor = 0.0000833 ##### watts*.001*(5/60)
+        pv_e = (pv_output*watt_to_kWh_5_min_factor)
 
+        combustion_vehicle_mies = get_combustion_vehicle_miles()
 
         cooler_load_E_no_ems = cooler_load_E_no_ems[math.ceil(outdoor_temp)]
         ev_load_E_no_ems = get_total_ev_no_ems_E()
-        grid_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E - (pv_output*watt_to_kWh_5_min_factor)
+        total_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E
+        grid_load_no_ems = total_load_no_ems - pv_e
         EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor) 
         total_load_baseline = cooler_load_E_no_ems + additional_load_E
 
         # THREE LINES --> for 5 min, add to running total
         total_emissions_no_ems = (grid_load_no_ems*moer)*MT_co2_to_lbs_co2
         total_emissions_ems = (total_emissions_no_ems - EREMS)*MT_co2_to_lbs_co2
-        total_emissions_baseline = (total_load_baseline*moer*MT_co2_to_lbs_co2) + (get_combustion_vehicle_miles()*1.30)
+        total_emissions_baseline = (total_load_baseline*moer*MT_co2_to_lbs_co2) + (combustion_vehicle_mies*1.30)
 
+        ################# IMPACT CALCS ####################
 
-        # aoer = get_wt("ruleBased", "aoer")
-        # moer = get_wt("ruleBased", "moer")
-        # grid_co2_list.append(max(0,aoer * grid_power))
-        # grid_co2 = sum(grid_co2_list)
+        total_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E
+        if (ev_load_E_no_ems == 0):
+            ev_grid_emissions_no_ems = 0
+        else:
+            ev_grid_emissions_no_ems = (ev_load_E_no_ems/total_load_no_ems)*total_emissions_no_ems
 
-        # # ############## EV reduction ###############
-        # ev_total_load_fraction = ev_p5 / total_power ## total_power: PV used + grid power  (maybe 'Consume' in power map)
-        # ev_grid_load = ev_total_load_fraction * grid_power 
-        # ev_grid_co2_list.append(max(0,aoer * ev_grid_load))
-        # ev_grid_co2 = sum(ev_grid_co2_list)
-
-        # # ############## PV reduction ###############
-        # solar_saving_list.append(max(0, aoer * solar_power_used))
-        # solar_saving = sum(solar_saving_list)
-
-        # # ############## rule-based EMS carbon accounting ##########
-        # ev_ems_co2_list.append(max(0,moer * ev_grid_load))
-        # ev_ems_co2 = sum(ev_ems_co2_list)
-
-        # cooler_grid_load = (cooler_load / total_power) * grid_power
-        # cooler_ems_co2_list.append(max(0, moer * cooler_grid_load))    
-        # cooler_ems_co2 = sum(cooler_ems_co2_list)
-
-        # connection = webAPI.model.get_db()
-        # cur = connection.execute(
-        #     "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission, netInvertertoGrid, netSolartoInverter, netInvertertoComps) "
-        #     "VALUES (?,?,?,?,?,?,?) ",
-        #     (total_emission_reduction, solar_saving, ev_emission_reduction, ems_emission_reduction, grid_power, solar_power_used, total_power)
-        # )
-        # connection.commit()
-
-        # cur2 = connection.execute(
-        #     "INSERT INTO chart(baselineEmission, noEMSEmission, withEMSEmission) "
-        #     "VALUES (?,?,?) ",
-        #     (baseline_con_emissions, total_baseline_emissions, total_baseline_emissions  - total_emission_reduction)
-        # )
-        # connection.commit()
+        emissions_saved_from_ev = ((combustion_vehicle_mies*1.30) - ev_grid_emissions_no_ems)*MT_co2_to_lbs_co2
+        emissions_saved_from_solar = (pv_e*moer)*MT_co2_to_lbs_co2
+        emissions_saved_from_ems = total_emissions_no_ems - total_emissions_ems
+        
+        total_emissions_saved = emissions_saved_from_ems + emissions_saved_from_ev + emissions_saved_from_solar
 
         rules_timer = datetime.now()
 
