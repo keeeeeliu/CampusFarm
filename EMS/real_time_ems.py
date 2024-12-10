@@ -789,6 +789,7 @@ def ems():
         #aoer_MWh = get_wt("ruleBased", "aoer")##### still no api access
         moer_MWh = get_wt("ruleBased", "moer")
         moer = moer_MWh/1000 ###### converting unit to be over kWh
+        MT_co2_to_lbs_co2 = 2.20462e9
 
 
         watt_to_kWh_5_min_factor = 0.0000833 ##### watts*.001*(5/60)
@@ -801,9 +802,9 @@ def ems():
         total_load_baseline = cooler_load_E_no_ems + additional_load_E
 
         # THREE LINES --> for 5 min, add to running total
-        total_emissions_no_ems = grid_load_no_ems*moer
-        total_emissions_ems = total_emissions_no_ems - EREMS
-        total_emissions_baseline = (total_load_baseline*moer) + (get_combustion_vehicle_miles()*1.30)
+        total_emissions_no_ems = (grid_load_no_ems*moer)*MT_co2_to_lbs_co2
+        total_emissions_ems = (total_emissions_no_ems - EREMS)*MT_co2_to_lbs_co2
+        total_emissions_baseline = (total_load_baseline*moer*MT_co2_to_lbs_co2) + (get_combustion_vehicle_miles()*1.30)
 
 
         # aoer = get_wt("ruleBased", "aoer")
