@@ -600,7 +600,10 @@ def get_total_ev_no_ems_E():
 def get_combustion_vehicle_miles():
     global ev_miles_travelled
     global num_clean_periods
-    combustion_miles_5_min = ev_miles_travelled/num_clean_periods
+    if (num_clean_periods == 0):
+        combustion_miles_5_min = 0
+    else:
+        combustion_miles_5_min = ev_miles_travelled/num_clean_periods
     return combustion_miles_5_min
 
 
