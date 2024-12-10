@@ -28,6 +28,7 @@ from ems_UI import save_to_json, ui_main
 from pyscipopt import Model, quicksum
 from datetime import datetime, timedelta
 import numpy as np
+from database import upload_data
 
 
 ############## Globals ###################
@@ -816,6 +817,18 @@ def ems():
         total_emissions_saved = emissions_saved_from_ems + emissions_saved_from_ev + emissions_saved_from_solar
 
         rules_timer = datetime.now()
+
+        data = {
+            'totalCarbonEmission': total_emissions_saved,
+            'solarCarbonEmission': emissions_saved_from_solar,
+            'evCarbonEmission': emissions_saved_from_ev,
+            'emsCarbonEmission': emissions_saved_from_ems,
+            'baselineEmission': total_baseline_emissions,
+            'noEMSEmission': total_emissions_no_ems,
+            'withEMSEmission': total_emissions_ems
+        }
+
+        upload_data(data)
 
 
 ############### main ###############

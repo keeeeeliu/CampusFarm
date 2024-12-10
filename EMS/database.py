@@ -14,9 +14,6 @@ def create_table():
             solarCarbonEmission VARCHAR(256) NOT NULL,
             evCarbonEmission VARCHAR(256) NOT NULL,
             emsCarbonEmission VARCHAR(256) NOT NULL,
-            netInvertertoGrid VARCHAR(256) NOT NULL,
-            netSolartoInverter VARCHAR(256) NOT NULL,
-            netInvertertoComps VARCHAR(256) NOT NULL,
             postid INTEGER PRIMARY KEY AUTOINCREMENT,
             created DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -44,9 +41,9 @@ def upload_data(data):
 
         # Update data
         cursor.execute(
-            "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission, netInvertertoGrid, netSolartoInverter, netInvertertoComps) "
+            "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission) "
             "VALUES (?,?,?,?,?,?,?) ",
-            (data['totalCarbonEmission'], data['solarCarbonEmission'], data['evCarbonEmission'], data['emsCarbonEmission'], data['netInvertertoGrid'], data['netSolartoInverter'], data['netInvertertoComps'])
+            (data['totalCarbonEmission'], data['solarCarbonEmission'], data['evCarbonEmission'], data['emsCarbonEmission'])
         )
         connection.commit()
 
