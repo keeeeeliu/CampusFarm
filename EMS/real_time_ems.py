@@ -174,6 +174,7 @@ wifi_status = True
 ############# constants #################
 EV_CHARGING_RATE = 11.5 ## kW 
 EV_CAPACITY = 131 ## kWh
+EV_MAX_MILES = 240 ## Miles
 
 ############## Test Mode ################
 EMS_EV = True
@@ -512,9 +513,8 @@ def get_amount_of_dirty_periods():
 def get_ev_miles_travelled():
     global ev_miles_travelled
     global kWh_to_full_charge
+    global EV_MAX_MILES
     ev_miles_travelled = miles_before_drive - ev_miles_left
-    #kWh_to_full_charge = 
-
 
 def get_wifi_status():
     global wifi_status
@@ -604,9 +604,11 @@ def get_total_ev_no_ems_E():
     else:
         return 0
     
-def get_combustion_vehicle_emissions():
-
-    print(5)
+def get_combustion_vehicle_miles():
+    global ev_miles_travelled
+    global num_clean_periods
+    combustion_miles_5_min = ev_miles_travelled/num_clean_periods
+    return combustion_miles_5_min
 
 
 ############### decision rules ###############
@@ -797,9 +799,11 @@ def ems():
         grid_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E - (pv_output*watt_to_kWh_5_min_factor)
         EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor) 
         total_load_baseline = cooler_load_E_no_ems + additional_load_E
+
+        # THREE LINES --> for 5 min, add to running total
         total_emissions_no_ems = grid_load_no_ems*moer
         total_emissions_ems = total_emissions_no_ems - EREMS
-        total_emissions_baseline = (total_load_baseline*moer) + get_combustion_vehicle_emissions()
+        total_emissions_baseline = (total_load_baseline*moer) + (get_combustion_vehicle_miles()*moer)
 
 
         # aoer = get_wt("ruleBased", "aoer")
