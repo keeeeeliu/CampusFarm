@@ -276,7 +276,7 @@ def functional_test_save():
     global total_power, power_map, cooler_dirty_periods
     global ev_charging, ev_charge, ev_p5, cooler_load, ev_miles_travelled, grid_power, solar_power_used, driving
     global enphase_down
-    with open('output_1205.txt', 'a') as file:
+    with open('output_1210.txt', 'a') as file:
         file.write(f"realtime: {realtime}\n")
         file.write(f"Current Setpoint: {CURRENT_SETPOINT}\n")
         file.write(f"Enphase website down? {enphase_down}\n")
@@ -548,7 +548,7 @@ def star_adjust_temp_setpoint_coolth():
     global realtime
     global coolth_timer
 
-    with open('output_1205.txt', 'a') as file:
+    with open('output_1210.txt', 'a') as file:
         # adjust temperature setpoint  
         if CURRENT_SETPOINT != SETPOINT_COOLTH:
             send_cooler_decision(SETPOINT_COOLTH)
@@ -630,7 +630,7 @@ def ems():
     global charging_timer
     global total_emissions_ems, total_emissions_no_ems, total_emissions_baseline, EREMS, grid_load_no_ems, total_load_baseline, ev_load_E_no_ems, cooler_load_E_no_ems, additional_load_E
     global emissions_saved_from_ev, emissions_saved_from_ems, emissions_saved_from_solar, ev_grid_emissions_no_ems, total_emissions_saved
-    with open('output_1205.txt', 'a') as file:
+    with open('output_1210.txt', 'a') as file:
 
         if RULE_BASED_MODE == True and OPTIMIZATION_MODE == False:
             ############### Charging in clean periods section ###################
