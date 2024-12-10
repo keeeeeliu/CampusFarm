@@ -803,7 +803,7 @@ def ems():
         # THREE LINES --> for 5 min, add to running total
         total_emissions_no_ems = grid_load_no_ems*moer
         total_emissions_ems = total_emissions_no_ems - EREMS
-        total_emissions_baseline = (total_load_baseline*moer) + (get_combustion_vehicle_miles()*moer)
+        total_emissions_baseline = (total_load_baseline*moer) + (get_combustion_vehicle_miles()*1.30)
 
 
         # aoer = get_wt("ruleBased", "aoer")
