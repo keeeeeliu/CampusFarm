@@ -353,7 +353,7 @@ def update_realtime():
     realtime = datetime.now()
 
 def get_cooler_temp():
-    url="http://192.168.0.160:5000/temperatures"
+    url="http://192.168.0.190:5000/temperatures"
     global cooler_indoor_temp
     global outdoor_temp
     try:
@@ -385,7 +385,7 @@ def toggle_vent():
     else:
         vent_open = True
 
-    url = "http://192.168.0.160:5000/toggle_vent"
+    url = "http://192.168.0.190:5000/toggle_vent"
     try:
         response = requests.post(url)
         if response.status_code == 200:
