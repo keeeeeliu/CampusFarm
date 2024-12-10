@@ -5,11 +5,11 @@ import sqlite3
 def create_table():
     """Create the databbase table."""
     try:
-        connection = sqlite3.connect('var/ems.db')
+        connection = sqlite3.connect('sqlite/ems.db')
         cursor = connection.cursor()
 
         cursor.execute('''
-        CREATE TABLE IF NOT EXITS data(
+        CREATE TABLE IF NOT EXISTS data(
             totalCarbonEmission VARCHAR(256) NOT NULL, 
             solarCarbonEmission VARCHAR(256) NOT NULL,
             evCarbonEmission VARCHAR(256) NOT NULL,
@@ -23,7 +23,7 @@ def create_table():
         ''')
 
         cursor.execute('''
-        CREATE TABLE IF NOT EXITS chart(
+        CREATE TABLE IF NOT EXISTS chart(
             baselineEmission VARCHAR(256) NOT NULL,
             noEMSEmission VARCHAR(256) NOT NULL,
             withEMSEmission VARCHAR(256) NOT NULL,
@@ -39,21 +39,21 @@ def create_table():
 def upload_data():
     """Upload generated data to database."""
     try:
-        connection = sqlite3.connect('var/ems.db')
+        connection = sqlite3.connect('sqlite/ems.db')
         cursor = connection.cursor()
 
         # Update data
         cursor.execute(
             "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission, netInvertertoGrid, netSolartoInverter, netInvertertoComps) "
             "VALUES (?,?,?,?,?,?,?) ",
-            (total_emission_reduction, solar_saving, ev_emission_reduction, ems_emission_reduction, grid_power, solar_power_used, total_power)
+            (1, 2, 3, 4, 5, 6, 7)
         )
         connection.commit()
 
         cursor.execute(
             "INSERT INTO chart(baselineEmission, noEMSEmission, withEMSEmission) "
             "VALUES (?,?,?) ",
-            (baseline_con_emissions, total_baseline_emissions, total_baseline_emissions  - total_emission_reduction)
+            (8, 9, 10)
         )
         connection.commit()
 
@@ -61,3 +61,7 @@ def upload_data():
         connection.close()
     except sqlite3.Error as error:
         print(f"Error while inserting data: {error}")
+
+
+if __name__ == "__main__":
+    upload_data()
