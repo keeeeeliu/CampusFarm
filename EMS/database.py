@@ -36,7 +36,7 @@ def create_table():
         print(f"Error while creating table: {error}")
 
 
-def upload_data():
+def upload_data(data):
     """Upload generated data to database."""
     try:
         connection = sqlite3.connect('sqlite/ems.db')
@@ -46,14 +46,14 @@ def upload_data():
         cursor.execute(
             "INSERT INTO data(totalCarbonEmission, solarCarbonEmission, evCarbonEmission, emsCarbonEmission, netInvertertoGrid, netSolartoInverter, netInvertertoComps) "
             "VALUES (?,?,?,?,?,?,?) ",
-            (1, 2, 3, 4, 5, 6, 7)
+            (data['totalCarbonEmission'], data['solarCarbonEmission'], data['evCarbonEmission'], data['emsCarbonEmission'], data['netInvertertoGrid'], data['netSolartoInverter'], data['netInvertertoComps'])
         )
         connection.commit()
 
         cursor.execute(
             "INSERT INTO chart(baselineEmission, noEMSEmission, withEMSEmission) "
             "VALUES (?,?,?) ",
-            (8, 9, 10)
+            (data['baselineEmission'], data['noEMSEmission'], data['withEMSEmission'])
         )
         connection.commit()
 
@@ -64,4 +64,4 @@ def upload_data():
 
 
 if __name__ == "__main__":
-    upload_data()
+    create_table()
