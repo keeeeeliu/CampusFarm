@@ -6,5 +6,5 @@
     "econ": 48.0,
     "tolerance_time": 40,
     "current_mode": "Rule-Based",
-    "current_charge_setpoint": 95.0
+    "current_charge_setpoint": 80.0
 }

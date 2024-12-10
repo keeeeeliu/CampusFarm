@@ -58,5 +58,6 @@ def check_battery():
         return battery
 
     except Exception as e:
+        driver.quit()
         print(f"Attempt failed. Error extracting data: {e}")
 

@@ -823,7 +823,7 @@ def ems():
             'solarCarbonEmission': emissions_saved_from_solar,
             'evCarbonEmission': emissions_saved_from_ev,
             'emsCarbonEmission': emissions_saved_from_ems,
-            'baselineEmission': total_baseline_emissions,
+            'baselineEmission': total_emissions_baseline,
             'noEMSEmission': total_emissions_no_ems,
             'withEMSEmission': total_emissions_ems
         }
