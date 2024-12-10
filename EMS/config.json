@@ -1,10 +1,10 @@
 {
     "current_temperature": 55.0,
-    "tmin": 51.0,
-    "tmax": 59.0,
+    "tmin": 35.0,
+    "tmax": 50.0,
     "coolth": 35.0,
     "econ": 48.0,
     "tolerance_time": 40,
     "current_mode": "Rule-Based",
-    "current_charge_setpoint": 80.0
+    "current_charge_setpoint": 95.0
 }
