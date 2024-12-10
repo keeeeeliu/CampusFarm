@@ -40,5 +40,5 @@ def get_cooler_temp():
         print(f"An error occurred with the temp sensor trying automation: {e}")
 
 # Call the function
-get_cooler_temp()
+toggle_vent()
 

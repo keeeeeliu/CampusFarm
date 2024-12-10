@@ -144,13 +144,11 @@ def plugged_in_and_charging():
         sign_in_button.click()
 
         print("Logged in successfully!")
-    except Exception as e:
-        print("Error during login:", e)
 
-    time.sleep(10)
+        time.sleep(10)
 
-    # Click the myEnlighten button and switch to the new tab
-    try:
+        # Click the myEnlighten button and switch to the new tab
+    
         myEnlighten_button = driver.find_element(By.ID, 'myenlighten_link')
         myEnlighten_button.click()
         print("Clicked on myEnlighten button.")
@@ -160,12 +158,10 @@ def plugged_in_and_charging():
 
         driver.switch_to.window(driver.window_handles[-1])  # Switch to the last opened tab
         print("Switched to the new tab.")
-    except Exception as e:
-        print("Error during myEnlighten click or switching tabs:", e)
 
-    time.sleep(3)
+        time.sleep(3)
 
-    try:
+    
         # Locate the span element using its class name
         status_box = driver.find_element(By.CLASS_NAME, 'ev_info_icon_section')
         
@@ -180,34 +176,32 @@ def plugged_in_and_charging():
             connected = False
             print("not connected")
 
-    except Exception as e:
-        print("Error checking plug-in status:", e)
 
-
-    try:
         ev_connection_status['connected'] = connected
         if connected == False:
             ev_connection_status['charging'] = False
             driver.quit()
             print("Therefore not charging")
             return ev_connection_status
-    except Exception as e:
-        print("Error checking plug-in status: ", e)
 
-    time.sleep(5)  # Ensure the new tab's content loads completely
+
+        time.sleep(5)  # Ensure the new tab's content loads completely
 
         # Wait for the Charge Now button to appear
 
-    try:
-        # Locate the "Stop" button using the XPath
-        stop_button = driver.find_element(By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Stop']")
-        print("Stop button found! Charging")
-        ev_connection_status['charging'] = True
-        driver.quit()  # Quit the driver if the button is found
-        return ev_connection_status  # Return True if the button is found
-    except Exception:
-        # Handle the case where the button is not found
-        print("Stop button not found. Not charging")
-        ev_connection_status['charging'] = False
-        driver.quit()  # Quit the driver even if the button is not found
-        return ev_connection_status  # Return False if the button is not found
+        try:
+            # Locate the "Stop" button using the XPath
+            stop_button = driver.find_element(By.XPATH, "//button[contains(@class, 'start-stop-button')]//span[text()='Stop']")
+            print("Stop button found! Charging")
+            ev_connection_status['charging'] = True
+            driver.quit()  # Quit the driver if the button is found
+            return ev_connection_status  # Return True if the button is found
+        except Exception:
+            # Handle the case where the button is not found
+            print("Stop button not found. Not charging")
+            ev_connection_status['charging'] = False
+            driver.quit()  # Quit the driver even if the button is not found
+            return ev_connection_status  # Return False if the button is not found
+    
+    except Exception as e:
+        print("Error during plugged in and charging:", e)
