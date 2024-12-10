@@ -111,7 +111,7 @@ def get_wt(mode,type):
             return sum(value for _, value in formatted_data)/len(formatted_data)
      
     if mode == "ruleBased":
-        get_moer(token, time_interval=15)
+        get_moer(token, time_interval=5)
         data = get_moer(token)
         formatted_data = [(entry['point_time'], entry['value']) for entry in data['data']]
         if type == "aoer":

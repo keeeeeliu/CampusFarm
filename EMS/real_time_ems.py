@@ -48,7 +48,9 @@ econ_timer = 0
 rules_timer = datetime.now()
 charging_timer = datetime.now()
 enphase_down = False
-ev_p5 = 958.33
+ev_p5 = 958.33 ### Wh
+ev_E_5 = 0.9583 #### kWh 
+num_periods_to_charged = 0
 cooler_load = 0
 time_interval = 5 # mins
 ev_miles_travelled = 0 # 
@@ -62,6 +64,72 @@ outdoor_temp = 0 # read from temp sensor
 vent_open = False
 num_clean_periods = 0
 periods_to_next_delivery = 0
+miles_before_drive = 0
+
+
+temps_to_cooler_E = {
+    30: 0.00667, # 280 W
+    31: 0.008733,
+    32: 0.010796,
+    33: 0.012859,
+    34: 0.014922,
+    35: 0.016985,
+    36: 0.019048,
+    37: 0.021111,
+    38: 0.023174,
+    39: 0.025237,
+    40: 0.0273, # 427 W
+    41: 0.02907,
+    42: 0.03084,
+    43: 0.03261,
+    44: 0.03438,
+    45: 0.03615,
+    46: 0.03792,
+    47: 0.03969,
+    48: 0.04146,
+    49: 0.04323,
+    50: 0.045, # 640 W
+    51: 0.04537,
+    52: 0.04574,
+    53: 0.04611,
+    54: 0.04648,
+    55: 0.04685,
+    56: 0.04722,
+    57: 0.04759,
+    58: 0.04796,
+    59: 0.04833,
+    60: 0.0487, # 684 W
+    61: 0.05005,
+    62: 0.0514,
+    63: 0.05275,
+    64: 0.0541,
+    65: 0.05545,
+    66: 0.0568,
+    67: 0.05815,
+    68: 0.0595,
+    69: 0.06085,
+    70: .0622, # 846 W
+    71: 0.06284,
+    72: 0.06348,
+    73: 0.06412,
+    74: 0.06476,
+    75: 0.0654,
+    76: 0.06604,
+    77: 0.06668,
+    78: 0.06732,
+    79: 0.06796,
+    80: .0686, # 923 W
+    81: 0.06909,
+    82: 0.06958,
+    83: 0.07007,
+    84: 0.07056,
+    85: 0.07105,
+    86: 0.07154,
+    87: 0.07203,
+    88: 0.07252,
+    89: 0.07301,
+    90: .0735 # 982 W
+}
 
 ############# WattTime Data #############
 aoer = [] # average operatinig emission rate
@@ -87,6 +155,19 @@ ev_emission_reduction = 0 # relative to baseline
 pv_emission_reduction = 0
 ems_emission_reduction = 0
 total_emission_reduction = 0 # gonna be the sum(pv,ems,ev... reduction)
+
+total_emissions_ems = 0
+total_emissions_no_ems = 0
+total_emissions_baseline = 0
+EREMS = 0
+grid_load_no_ems = 0
+total_load_baseline = 0
+ev_load_E_no_ems = 0
+cooler_load_E_no_ems = 0
+additional_load_E = 0.0167 # kWh (5 min)
+kWh_to_full_charge = 0
+
+
 wifi_status = True 
 
 
@@ -212,11 +293,6 @@ def functional_test_save():
         file.write(f"ev_charging: {ev_charging}, driving: {driving}\n")
         file.write(f"ev_p5: {ev_p5}, cooler_load: {cooler_load}\n")
         file.write(f"ev_miles_travelled: {ev_miles_travelled}, grid_power: {grid_power}, solar_power_used: {solar_power_used}\n\n")
-
-        
-
-########### Carbon Accounting Getters #############
-baseline_con_emissions = ev_miles_travelled * 1.590 # lbs CO2/mile
 
 def get_total_baseline_emissions():
     try:
@@ -371,7 +447,7 @@ def get_total_power():
     consumption = int(consumption.replace("W", ""))
     total_power = consumption
 
-def get_charge():
+def get_charge(leaving_for_drive):
     global ev_charge
     global ev_miles_left
 
@@ -403,9 +479,13 @@ def get_charge():
        print("setting to old battery values")
        ev_charge = old_ev_charge
        ev_miles_left = old_ev_miles_left
+       if leaving_for_drive:
+           miles_before_drive = ev_miles_left
     else:
         ev_charge = int(ev_battery_dict['percentage'])
         ev_miles_left = int(ev_battery_dict['miles_left'])
+        if leaving_for_drive:
+           miles_before_drive = ev_miles_left
 
 
 def get_amount_of_clean_periods():
@@ -428,10 +508,13 @@ def get_amount_of_dirty_periods():
     global dirtytime_threshold
     return dirtytime_threshold * 12 
 
+
 def get_ev_miles_travelled():
     global ev_miles_travelled
-    ev_miles_travelled += get_miles_added()
-    return ev_miles_travelled
+    global kWh_to_full_charge
+    ev_miles_travelled = miles_before_drive - ev_miles_left
+    #kWh_to_full_charge = 
+
 
 def get_wifi_status():
     global wifi_status
@@ -452,9 +535,11 @@ def send_charging_decision(OnOFF:bool):
         charger_off()
 
 def generate_new_clean_periods():
-    get_charge()
+    get_charge(leaving_for_drive=False)
     global num_clean_periods
+    global num_periods_to_charged
     num_clean_periods = get_amount_of_clean_periods()
+    num_periods_to_charged = num_clean_periods
     print(num_clean_periods)
     generate_clean_periods(num_clean_periods)
     save_clean_periods()
@@ -511,6 +596,18 @@ def update_inverter_data():
     pv_output = int(power_map["Solar W"][:-1])
     grid_power = int(power_map["Grid W"][:-1])
 
+def get_total_ev_no_ems_E():
+    global num_periods_to_charged
+    global ev_E_5
+    if(num_periods_to_charged - 1 >= 0):
+        return ev_E_5
+    else:
+        return 0
+    
+def get_combustion_vehicle_emissions():
+
+    print(5)
+
 
 ############### decision rules ###############
 def ems():
@@ -536,6 +633,8 @@ def ems():
     global TMIN
     global rules_timer
     global charging_timer
+    global total_emissions_ems, total_emissions_no_ems, total_emissions_baseline, EREMS, grid_load_no_ems, total_load_baseline, ev_load_E_no_ems, cooler_load_E_no_ems, additional_load_E
+
     with open('output_1205.txt', 'a') as file:
 
         if RULE_BASED_MODE == True and OPTIMIZATION_MODE == False:
@@ -573,6 +672,7 @@ def ems():
                         generate_new_clean_periods()
                         file.write(f"EVENT/Decision:\n")
                         file.write(f"{realtime}: back from drive, generate new clean charging schedule\n")
+                        get_ev_miles_travelled()
                         functional_test_save()
                     if ev_charging:
                         send_charging_decision(False)
@@ -587,6 +687,7 @@ def ems():
                     driving = True
                     file.write(f"EVENT:\n")
                     file.write(f"{realtime}: going on a drive)\n")
+                    get_charge(leaving_for_drive=True)
                     functional_test_save()
             
             charging_timer = datetime.now()
@@ -680,6 +781,27 @@ def ems():
 
 
         # # ############## calculation ################
+
+
+        ################# Three Lines Plot #############
+        #aoer_MWh = get_wt("ruleBased", "aoer")##### still no api access
+        moer_MWh = get_wt("ruleBased", "moer")
+        moer = moer_MWh/1000 ###### converting unit to be over kWh
+
+
+        watt_to_kWh_5_min_factor = 0.0000833 ##### watts*.001*(5/60)
+
+
+        cooler_load_E_no_ems = cooler_load_E_no_ems[math.ceil(outdoor_temp)]
+        ev_load_E_no_ems = get_total_ev_no_ems_E()
+        grid_load_no_ems = ev_load_E_no_ems + cooler_load_E_no_ems + additional_load_E - (pv_output*watt_to_kWh_5_min_factor)
+        EREMS = moer*(grid_load_no_ems - grid_power*watt_to_kWh_5_min_factor) 
+        total_load_baseline = cooler_load_E_no_ems + additional_load_E
+        total_emissions_no_ems = grid_load_no_ems*moer
+        total_emissions_ems = total_emissions_no_ems - EREMS
+        total_emissions_baseline = (total_load_baseline*moer) + get_combustion_vehicle_emissions()
+
+
         # aoer = get_wt("ruleBased", "aoer")
         # moer = get_wt("ruleBased", "moer")
         # grid_co2_list.append(max(0,aoer * grid_power))
